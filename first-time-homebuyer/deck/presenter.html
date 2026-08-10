@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Presenter View — First-Time Homebuyer Webinar</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./css/tokens.css">
+  <style>
+    /* Presenter view is a tool, not a slide. It is deliberately dense and
+       deliberately dark — it sits on your screen for 38 minutes. */
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--c-near-black);
+      color: #E8EDE8;
+      font-family: var(--font-sans);
+      font-variant-numeric: tabular-nums;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    h1,h2,h3,p,ul { margin: 0; }
+    ul { list-style: none; padding: 0; }
+    button {
+      font: inherit; color: inherit; cursor: pointer;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.16);
+      border-radius: 8px;
+      padding: 10px 16px;
+      transition: background 160ms ease;
+    }
+    button:hover { background: rgba(255,255,255,.16); }
+    :focus-visible { outline: 3px solid var(--fill-accent); outline-offset: 2px; }
+
+    .p-bar {
+      display: flex; align-items: center; gap: 20px;
+      padding: 12px 22px;
+      border-bottom: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.03);
+      flex-wrap: wrap;
+    }
+    .p-brand { font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: var(--fill-accent); font-weight: 700; }
+    .p-who { font-size: 13px; color: rgba(255,255,255,.6); }
+    .p-bar-spacer { flex: 1 1 auto; }
+
+    .p-clocks { display: flex; gap: 22px; align-items: center; }
+    .p-clock { text-align: right; }
+    .p-clock-label { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: rgba(255,255,255,.45); }
+    .p-clock-value { font-size: 30px; font-weight: 700; line-height: 1.1; }
+    .p-clock-value[data-state="behind"] { color: #E4B84A; }
+    .p-clock-value[data-state="ahead"]  { color: var(--fill-accent); }
+
+    .p-main {
+      flex: 1 1 auto;
+      display: grid;
+      grid-template-columns: 1.35fr 1fr;
+      gap: 0;
+      min-height: 0;
+    }
+    .p-left  { padding: 26px 28px; overflow-y: auto; }
+    .p-right { padding: 26px 28px; overflow-y: auto; border-left: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.02); }
+
+    .p-section {
+      font-size: 12px; letter-spacing: .14em; text-transform: uppercase;
+      color: var(--fill-accent); font-weight: 700;
+    }
+    .p-headline {
+      font-size: 38px; font-weight: 700; letter-spacing: -.02em;
+      line-height: 1.12; margin-top: 8px; color: #fff;
+    }
+    .p-concept {
+      margin-top: 12px; padding: 10px 14px;
+      border-left: 4px solid var(--fill-accent);
+      background: rgba(140,198,62,.08);
+      font-size: 15px; color: rgba(255,255,255,.82);
+    }
+    .p-concept::before {
+      content: "ONE CONCEPT";
+      display: block; font-size: 10px; letter-spacing: .14em;
+      color: var(--fill-accent); font-weight: 700; margin-bottom: 4px;
+    }
+
+    .p-notes-head, .p-panel-head {
+      margin-top: 24px; margin-bottom: 10px;
+      font-size: 11px; letter-spacing: .14em; text-transform: uppercase;
+      color: rgba(255,255,255,.45); font-weight: 700;
+    }
+    .p-notes { font-size: 19px; line-height: 1.5; color: #E8EDE8; }
+    .p-notes p { margin-bottom: 14px; }
+    .p-notes p:first-child { font-weight: 500; }
+
+    .p-next {
+      padding: 14px 16px;
+      border: 1px dashed rgba(255,255,255,.22);
+      border-radius: 10px;
+      font-size: 17px; color: rgba(255,255,255,.8);
+    }
+
+    .p-popouts { display: flex; flex-direction: column; gap: 6px; }
+    .p-popouts button { text-align: left; width: 100%; font-size: 15px; padding: 9px 13px; }
+    .p-none { font-size: 14px; color: rgba(255,255,255,.4); font-style: normal; }
+
+    .p-controls { display: flex; gap: 10px; margin-top: 26px; flex-wrap: wrap; }
+    .p-controls button { flex: 1 1 auto; font-weight: 600; }
+
+    .p-hint {
+      margin-top: 18px; font-size: 12px; line-height: 1.6;
+      color: rgba(255,255,255,.42);
+      border-top: 1px solid rgba(255,255,255,.1); padding-top: 14px;
+    }
+    .p-hint kbd {
+      background: rgba(255,255,255,.12); border-radius: 4px;
+      padding: 1px 6px; font-family: inherit; font-size: 11px;
+    }
+    @media (max-width: 860px) { .p-main { grid-template-columns: 1fr; } .p-right { border-left: 0; } }
+  </style>
+</head>
+<body>
+
+  <header class="p-bar">
+    <div>
+      <div class="p-brand">Presenter View</div>
+      <div class="p-who"><span id="p-presenter"></span> · <span id="p-company"></span></div>
+    </div>
+    <div class="p-bar-spacer"></div>
+    <div class="p-clocks">
+      <div class="p-clock">
+        <div class="p-clock-label">Slide</div>
+        <div class="p-clock-value" id="p-slide-elapsed" data-state="ok">00:00</div>
+      </div>
+      <div class="p-clock">
+        <div class="p-clock-label">Target</div>
+        <div class="p-clock-value" id="p-slide-target" style="color:rgba(255,255,255,.5)">00:00</div>
+      </div>
+      <div class="p-clock">
+        <div class="p-clock-label">Pace</div>
+        <div class="p-clock-value" id="p-drift" data-state="ok">+00:00</div>
+      </div>
+      <div class="p-clock">
+        <div class="p-clock-label">Elapsed / <span id="p-total">38:00</span></div>
+        <div class="p-clock-value" id="p-elapsed">00:00</div>
+      </div>
+    </div>
+  </header>
+
+  <main class="p-main">
+    <div class="p-left">
+      <div class="p-section" id="p-section"></div>
+      <h1 class="p-headline" id="p-headline"></h1>
+      <p class="p-concept" id="p-concept"></p>
+      <div class="p-notes-head">Speaker notes</div>
+      <div class="p-notes" id="p-notes"></div>
+    </div>
+
+    <aside class="p-right">
+      <div class="p-panel-head">Position</div>
+      <div style="font-size:26px;font-weight:700" id="p-position">1 / 22</div>
+
+      <div class="p-panel-head">Up next</div>
+      <div class="p-next" id="p-next"></div>
+
+      <div class="p-panel-head">Popouts on this slide (<span id="p-popout-count">0</span>)</div>
+      <ul class="p-popouts" id="p-popouts"></ul>
+
+      <div class="p-controls">
+        <button type="button" id="p-prev">‹ Back</button>
+        <button type="button" id="p-next-btn">Next ›</button>
+        <button type="button" id="p-start">Start timer</button>
+      </div>
+
+      <div class="p-hint">
+        Share the <strong>main window</strong>, keep this one on your own screen.<br>
+        <kbd>→</kbd> next · <kbd>←</kbd> back — works from either window.<br>
+        Popout buttons open the modal on the shared screen.<br>
+        <strong>Pace</strong> is how far ahead or behind the spec's run of show you are.
+      </div>
+    </aside>
+  </main>
+
+  <script type="module">
+    import { initPresenter } from './js/presenter.js';
+    initPresenter();
+  </script>
+</body>
+</html>

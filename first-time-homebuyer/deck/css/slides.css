@@ -1,0 +1,332 @@
+/* ============================================================================
+   SLIDE LAYOUTS — the per-layout styling deck.js composes.
+   ========================================================================= */
+
+/* ---------------------------------------------------------------------------
+   OPENING
+   Portrait left third, text right two-thirds. Clean, generous whitespace.
+   No logo wall, no credential badges.
+   Contact block at 32pt MINIMUM — half the audience watches the replay,
+   where chat links don't exist.
+   ------------------------------------------------------------------------ */
+.opening-split { align-items: center; }
+
+.opening-portrait {
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  object-position: center top;
+  border-radius: var(--radius-card);
+  background: var(--surface-sunken);
+}
+.opening-portrait--missing {
+  display: grid;
+  place-items: center;
+  border: 3px dashed var(--fill-accent);
+}
+
+.opening-kicker {
+  font-size: 30px;
+  font-weight: var(--fw-semi);
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+.opening-company {
+  margin-top: var(--sp-1);
+  font-size: 60px;
+  font-weight: var(--fw-bold);
+  letter-spacing: -.025em;
+  line-height: var(--lh-tight);
+  color: var(--text-primary);
+}
+.opening-company::after {
+  content: "";
+  display: block;
+  width: 104px; height: 9px;
+  margin-top: var(--sp-3);
+  background: var(--fill-accent);
+  border-radius: 2px;
+}
+.opening-presenter { margin-top: var(--sp-5); }
+.opening-name {
+  font-size: 48px;
+  font-weight: var(--fw-bold);
+  color: var(--text-primary);
+  line-height: var(--lh-tight);
+}
+.opening-title {
+  margin-top: 6px;
+  font-size: 32px;
+  color: var(--text-body);
+}
+.opening-contact {
+  margin-top: var(--sp-4);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.opening-contact li {
+  display: flex; align-items: center; gap: 14px;
+  font-size: 32px;                    /* 32pt floor — replay requirement */
+  font-weight: var(--fw-medium);
+  color: var(--text-primary);
+}
+
+/* ---------------------------------------------------------------------------
+   BREAKEVEN — Myth Slide 2
+   ------------------------------------------------------------------------ */
+/* Breakeven slide: cards side-by-side on top, diagram + chips below.
+   Header runs tight here so the diagram — the teaching hero — gets height. */
+#slide-myth-2 .slide-header, #slide-mistakes-2 .slide-header { margin-bottom: var(--sp-3); }
+.breakeven-body { justify-content: flex-start; gap: var(--sp-3); }
+.loan-cards-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: start;         /* natural height — don't stretch to the diagram */
+  gap: var(--sp-3);
+  flex: none;
+}
+.loan-cards-row .loan-card { padding: 10px var(--sp-3) 12px; }
+.loan-cards-row .loan-name { font-size: 22px; margin-bottom: 2px; }
+.loan-cards-row .loan-rows > div {
+  display: flex; justify-content: space-between; align-items: baseline;
+  gap: var(--sp-3); padding: 3px 0;
+  border-top: 1px solid var(--border-hairline);
+}
+.loan-cards-row .loan-rows dt { font-size: 18px; }
+.loan-cards-row .loan-rows dd { font-size: 21px; }
+.breakeven-lower {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+.breakeven-lower .figure-wrap {
+  flex: 1 1 auto; min-height: 0;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+/* Height is the binding constraint here — the diagram is wide, the slot is
+   short. Size by height so it can never grow up into the cards. */
+.breakeven-lower .figure-wrap > svg { height: 100%; width: auto; max-width: 100%; }
+.breakeven-lower .chip-slot { flex: none; margin-top: 0; }
+
+.loan-cards { display: flex; flex-direction: column; gap: 10px; }
+
+.loan-card {
+  padding: 10px var(--sp-3) 12px;
+  border: 2px solid var(--border-card);
+  border-radius: var(--radius-card);
+  background: var(--surface-white);
+}
+.loan-card.is-emphasis { border-color: var(--fill-accent); border-width: 4px; }
+
+.loan-name {
+  font-size: 24px;
+  font-weight: var(--fw-bold);
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+.loan-rows > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--sp-2);
+  padding: 3px 0;
+  border-top: 1px solid var(--border-hairline);
+}
+.loan-rows dt { font-size: 19px; color: var(--text-secondary); }
+.loan-rows dd {
+  margin: 0;
+  font-size: 22px;
+  font-weight: var(--fw-bold);
+  color: var(--text-primary);
+}
+.loan-prompt {
+  font-size: 18px;
+  color: var(--text-secondary);
+  margin-top: 0;
+}
+
+/* Figures are capped so a tall diagram can't push a slide past its canvas.
+   preserveAspectRatio letterboxes inside the cap — nothing distorts. */
+.slide-body .figure-wrap > svg { max-height: 470px; }
+.slide-body .split .figure-wrap > svg { max-height: 430px; }
+
+/* ---------------------------------------------------------------------------
+   STACK + COMPARE — Budget Slide 2
+   ------------------------------------------------------------------------ */
+.stack-figure { width: 100%; max-width: 1060px; margin: 0 auto var(--sp-3); }
+.stack-figure > svg { width: 100%; height: auto; max-height: 190px; }
+
+/* This layout stacks three blocks (stack, compare, chips) — keep the header
+   tight and the compare rows compact so all three clear the footer. */
+#slide-budget-2 .slide-header { margin-bottom: var(--sp-3); }
+#slide-budget-2 .compare-col li { font-size: 23px; margin-bottom: 9px; }
+#slide-budget-2 .compare-col-head { font-size: 22px; padding-bottom: 10px; margin-bottom: 12px; }
+#slide-budget-2 .chip-slot { margin-top: var(--sp-3); }
+.chip-slot { margin-top: var(--sp-2); }
+
+/* Stacked into one column, the compare block runs long — tighten it so the
+   chip beneath it can't push into the compliance furniture. */
+.compare--stacked { grid-template-columns: 1fr; gap: var(--sp-2); }
+.compare--stacked .compare-col-head { font-size: 21px; padding-bottom: 8px; margin-bottom: 10px; }
+.compare--stacked .compare-col li { font-size: 22px; margin-bottom: 7px; }
+.compare--stacked .compare-col li small { font-size: 17px; }
+
+/* ---------------------------------------------------------------------------
+   TIMELINE — Process Slide 2
+   ------------------------------------------------------------------------ */
+.timeline-nodes {
+  margin-top: var(--sp-4);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+}
+
+/* ---------------------------------------------------------------------------
+   MARKERS — Mistakes 1A / 1B
+   ------------------------------------------------------------------------ */
+.marker-body { position: relative; padding-left: var(--sp-5); }
+.marker-cols { display: grid; gap: var(--sp-5); }
+.marker-cols[data-cols="2"] { grid-template-columns: 1fr 1fr; }
+
+/* The Do's are fewer and read larger — the contrast between eleven and five
+   is deliberate. */
+.marker-cols[data-cols="1"] .marker-list > li { font-size: 32px; margin-bottom: 22px; }
+.marker-cols[data-cols="1"] .marker { width: 40px; height: 40px; font-size: 22px; }
+
+/* ---------------------------------------------------------------------------
+   ROWS — Questions
+   ------------------------------------------------------------------------ */
+.row-stack { display: flex; flex-direction: column; gap: var(--sp-2); }
+.row-stack .card--row .card-title { font-size: 32px; font-weight: var(--fw-semi); }
+
+/* ---------------------------------------------------------------------------
+   WRAP UP
+   Must feel like a close, not another content slide.
+   ------------------------------------------------------------------------ */
+.wrap-split { align-items: center; }
+.wrap-headline {
+  font-size: 76px;
+  font-weight: var(--fw-bold);
+  letter-spacing: -.03em;
+  color: var(--text-on-dark);
+  line-height: var(--lh-tight);
+}
+.wrap-headline::after {
+  content: "";
+  display: block;
+  width: 104px; height: 9px;
+  margin-top: var(--sp-3);
+  background: var(--fill-accent);
+  border-radius: 2px;
+}
+.wrap-presenter { margin-top: var(--sp-4); }
+.wrap-name {
+  font-size: 42px; font-weight: var(--fw-bold);
+  color: var(--text-on-dark); line-height: var(--lh-tight);
+}
+.wrap-title, .wrap-company {
+  font-size: 26px;
+  color: rgba(255,255,255,.78);
+  margin-top: 4px;
+}
+.wrap-contact {
+  margin-top: var(--sp-3);
+  display: flex; flex-direction: column; gap: 12px;
+}
+.wrap-contact li {
+  display: flex; align-items: center; gap: 14px;
+  font-size: 32px;                    /* 32pt floor — replay requirement */
+  font-weight: var(--fw-medium);
+  color: var(--text-on-dark);
+}
+
+.wrap-actions { margin-top: var(--sp-4); display: flex; gap: var(--sp-2); flex-wrap: wrap; }
+
+.btn {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;                   /* 44px minimum touch target */
+  padding: 16px var(--sp-4);
+  border-radius: 10px;
+  font-size: 26px;
+  font-weight: var(--fw-bold);
+  letter-spacing: .03em;
+  text-decoration: none;
+  transition: transform var(--dur-fast) var(--ease-out),
+              background var(--dur-fast) var(--ease-out);
+}
+/* Lime FILL with Deep Teal text — never lime text. */
+.btn--primary { background: var(--fill-accent); color: var(--text-on-accent); }
+.btn--ghost   { background: transparent; color: var(--text-on-dark);
+                box-shadow: inset 0 0 0 3px rgba(255,255,255,.72); }
+.btn:hover { transform: translateY(-2px); }
+.btn--placeholder { opacity: .78; cursor: not-allowed; }
+.btn--placeholder small {
+  display: block;
+  margin-top: 4px;
+  font-size: 14px;
+  font-weight: var(--fw-semi);
+  letter-spacing: .06em;
+  opacity: .85;
+}
+
+.wrap-qr { text-align: center; }
+.qr-img {
+  width: 260px; height: 260px;        /* spec floor is 200x200 */
+  margin: 0 auto;
+  background: var(--c-white);
+  padding: 14px;
+  border-radius: 12px;
+}
+.wrap-qr-target { margin-top: var(--sp-2); font-size: 20px; }
+.wrap-socials { margin-top: var(--sp-2); font-size: 20px; }
+
+.wrap-close {
+  margin-top: var(--sp-3);
+  padding-top: var(--sp-2);
+  border-top: 1px solid rgba(255,255,255,.22);
+  font-size: 28px;
+  color: rgba(255,255,255,.9);
+  max-width: 900px;
+}
+.wrap-close strong { color: var(--text-on-dark); }
+
+/* ---------------------------------------------------------------------------
+   MOBILE
+   ------------------------------------------------------------------------ */
+@media (max-width: 900px) {
+  .loan-cards-row { grid-template-columns: 1fr; }
+  .breakeven-lower .figure-wrap > svg { height: auto; width: 100%; max-height: none; }
+  #slide-myth-2 .slide-header, #slide-mistakes-2 .slide-header,
+  #slide-budget-2 .slide-header { margin-bottom: var(--sp-3); }
+  .stack-figure > svg { max-height: none; }
+  .opening-portrait { aspect-ratio: 3 / 2; }
+  .opening-company { font-size: 30px; }
+  .opening-kicker { font-size: 15px; }
+  .opening-name { font-size: 24px; }
+  .opening-title, .opening-contact li, .wrap-contact li { font-size: 18px; }
+  .wrap-headline { font-size: 34px; }
+  .wrap-name { font-size: 24px; }
+  .wrap-title, .wrap-company { font-size: 16px; }
+  .wrap-close { font-size: 17px; }
+  .btn { font-size: 17px; padding: 12px var(--sp-3); width: 100%; }
+  .wrap-actions { flex-direction: column; }
+  .qr-img { width: 200px; height: 200px; }
+  .marker-cols[data-cols="2"] { grid-template-columns: 1fr; gap: var(--sp-2); }
+  .marker-cols[data-cols="1"] .marker-list > li { font-size: 17px; margin-bottom: 14px; }
+  .marker-cols[data-cols="1"] .marker { width: 30px; height: 30px; font-size: 16px; }
+  .marker-body { padding-left: var(--sp-3); }
+  .row-stack .card--row .card-title { font-size: 18px; }
+  .loan-rows dd { font-size: 19px; }
+  .loan-rows dt { font-size: 15px; }
+  .loan-name { font-size: 20px; }
+  .stack-figure { margin-bottom: var(--sp-3); }
+}

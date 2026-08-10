@@ -1,0 +1,366 @@
+/* ============================================================================
+   BASE — reset, typography, the stage, compliance furniture
+   ========================================================================= */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: var(--c-near-black);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* TABULAR FIGURES — mandatory anywhere a number appears.
+   Without this, digits have different widths and columns of currency
+   visibly shimmy as they animate. Applied globally; the deck is built
+   around comparisons that recur. */
+body {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1, "cv05" 1;
+}
+
+h1, h2, h3, h4, p, ul, ol, dl, dd, figure, blockquote { margin: 0; }
+ul, ol { padding: 0; list-style: none; }
+button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+img, svg { max-width: 100%; display: block; }
+
+/* Bold for emphasis, NEVER italic — italic dies under stream compression. */
+em, i { font-style: normal; font-weight: var(--fw-bold); }
+
+:focus-visible {
+  outline: 3px solid var(--fill-accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px;
+  margin: -1px; padding: 0; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+/* ---------------------------------------------------------------------------
+   STAGE — the 16:9 canvas.
+   Slides are authored at 1600x900 and scaled with a transform, so the type
+   scale in tokens.css maps 1:1 to the spec's pt values regardless of the
+   viewer's screen. This is what keeps "28pt floor" a real guarantee.
+   ------------------------------------------------------------------------ */
+.stage {
+  position: fixed; inset: 0;
+  background: var(--c-near-black);
+  overflow: hidden;
+}
+
+/* Centred with translate rather than grid/flex alignment: the canvas is
+   deliberately WIDER than the viewport before it scales, and centring
+   keywords align an oversized item to the start rather than centring it. */
+.slide-scaler {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: var(--slide-w);
+  height: var(--slide-h);
+  transform-origin: center center;
+  transform: translate(-50%, -50%);
+}
+
+.slide {
+  position: absolute; inset: 0;
+  display: none;
+  flex-direction: column;
+  /* Bottom padding reserves the compliance furniture's space so content can
+     never run under the footer. It is not a margin you can eyeball away. */
+  padding: var(--slide-pad-y) var(--slide-pad-x) 78px;
+  background: var(--surface-light);
+  color: var(--text-body);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  overflow: hidden;
+}
+.slide[data-disclaimer] { padding-bottom: 116px; }
+.slide.is-active { display: flex; }
+
+/* Surface variants ------------------------------------------------------- */
+.slide[data-surface="white"] { background: var(--surface-white); }
+.slide[data-surface="dark"]  { background: var(--surface-dark); color: var(--text-on-dark); }
+.slide[data-surface="beat"]  { background: var(--surface-beat); color: var(--text-on-dark); }
+.slide[data-surface="dark"] .slide-headline,
+.slide[data-surface="beat"] .slide-headline { color: var(--text-on-dark); }
+
+/* ---------------------------------------------------------------------------
+   WEBCAM SAFE AREA
+   Upper right is reserved on every slide. The slide header reserves it by
+   constraining its own width; this element is a dev-visible guide only.
+   ------------------------------------------------------------------------ */
+.webcam-safe {
+  position: absolute;
+  top: 0; right: 0;
+  width: var(--safe-webcam-w);
+  height: var(--safe-webcam-h);
+  pointer-events: none;
+  z-index: 2;
+}
+body.show-guides .webcam-safe {
+  outline: 2px dashed rgba(140, 198, 62, .75);
+  background: rgba(140, 198, 62, .07);
+}
+body.show-guides .webcam-safe::after {
+  content: "WEBCAM — keep clear";
+  position: absolute; bottom: 6px; right: 10px;
+  font-size: 14px; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--fill-accent);
+}
+
+/* ---------------------------------------------------------------------------
+   SLIDE HEADER
+   ------------------------------------------------------------------------ */
+.slide-header {
+  /* Constrained so headlines never run under the webcam. */
+  max-width: calc(var(--slide-w) - var(--slide-pad-x) * 2 - var(--safe-webcam-w) + 80px);
+  margin-bottom: var(--sp-4);
+  flex: none;
+}
+
+.slide-headline {
+  font-size: var(--fs-headline);
+  line-height: var(--lh-tight);
+  font-weight: var(--fw-bold);
+  letter-spacing: -.02em;
+  color: var(--text-primary);
+  text-wrap: balance;
+}
+.slide-headline.is-long { font-size: var(--fs-headline-s); }
+
+/* The lime accent as a SHAPE — a bar under the heading. Not type. */
+.slide-headline::after {
+  content: "";
+  display: block;
+  width: 92px; height: 8px;
+  margin-top: var(--sp-3);
+  background: var(--fill-accent);
+  border-radius: 2px;
+}
+.slide[data-no-rule] .slide-headline::after { display: none; }
+
+.slide-subhead {
+  margin-top: var(--sp-3);
+  font-size: var(--fs-subhead);
+  font-weight: var(--fw-medium);
+  color: var(--text-secondary);
+}
+.slide[data-surface="dark"] .slide-subhead { color: rgba(255,255,255,.72); }
+
+.slide-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+}
+.slide-body > .split { min-height: 0; }
+.slide-body > .split > * { min-width: 0; min-height: 0; }
+
+/* ---------------------------------------------------------------------------
+   SECTION TITLE SLIDES
+   Large title UPPER LEFT. No large numerals — the "01" styling is removed
+   everywhere in v6.
+   ------------------------------------------------------------------------ */
+.section-title {
+  justify-content: flex-start;
+  padding: var(--sp-8) var(--slide-pad-x);
+}
+.section-title .section-title-text {
+  font-size: var(--fs-display);
+  font-weight: var(--fw-bold);
+  letter-spacing: -.025em;
+  line-height: var(--lh-tight);
+  color: var(--text-on-dark);
+  max-width: 60%;
+}
+.section-title .section-title-text::after {
+  content: "";
+  display: block;
+  width: 120px; height: 10px;
+  margin-top: var(--sp-4);
+  background: var(--fill-accent);
+  border-radius: 2px;
+}
+/* Banded-triangle motif bleeding off the right edge at low opacity. */
+.section-motif {
+  position: absolute;
+  right: -120px; bottom: -80px;
+  width: 780px; height: 780px;
+  opacity: .14;
+  pointer-events: none;
+}
+.section-logo {
+  position: absolute;
+  right: var(--slide-pad-x); bottom: var(--sp-5);
+  width: 260px;
+  opacity: .9;
+}
+
+/* ---------------------------------------------------------------------------
+   COMPLIANCE FURNITURE
+   These are legal requirements, not design elements. They render from data
+   in js/deck.js — nobody types them per-slide, so they cannot be forgotten.
+   May not be removed or shrunk.
+   ------------------------------------------------------------------------ */
+.slide-footer {
+  position: absolute;
+  left: var(--slide-pad-x);
+  right: var(--slide-pad-x);
+  bottom: 26px;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--fs-legal);
+  line-height: 1.35;
+  color: var(--text-legal);
+  z-index: 3;
+}
+.slide[data-surface="dark"] .slide-footer,
+.slide[data-surface="beat"] .slide-footer { color: rgba(255,255,255,.62); }
+
+.slide-footer .eh-mark { flex: none; font-size: 15px; }
+.slide-footer .footer-text { flex: 1 1 auto; }
+
+/* Hypothetical-illustration label. Auto-applied to any slide or modal whose
+   content data carries hasNumbers: true. */
+.disclaimer {
+  font-size: var(--fs-legal);
+  line-height: 1.4;
+  color: var(--text-legal);
+  margin-top: var(--sp-2);
+}
+.slide .disclaimer {
+  position: absolute;
+  left: var(--slide-pad-x);
+  right: var(--slide-pad-x);
+  bottom: 56px;
+  margin-top: 0;
+}
+.slide[data-surface="dark"] .disclaimer { color: rgba(255,255,255,.6); }
+
+/* Source + year lines under any cited figure — 18pt, verified before delivery */
+.source-line {
+  font-size: var(--fs-source);
+  color: var(--text-secondary);
+  margin-top: var(--sp-2);
+}
+
+/* ---------------------------------------------------------------------------
+   PLACEHOLDERS
+   Built VISIBLE, on purpose. An empty field that looks intentional is how a
+   deck ships with a blank on it.
+   ------------------------------------------------------------------------ */
+.placeholder {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 14px 3px;
+  border: 2px dashed var(--fill-accent);
+  border-radius: var(--radius-chip);
+  background: rgba(140, 198, 62, .13);
+  color: var(--text-primary);       /* teal type — never lime type */
+  font-weight: var(--fw-semi);
+  letter-spacing: .01em;
+}
+.placeholder::before { content: "⬚"; opacity: .7; }
+.slide[data-surface="dark"] .placeholder { color: var(--text-on-dark); }
+
+/* ---------------------------------------------------------------------------
+   BUILD ANIMATION
+   Elements carry .build and reveal in sequence. Max 5 per slide.
+   ------------------------------------------------------------------------ */
+.build {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity var(--dur-base) var(--ease-out),
+              transform var(--dur-base) var(--ease-out);
+}
+.slide.is-active .build.is-in { opacity: 1; transform: none; }
+
+/* ---------------------------------------------------------------------------
+   NAVIGATION + PROGRESS
+   ------------------------------------------------------------------------ */
+.deck-nav {
+  position: fixed;
+  bottom: 18px; left: 50%;
+  transform: translateX(-50%);
+  display: flex; align-items: center; gap: var(--sp-2);
+  padding: 8px 14px;
+  background: rgba(11, 18, 16, .82);
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: var(--radius-chip);
+  backdrop-filter: blur(8px);
+  z-index: 40;
+  opacity: 0;
+  transition: opacity var(--dur-base) var(--ease-out);
+}
+.deck-nav:hover, .deck-nav:focus-within, body.nav-visible .deck-nav { opacity: 1; }
+
+.deck-nav button {
+  width: 34px; height: 34px;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  color: rgba(255,255,255,.9);
+  font-size: 16px;
+  transition: background var(--dur-fast) var(--ease-out);
+}
+.deck-nav button:hover { background: rgba(255,255,255,.14); }
+.deck-nav .nav-count {
+  font-size: 14px; letter-spacing: .06em;
+  color: rgba(255,255,255,.72);
+  padding: 0 6px; min-width: 66px; text-align: center;
+}
+
+.deck-progress {
+  position: fixed; top: 0; left: 0;
+  height: 4px;
+  background: var(--fill-accent);
+  z-index: 45;
+  transition: width var(--dur-slow) var(--ease-out);
+}
+
+/* ---------------------------------------------------------------------------
+   RESPONSIVE — the deck must still work stacked on mobile.
+   Below 900px the stage stops letterboxing and slides flow vertically so the
+   content is readable on a phone.
+   ------------------------------------------------------------------------ */
+@media (max-width: 900px) {
+  html, body { height: auto; background: var(--surface-light); }
+  .stage { position: static; display: block; overflow: visible; }
+  .slide-scaler {
+    position: static;
+    top: auto; left: auto;
+    width: 100%; height: auto;
+    transform: none !important;
+  }
+  .slide {
+    position: relative;
+    display: none;
+    inset: auto;
+    min-height: 100vh;
+    padding: var(--sp-5) var(--sp-3) 120px;
+    font-size: 17px;
+  }
+  .slide.is-active { display: flex; }
+  .slide-header { max-width: none; }
+  .slide-headline, .slide-headline.is-long { font-size: 30px; }
+  .slide-headline::after { width: 56px; height: 5px; }
+  .slide-subhead { font-size: 18px; }
+  .section-title .section-title-text { font-size: 38px; max-width: 100%; }
+  .slide-footer, .slide .disclaimer {
+    position: static; left: auto; right: auto; bottom: auto;
+    margin-top: var(--sp-3);
+    font-size: 12px;
+  }
+  .webcam-safe { display: none; }
+  .section-motif { width: 380px; height: 380px; right: -90px; }
+  .section-logo { width: 150px; position: static; margin-top: var(--sp-5); }
+}
