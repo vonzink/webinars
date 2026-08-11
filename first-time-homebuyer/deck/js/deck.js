@@ -296,6 +296,7 @@ function handleAnnotate(m) {
   if (m.toggle) annotate.toggle();
   if (m.tool) annotate.setTool(m.tool);
   if (m.color) annotate.setColor(m.color);
+  if (m.autoOff !== undefined) annotate.setAutoOff(m.autoOff);
   if (m.toolbar !== undefined) annotate.showToolbar(m.toolbar);
   if (m.clear) annotate.clear();
 }
@@ -305,7 +306,11 @@ export function initDeck() {
   scaler = document.querySelector('.slide-scaler');
   if (PREVIEW) document.body.classList.add('is-preview');
   initModal();
-  if (!PREVIEW) annotate.initAnnotate();
+  if (!PREVIEW) {
+    annotate.initAnnotate();
+    /* When auto-off flips drawing off after a stroke, tell the presenter view. */
+    annotate.onStateChange(on => { if (channel) channel.postMessage({ type: 'annstate', on }); });
+  }
 
   SLIDES.forEach((d, i) => {
     const el = shell(d, i);

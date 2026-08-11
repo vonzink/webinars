@@ -35,7 +35,9 @@ PADX=IN(96); PADY=IN(90); CW=Inches(13.333); CH=Inches(7.5)
 # ---- compliance / presenter ----
 COMPANY_L1="Mountain State Financial Group, LLC · NMLS# 1314257 · msfg.us"
 COMPANY_L2="Licensed in CO, ND, SD, MN, MI, IL, TX · Equal Housing Lender"
-SETH=dict(name="Seth Angell",title="Executive VP · NMLS# 912881",email="info@msfgmortgage.com")
+SETH=dict(name="Seth Angell",title="Executive VP · NMLS# 912881",
+          phone="303-883-8519",email="Seth.angell@msfg.us")
+APPLY_URL="https://www.blink.mortgage/app/signup/p/mountainstatefinancialgroupllc/sethangell"
 LOGO=os.path.join(os.path.dirname(__file__),"assets/brand/logo-horizontal.png")
 QR=os.path.join(os.path.dirname(__file__),"assets/brand/qr-seth.png")
 PORTRAIT=os.path.join(os.path.dirname(__file__),"assets/portraits/seth-angell.png")
@@ -130,6 +132,17 @@ def std_header(slide,d,dark):
 def S(head,items,tone=None,note=None): return dict(head=head,items=items,tone=tone,note=note)
 
 MODALS={
+ 'compare-loans':dict(eyebrow='Compare',title='Conventional vs FHA vs VA',
+   intro='Same borrower, same price — the rate is only part of the story. APR folds in mortgage insurance and fees, so the lowest rate isn\'t always the lowest APR.',
+   table=dict(columns=['Conventional','FHA','VA'],rows=[
+     ('Minimum down',['3%','3.5%','0%']),
+     ('Mortgage insurance',['Removable','Often life of loan','None']),
+     ('Illustrative rate',['6.75%','6.50%','6.25%']),
+     ('Illustrative APR',['6.90%','7.40%','6.45%']),
+     ('Best for',['Strong credit','Credit flexibility','Eligible veterans']),
+   ]),
+   compliance='hypothetical',
+   sections=[S('The takeaway',['FHA\'s lower rate can carry a <strong>higher APR</strong> — upfront and monthly MI','VA often wins on APR — no monthly MI','Ask for <strong>rate AND APR</strong> on every quote'])]),
  'myth-20-down':dict(eyebrow='The myth',title='You need 20% down',sections=[
    S('The reality',['Conventional goes as low as <strong>3%</strong>, FHA <strong>3.5%</strong>, VA and USDA <strong>0%</strong>','The median first-time buyer puts down far less than 20%']),
    S('Pros of 20% down',['No monthly mortgage insurance','Lower payment and more instant equity'],'pros'),
@@ -241,7 +254,7 @@ SLIDES=[
    '<strong>APR folds those costs back in</strong> — the rate plus certain lender charges over the life of the loan',
    'Two loans at the same rate can have very different closing costs, and very different APRs',
    'Where lenders really differ is <strong>origination and fees</strong> — not the headline rate'],
-   callout='Ask for rate AND total cost. Compare Loan Estimates from the same day.'),
+   callout='Ask for rate AND total cost. Compare Loan Estimates from the same day.',compare='compare-loans'),
  dict(id='budget-rent-buy',layout='compare',bg='dark',eyebrow='Budget',
    left=dict(label='Renting',items=['Rent in Denver has trended <strong>up</strong>, year after year','Flexible — but every payment builds someone else’s equity','The longer you wait, the <strong>further ahead prices get</strong>']),
    right=dict(label='Buying',items=['A fixed payment while <strong>home values generally appreciate</strong>','Equity compounds; you’re paying yourself','Most people <strong>step up</strong> — the first home isn’t the last']),
@@ -353,7 +366,7 @@ def L_opening(s,d,dark):
     tf=textbox(s,PADX,PADY+IN(500),IN(1000),IN(300))
     set_text(line0(tf),SETH['name'],PT(46),WHITE,DISP,True)
     p=para(tf,2,18); set_text(p,SETH['title'],PT(28),BODY_DARK,BODY,False)
-    for lbl,val in [('CALL','[ PHONE ]'),('EMAIL',SETH['email']),('WEB','msfg.us')]:
+    for lbl,val in [('CALL',SETH['phone']),('EMAIL',SETH['email']),('WEB','msfg.us')]:
         pc=para(tf,4,4); r=pc.add_run(); r.text=lbl+'   '; r.font.name=DISP; r.font.bold=True; r.font.size=PT(22); r.font.color.rgb=GREEN
         r2=pc.add_run(); r2.text=val; r2.font.name=BODY; r2.font.size=PT(30); r2.font.color.rgb=WHITE
 
@@ -377,9 +390,14 @@ def L_points(s,d,dark):
     y=std_header(s,d,dark)
     bullets_box(s,PADX,y+IN(20),IN(1500),IN(500),d['points'],PT(30),(BODY_DARK if dark else CHARCOAL),gap=12)
     if d.get('callout'):
-        co=rect(s,PADX,CH-IN(330),IN(1500),IN(90),fill=GREEN)
+        coy = CH-IN(420) if d.get('compare') else CH-IN(330)
+        co=rect(s,PADX,coy,IN(1500),IN(84),fill=GREEN)
         tf=co.text_frame; tf.vertical_anchor=MSO_ANCHOR.MIDDLE; tf.margin_left=IN(40)
         set_text(line0(tf),d['callout'],PT(32),FOREST,DISP,True)
+    if d.get('compare'):
+        cb=rect(s,PADX,CH-IN(300),IN(820),IN(84),fill=GREEN); tfc=cb.text_frame; tfc.vertical_anchor=MSO_ANCHOR.MIDDLE
+        set_text(line0(tfc),'Compare loans:  Conventional · FHA · VA  ›',PT(24),FOREST,DISP,True,PP_ALIGN.CENTER)
+        modal_parent[d['compare']]=s; card_links.append((cb,d['compare']))
 
 def L_compare(s,d,dark):
     half=CW/2
@@ -403,39 +421,48 @@ def L_compare(s,d,dark):
         set_text(line0(tf3),d['callout'],PT(32),FOREST,DISP,True,PP_ALIGN.CENTER)
 
 def L_payment(s,d,dark):
-    y=std_header(s,d,dark)
-    # banded row
+    # compact header so the bar + columns + explainer row all fit above the footer
+    eyebrow(s,d['eyebrow'],dark)
+    headline(s,d['headline'],dark,y=PADY+IN(46),size=56)
+    accent(s,PADY+IN(150))
+    subhead(s,d['subhead'],dark,PADY+IN(180))
+    top=PADY+IN(250)
+    # banded bar
     segs=[('Principal',210),('Interest',300),('Taxes',170),('Insurance',120),('Mortgage ins.',110),('HOA',90)]
-    total=sum(w for _,w in segs); barw=IN(1500); x=PADX; barh=IN(90); by=y+IN(10)
+    total=sum(w for _,w in segs); barw=IN(1580); x=PADX; barh=IN(72)
     for i,(lbl,w) in enumerate(segs):
-        sw=barw*w/total; rect(s,x,by,sw,barh,fill=PAY[i])
-        lt=textbox(s,x,by+barh+IN(8),sw,IN(50)); set_text(line0(lt),lbl,PT(20),CHARCOAL,DISP,True,PP_ALIGN.CENTER)
+        sw=barw*w/total; rect(s,x,top,sw,barh,fill=PAY[i])
+        lt=textbox(s,x,top+barh+IN(6),sw,IN(40)); set_text(line0(lt),lbl,PT(19),CHARCOAL,DISP,True,PP_ALIGN.CENTER)
         x+=sw
-    cy=by+barh+IN(90)
+    cy=top+barh+IN(66)
     # two columns
-    colw=IN(720)
+    colw=IN(740)
     for ci,(head,items,bc) in enumerate([("What's locked",d['fixed'],SAGE),('What can still move',d['moves'],GREEN)]):
         cx=PADX+ci*(colw+IN(60))
-        ht=textbox(s,cx,cy,colw,IN(50)); set_text(line0(ht),head,PT(26),FOREST,DISP,True)
-        rect(s,cx,cy+IN(50),colw,Emu(28575),fill=bc)
-        bullets_box(s,cx,cy+IN(72),colw,IN(250),items,PT(24),CHARCOAL,gap=8)
-    # points row
-    py=CH-IN(320)
+        ht=textbox(s,cx,cy,colw,IN(46)); set_text(line0(ht),head,PT(24),FOREST,DISP,True)
+        rect(s,cx,cy+IN(44),colw,Emu(28575),fill=bc)
+        bullets_box(s,cx,cy+IN(60),colw,IN(200),items,PT(22),CHARCOAL,gap=5)
+    # explainer row, positioned below the taller (5-item) column
+    py=cy+IN(240)
     pw=(CW-PADX*2-IN(68))/3
     for i,pt in enumerate(d['points']):
         px=PADX+i*(pw+IN(34))
-        bullets_box(s,px,py,pw,IN(150),[pt],PT(23),CHARCOAL,gap=4)
+        bullets_box(s,px,py,pw,IN(130),[pt],PT(21),CHARCOAL,gap=3)
 
 def L_cashmakeup(s,d,dark):
-    y=std_header(s,d,dark)
+    eyebrow(s,d['eyebrow'],dark)
+    headline(s,d['headline'],dark,y=PADY+IN(46),size=56)
+    accent(s,PADY+IN(150))
+    subhead(s,d['subhead'],dark,PADY+IN(180))
+    top=PADY+IN(250)
     colw=IN(760)
     for ci,(head,items,bc) in enumerate([('Credits CAN pay',d['canpay'],SAGE),('Credits CANNOT pay',d['cannotpay'],GREEN)]):
         cx=PADX+ci*(colw+IN(60))
-        ht=textbox(s,cx,y,colw,IN(50)); set_text(line0(ht),head,PT(28),FOREST,DISP,True)
-        rect(s,cx,y+IN(52),colw,Emu(28575),fill=bc)
-        bullets_box(s,cx,y+IN(74),colw,IN(300),items,PT(26),CHARCOAL,gap=10)
-    py=CH-IN(430)
-    bullets_box(s,PADX,py,IN(1500),IN(300),d['points'],PT(26),CHARCOAL,gap=12)
+        ht=textbox(s,cx,top,colw,IN(46)); set_text(line0(ht),head,PT(26),FOREST,DISP,True)
+        rect(s,cx,top+IN(46),colw,Emu(28575),fill=bc)
+        bullets_box(s,cx,top+IN(64),colw,IN(220),items,PT(24),CHARCOAL,gap=6)
+    py=top+IN(250)
+    bullets_box(s,PADX,py,IN(1560),IN(240),d['points'],PT(24),CHARCOAL,gap=10)
 
 def L_stepper(s,d,dark):
     y=std_header(s,d,dark)
@@ -465,15 +492,18 @@ def L_markers(s,d,dark):
         tf=textbox(s,x+IN(66),yy,colw-IN(80),IN(70),MSO_ANCHOR.MIDDLE); add_rich(line0(tf),it,PT(26 if cols==2 else 30),(FOREST if not dark else WHITE) if False else CHARCOAL)
 
 def L_questions(s,d,dark):
-    y=std_header(s,d,dark)
-    top=y+IN(10)
+    # compact header (no subhead) + tighter rows so all five clear the footer
+    eyebrow(s,d['eyebrow'],dark)
+    headline(s,d['headline'],dark,y=PADY+IN(46),size=60)
+    accent(s,PADY+IN(158))
+    top=PADY+IN(208)
     for i,(q,a) in enumerate(d['items']):
-        yy=top+i*IN(150)
-        sq=rect(s,PADX,yy,IN(56),IN(56),fill=GREEN); tq=sq.text_frame; tq.vertical_anchor=MSO_ANCHOR.MIDDLE
-        set_text(line0(tq),str(i+1),PT(28),FOREST,DISP,True,PP_ALIGN.CENTER)
-        tf=textbox(s,PADX+IN(84),yy,IN(1450),IN(150))
-        set_text(line0(tf),q,PT(34),WHITE,DISP,True)
-        pa=para(tf,4,0); add_rich(pa,a,PT(24),BODY_DARK)
+        yy=top+i*IN(116)
+        sq=rect(s,PADX,yy,IN(50),IN(50),fill=GREEN); tq=sq.text_frame; tq.vertical_anchor=MSO_ANCHOR.MIDDLE
+        set_text(line0(tq),str(i+1),PT(26),FOREST,DISP,True,PP_ALIGN.CENTER)
+        tf=textbox(s,PADX+IN(78),yy,IN(1520),IN(120))
+        set_text(line0(tf),q,PT(30),WHITE,DISP,True)
+        pa=para(tf,3,0); add_rich(pa,a,PT(22),BODY_DARK)
 
 def L_wrap(s,d,dark):
     headline(s,d['headline'],dark,y=PADY+IN(30),size=76)
@@ -481,13 +511,14 @@ def L_wrap(s,d,dark):
     tf=textbox(s,PADX,PADY+IN(280),IN(1000),IN(400))
     set_text(line0(tf),SETH['name'],PT(42),WHITE,DISP,True)
     p=para(tf,2,18); set_text(p,SETH['title'],PT(26),BODY_DARK,BODY,False)
-    for lbl,val in [('CALL','[ PHONE ]'),('EMAIL',SETH['email']),('WEB','msfg.us')]:
+    for lbl,val in [('CALL',SETH['phone']),('EMAIL',SETH['email']),('WEB','msfg.us')]:
         pc=para(tf,4,4); r=pc.add_run(); r.text=lbl+'   '; r.font.name=DISP; r.font.bold=True; r.font.size=PT(22); r.font.color.rgb=GREEN
         r2=pc.add_run(); r2.text=val; r2.font.name=BODY; r2.font.size=PT(30); r2.font.color.rgb=WHITE
+    # Apply Now — real hyperlink. Schedule button omitted until the booking link exists.
     b1=rect(s,PADX,CH-IN(400),IN(430),IN(90),fill=GREEN); tb=b1.text_frame; tb.vertical_anchor=MSO_ANCHOR.MIDDLE
-    set_text(line0(tb),'APPLY NOW  [ LINK ]',PT(24),FOREST,DISP,True,PP_ALIGN.CENTER)
-    b2=rect(s,PADX,CH-IN(290),IN(560),IN(90),fill=None,line=WHITE); tb2=b2.text_frame; tb2.vertical_anchor=MSO_ANCHOR.MIDDLE
-    set_text(line0(tb2),'SCHEDULE A CONSULTATION  [ LINK ]',PT(20),WHITE,DISP,True,PP_ALIGN.CENTER)
+    set_text(line0(tb),'APPLY NOW',PT(24),FOREST,DISP,True,PP_ALIGN.CENTER)
+    try: b1.click_action.hyperlink.address=APPLY_URL
+    except Exception: pass
     try: s.shapes.add_picture(QR,CW-IN(560),PADY+IN(120),height=IN(420))
     except Exception: pass
 
@@ -517,7 +548,25 @@ def render_popout(mid,m):
     set_text(ph,m['title'],PT(50 if len(m['title'])<40 else 40),WHITE,DISP,True)
     rect(s,PADX,IN(250),IN(96),IN(8),fill=GREEN)
     # body
-    tf2=textbox(s,PADX,IN(360),CW-PADX*2,IN(700))
+    by=IN(360)
+    if m.get('intro'):
+        it=textbox(s,PADX,by,CW-PADX*2,IN(140)); set_text(line0(it),m['intro'],PT(25),CHARCOAL,BODY,False); by=IN(480)
+    if m.get('table'):
+        t=m['table']; cols=len(t['columns'])+1; rows=len(t['rows'])+1
+        gt=s.shapes.add_table(rows,cols,PADX,by,CW-PADX*2,IN(52*rows)).table
+        gt.first_row=True; gt.horz_banding=True
+        hdr=['']+t['columns']
+        for c,txt in enumerate(hdr):
+            cell=gt.cell(0,c); cell.fill.solid(); cell.fill.fore_color.rgb=FOREST
+            pp=cell.text_frame.paragraphs[0]; set_text(pp,txt,PT(24),WHITE,DISP,True)
+        for r,(label,cells) in enumerate(t['rows'],start=1):
+            lc=gt.cell(r,0); lc.fill.solid(); lc.fill.fore_color.rgb=MIST
+            set_text(lc.text_frame.paragraphs[0],label,PT(20),FOREST,DISP,True)
+            for c,val in enumerate(cells,start=1):
+                cc=gt.cell(r,c); cc.fill.solid(); cc.fill.fore_color.rgb=WHITE
+                set_text(cc.text_frame.paragraphs[0],re.sub('<[^>]+>','',val),PT(20),CHARCOAL,BODY,False)
+        by = by + IN(54*rows) + IN(20)
+    tf2=textbox(s,PADX,by,CW-PADX*2,IN(700)-(by-IN(360)))
     first=True
     for sec in m['sections']:
         if sec['head']:
@@ -534,8 +583,11 @@ def render_popout(mid,m):
             p=para(tf2,14,8); first=False
             rr=p.add_run(); rr.text='  '; add_rich(p,sec['note'],PT(26),FOREST)
     if m.get('compliance'):
+        txt=('Hypothetical illustration for education only. Not a quote, offer, or commitment to lend.'
+             if m['compliance']=='hypothetical'
+             else 'General guidelines only. Actual eligibility depends on full underwriting, credit, property, and lender overlays.')
         ct=textbox(s,PADX,CH-IN(210),CW-PADX*2,IN(80))
-        set_text(line0(ct),'General guidelines only. Actual eligibility depends on full underwriting, credit, property, and lender overlays.',PT(21),META_LIGHT,BODY,False)
+        set_text(line0(ct),txt,PT(21),META_LIGHT,BODY,False)
         line0(ct).runs[0].font.italic=True
     # back button
     back=rect(s,PADX,CH-IN(120),IN(240),IN(72),fill=FOREST); tb=back.text_frame; tb.vertical_anchor=MSO_ANCHOR.MIDDLE

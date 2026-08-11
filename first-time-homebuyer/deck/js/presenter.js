@@ -105,7 +105,14 @@ export function initPresenter() {
   $('#p-company').textContent = `${COMPANY.name} · ${COMPANY.nmls}`;
   $('#p-total').textContent = fmt(TARGET_RUNTIME_SECONDS);
 
-  channel.onmessage = e => { if (e.data.type === 'slide') setIndex(e.data.index); };
+  channel.onmessage = e => {
+    if (e.data.type === 'slide') setIndex(e.data.index);
+    if (e.data.type === 'annstate') {   // auto-off flipped drawing off on the shared slide
+      annOn = e.data.on;
+      $('#p-annon').textContent = `Draw: ${annOn ? 'On' : 'Off'}`;
+      $('#p-annon').classList.toggle('on', annOn);
+    }
+  };
   channel.postMessage({ type: 'hello' });
 
   $('#p-prev').addEventListener('click', () => channel.postMessage({ type: 'prev' }));
@@ -114,6 +121,13 @@ export function initPresenter() {
   $('#p-note-save').addEventListener('click', addNote);
 
   $('#p-annon').addEventListener('click', () => setAnnOn(!annOn));
+  let autoOff = false;
+  $('#p-autooff').addEventListener('click', () => {
+    autoOff = !autoOff;
+    $('#p-autooff').textContent = `Auto-off: ${autoOff ? 'On' : 'Off'}`;
+    $('#p-autooff').classList.toggle('on', autoOff);
+    ann({ autoOff });
+  });
   $('#p-anntoolbar').addEventListener('click', () => {
     barOn = !barOn; if (barOn && !annOn) setAnnOn(true);
     $('#p-anntoolbar').textContent = `On-slide tools: ${barOn ? 'On' : 'Off'}`;
