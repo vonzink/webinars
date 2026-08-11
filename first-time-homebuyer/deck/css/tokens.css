@@ -1,157 +1,126 @@
 /* ============================================================================
-   TOKENS — First-Time Homebuyer Webinar v6
-   Mountain State Financial Group LLC
+   TOKENS — "Ridgeline" design system
+   Homebuyer's Playbook · Mountain State Financial Group
 
-   Two rules are enforced STRUCTURALLY in this file, not by discipline:
+   Per SLIDE_DESIGN_SPEC.md. Two backgrounds deck-wide (Deep Forest + White/Mist),
+   one green accent moment per slide, Montserrat + Open Sans, 1920×1080 canvas,
+   squared geometry, NO emoji, NO decorative shadows.
 
-   1. THE LIME RULE. #8cc63E is 2.1:1 on white. It FAILS contrast.
-      There is deliberately NO lime text token. Lime exists only as
-      --fill-accent and --band-1. If you find yourself wanting
-      `color: var(--fill-accent)` on a light ground, the answer is no.
-
-   2. SEMANTIC COLOUR IS LOCKED. Principal is the same token in the payment
-      stack and the amortization chart. Do not reach for --c-teal in a
-      diagram; reach for --sem-principal.
+   The green (#8cc63E) is an ACCENT and never body text or a full-slide
+   background — there is deliberately no green text token below.
    ========================================================================= */
 
 :root {
-  /* ---- Core palette --------------------------------------------------- */
-  --c-deep-teal:   #104547;  /* primary · headlines · dark fields */
-  --c-green:       #4b7b4d;  /* secondary · positive · "do" */
-  --c-charcoal:    #2E3532;  /* negatives · "don't" · money spent */
-  --c-gray-dark:   #3D4650;  /* body text */
-  --c-gray-mid:    #8A9099;  /* secondary text · source lines · legal */
-  --c-white:       #FFFFFF;
-  --c-offwhite:    #F5F7F5;
-  --c-near-black:  #0B1210;  /* emotional beats ONLY */
+  /* ---- Palette (the whole deck lives in these) ------------------------ */
+  --forest:      #0C3335;  /* primary dark canvas · photo wash · dark panels */
+  --forest-mid:  #14494B;  /* secondary dark block · hover / active step */
+  --sage:        #4b7b4d;  /* eyebrow labels on light · secondary rules */
+  --green:       #8cc63E;  /* THE accent — one moment per slide */
+  --charcoal:    #404041;  /* body copy on light */
+  --mist:        #F5F7F4;  /* light neutral background */
+  --white:       #FFFFFF;
 
-  /* ---- Accent — FILL AND SHAPE ONLY. Never a text colour. ------------- */
-  --fill-accent:   #8cc63E;
+  /* ---- Text ----------------------------------------------------------- */
+  --text-on-light:        var(--charcoal);
+  --text-head-light:      var(--forest);
+  --text-on-dark:         var(--white);
+  --text-body-dark:       rgba(255,255,255,0.82);
+  --text-meta-dark:       rgba(255,255,255,0.62);
+  --text-meta-light:      #6A7370;
 
-  /* ---- The five-band ramp --------------------------------------------
-     Taken from the MSFG mark: lime apex -> deep teal base, hard edges.
-     Every diagram in the deck bands with these. Banded fills, never
-     soft gradients — that is what makes it read as MSFG's deck rather
-     than a template with a logo in the corner.                          */
-  --band-1: #8CC63E;
-  --band-2: #6BAE47;
-  --band-3: #4B7B4D;
-  --band-4: #2A5F4E;
-  --band-5: #104547;
+  /* ---- Backgrounds — exactly two families ----------------------------- */
+  --bg-dark:   var(--forest);
+  --bg-light:  var(--mist);
+  --bg-white:  var(--white);
 
-  /* ---- Semantic lock — same idea, same colour, all 38 minutes --------- */
-  --sem-principal: var(--c-deep-teal);
-  --sem-interest:  var(--c-charcoal);
-  --sem-taxes:     var(--c-green);
-  --sem-insurance: var(--c-gray-mid);
-  --sem-mi:        var(--fill-accent);
-  --sem-hoa:       var(--c-charcoal);
+  /* Cards */
+  --card-on-dark:   rgba(255,255,255,0.07);
+  --card-on-dark-h: rgba(255,255,255,0.12);
+  --card-on-light:  var(--white);
+  --card-border-light: #E2E7E2;
 
-  /* Directional semantics — never colour alone, always paired with a
-     ✓ / ✗ glyph or a position. See .marker in components.css. */
-  --sem-do:    var(--c-green);
-  --sem-dont:  var(--c-charcoal);
+  /* Diagram bands — an on-palette forest→green ramp for the one or two
+     diagrams the deck keeps (payment makeup, process). No numbers ride these. */
+  --band-1: var(--green);
+  --band-2: #6FA847;
+  --band-3: var(--sage);
+  --band-4: var(--forest-mid);
+  --band-5: var(--forest);
 
-  /* ---- Surfaces -------------------------------------------------------- */
-  --surface-light:   var(--c-offwhite);
-  --surface-white:   var(--c-white);
-  --surface-dark:    var(--c-deep-teal);
-  --surface-beat:    var(--c-near-black);
-  --surface-card:    var(--c-white);
-  --surface-sunken:  #ECF0EC;
+  /* Payment-makeup semantic bands (proportional only, always labelled) */
+  --pay-principal: var(--forest);
+  --pay-interest:  var(--forest-mid);
+  --pay-taxes:     var(--sage);
+  --pay-insurance: #8FA69B;
+  --pay-mi:        var(--green);
+  --pay-hoa:       var(--charcoal);
 
-  --border-hairline: #D9E0D9;
-  --border-card:     #E2E8E2;
+  /* ---- Type ----------------------------------------------------------
+     Montserrat display, Open Sans body. Sizes are the spec's px values on
+     the 1920×1080 canvas (authored 1:1, then the canvas scales to fit).    */
+  --font-display: 'Montserrat', 'Helvetica Neue', Arial, sans-serif;
+  --font-body:    'Open Sans', 'Helvetica Neue', Arial, sans-serif;
 
-  /* ---- Text ------------------------------------------------------------
-     No lime here. On purpose. See rule 1 above. */
-  --text-primary:    var(--c-deep-teal);
-  --text-body:       var(--c-gray-dark);
-  --text-secondary:  var(--c-gray-mid);
-  --text-legal:      var(--c-gray-mid);
-  --text-on-dark:    var(--c-white);
-  --text-on-accent:  var(--c-deep-teal);   /* teal ON lime — the legal direction */
+  --fs-title:      132px;  /* title slide headline  (900) */
+  --fs-section:    80px;   /* section headline      (800) */
+  --fs-headline:   72px;   /* content headline      (800) */
+  --fs-card-title: 42px;   /* card / item title     (700–800) */
+  --fs-card-title-s: 34px; /* dense grids */
+  --fs-stat:       72px;   /* big stat number       (900) */
+  --fs-eyebrow:    23px;   /* ALL CAPS label        (700) */
+  --fs-body:       30px;   /* body copy             (400) */
+  --fs-body-s:     26px;   /* dense body — the 26px floor for content */
+  --fs-footer:     22px;   /* footer / legal        (400) */
+  --fs-min:        21px;   /* HARD FLOOR — nothing below this, anywhere */
 
-  /* ---- Type ------------------------------------------------------------
-     Scale is calibrated for a webinar watched at ~40% of a laptop screen,
-     which is a different problem than in-room presentation. Everything is
-     larger than presentation instinct suggests. 28pt content floor.
+  --ls-title:  -0.035em;
+  --ls-head:   -0.02em;
+  --ls-eyebrow: 0.22em;
 
-     Slides are authored on a 1600x900 canvas and scaled to fit, so these
-     px values ARE the spec's pt values 1:1 on the design canvas.          */
-  --font-sans: 'Inter', 'Inter Tight', -apple-system, BlinkMacSystemFont,
-               'Helvetica Neue', Arial, sans-serif;
-
-  --fs-display:    72px;  /* section titles */
-  --fs-headline:   58px;  /* slide headlines — spec 54-64 */
-  --fs-headline-s: 48px;  /* long headlines that must not wrap 3x */
-  --fs-subhead:    32px;
-  --fs-body:       30px;  /* spec 28-32 */
-  --fs-body-s:     28px;  /* THE FLOOR. Nothing smaller carries content. */
-  --fs-card-title: 32px;
-  --fs-source:     18px;  /* source + year lines */
-  --fs-legal:      16px;  /* compliance — may not be shrunk */
-
-  --lh-tight:  1.05;
-  --lh-snug:   1.22;
+  --lh-title:  0.9;
+  --lh-head:   1.0;
   --lh-body:   1.45;
 
-  --fw-regular: 400;
-  --fw-medium:  500;
-  --fw-semi:    600;
-  --fw-bold:    700;
-  --fw-black:   800;
+  --fw-body:      400;
+  --fw-body-semi: 600;
+  --fw-700: 700;
+  --fw-800: 800;
+  --fw-900: 900;
 
-  /* ---- Spacing (8pt grid) ---------------------------------------------- */
-  --sp-1: 8px;   --sp-2: 16px;  --sp-3: 24px;  --sp-4: 32px;
-  --sp-5: 48px;  --sp-6: 64px;  --sp-7: 80px;  --sp-8: 112px;
+  /* ---- Geometry ------------------------------------------------------- */
+  --slide-w: 1920px;
+  --slide-h: 1080px;
+  --pad-y: 90px;
+  --pad-x: 96px;
 
-  /* ---- Slide geometry --------------------------------------------------
-     WEBCAM SAFE AREA: the upper right is reserved on every slide.
-     Nothing critical goes there, ever. --safe-webcam is the inset the
-     slide padding respects. */
-  --slide-w: 1600px;
-  --slide-h: 900px;
-  --slide-pad-x: 96px;
-  --slide-pad-y: 72px;
-  --safe-webcam-w: 380px;
-  --safe-webcam-h: 240px;
+  --gap-card:    28px;   /* 26–36 */
+  --gap-section: 60px;   /* 56–64 */
+  --card-pad:    40px;   /* 44–52 */
 
-  --radius-card:  14px;
-  --radius-modal: 18px;
-  --radius-chip:  999px;
+  --radius: 0px;         /* squared. inner elements ≤4px, prefer 0 */
+  --accent-bar-w: 96px;
+  --accent-bar-h: 8px;
 
-  /* Shadows are restrained. No Canva-style drop shadows on everything —
-     cards lift on hover, and that is the whole shadow budget. */
-  --shadow-card:  0 1px 2px rgba(16, 69, 71, .06),
-                  0 2px 8px rgba(16, 69, 71, .05);
-  --shadow-lift:  0 4px 10px rgba(16, 69, 71, .10),
-                  0 12px 28px rgba(16, 69, 71, .10);
-  --shadow-modal: 0 24px 70px rgba(11, 18, 16, .34);
+  /* The only permitted shadow: headline over photography. */
+  --shadow-head: 0 4px 40px rgba(0,0,0,0.35);
 
-  /* ---- Motion ----------------------------------------------------------
-     Purposeful. 200-300ms ease-out. Max 5 elements per build.
-     No spins, bounces, flips, 3D. */
+  /* Photo legibility washes (§5) */
+  --wash-vertical: linear-gradient(180deg,
+      rgba(12,51,53,0.86) 0%, rgba(12,51,53,0.55) 45%, rgba(12,51,53,0.95) 100%);
+  --wash-horizontal: linear-gradient(90deg,
+      rgba(12,51,53,0.35), rgba(12,51,53,0.85));
+
+  /* ---- Motion --------------------------------------------------------- */
   --ease-out: cubic-bezier(.16, .84, .44, 1);
-  --dur-fast:   200ms;
-  --dur-base:   260ms;
-  --dur-slow:   300ms;
-  --stagger-card: 60ms;
-  --stagger-list: 50ms;
-  --stagger-block: 150ms;
+  --dur-fast: 200ms;
+  --dur-base: 260ms;
+  --stagger:  60ms;
 }
 
-/* Reduced motion: the deck still teaches, it just stops moving.
-   Builds resolve to their final state immediately. */
 @media (prefers-reduced-motion: reduce) {
-  :root {
-    --dur-fast: 1ms; --dur-base: 1ms; --dur-slow: 1ms;
-    --stagger-card: 0ms; --stagger-list: 0ms; --stagger-block: 0ms;
-  }
+  :root { --dur-fast: 1ms; --dur-base: 1ms; --stagger: 0ms; }
   *, *::before, *::after {
     animation-duration: 1ms !important;
-    animation-iteration-count: 1 !important;
     transition-duration: 1ms !important;
-    scroll-behavior: auto !important;
   }
 }

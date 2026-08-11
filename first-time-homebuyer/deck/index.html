@@ -3,51 +3,37 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>First-Time Homebuyer Webinar — Mountain State Financial Group</title>
-  <meta name="description" content="A first-time homebuyer education webinar from Mountain State Financial Group. Education first.">
-
+  <title>The Homebuyer's Playbook — Mountain State Financial Group</title>
+  <meta name="description" content="A first-time homebuyer education seminar from Mountain State Financial Group.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <!-- PLACEHOLDER 10 — Inter until MSFG supplies the brand family. -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800;900&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./css/tokens.css">
   <link rel="stylesheet" href="./css/base.css">
   <link rel="stylesheet" href="./css/components.css">
   <link rel="stylesheet" href="./css/slides.css">
 </head>
 <body>
-
   <div class="deck-progress" style="width:0"></div>
-
-  <main class="stage" aria-label="Presentation slides">
-    <div class="slide-scaler"></div>
-  </main>
-
-  <div id="modal-root" class="modal-root" aria-hidden="false"></div>
+  <main class="stage" aria-label="Presentation slides"><div class="slide-scaler"></div></main>
+  <div id="modal-root" class="modal-root"></div>
 
   <nav class="deck-nav" aria-label="Slide navigation">
     <button type="button" data-nav="prev" aria-label="Previous slide">‹</button>
-    <span class="nav-count" aria-live="polite">1 / 22</span>
+    <span class="nav-count" aria-live="polite">1 / 17</span>
     <button type="button" data-nav="next" aria-label="Next slide">›</button>
     <button type="button" data-nav="presenter" aria-label="Open presenter view" title="Presenter view (P)">▤</button>
   </nav>
 
-  <p class="visually-hidden">
-    Use the left and right arrow keys to move between slides.
-    Press P for presenter view, F for fullscreen, G to toggle layout guides.
-  </p>
+  <p class="visually-hidden">Arrow keys move between slides. P opens presenter view, F fullscreen, G layout guides.</p>
 
   <script type="module">
     import { initDeck } from './js/deck.js';
     initDeck();
-
-    /* Reveal the nav briefly on mouse movement, then let it fade. */
     let t;
     window.addEventListener('mousemove', () => {
       document.body.classList.add('nav-visible');
-      clearTimeout(t);
-      t = setTimeout(() => document.body.classList.remove('nav-visible'), 2200);
+      clearTimeout(t); t = setTimeout(() => document.body.classList.remove('nav-visible'), 2200);
     });
   </script>
 </body>

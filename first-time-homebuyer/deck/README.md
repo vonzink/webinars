@@ -1,9 +1,9 @@
-# First-Time Homebuyer Webinar — HTML Deck
+# The Homebuyer's Playbook — HTML Deck ("Ridgeline")
 
-Built to **HANDOFF v6** (`../final/HANDOFF-v6-PART-1.md`, `-PART-2.md`,
-`DESIGN-PROMPT-v6.md`), which supersedes v5 entirely.
+Built to **`SLIDE_DESIGN_SPEC.md`** (the "Ridgeline" visual system) with content
+realigned to the client's actual presentation.
 
-**22 main slides · 53 popouts · ~38 min taught + open Q&A · 16:9.**
+**17 main slides · 30 popouts · ~40 min + Q&A · 1920×1080.**
 
 ## Run it
 
@@ -11,129 +11,83 @@ Built to **HANDOFF v6** (`../final/HANDOFF-v6-PART-1.md`, `-PART-2.md`,
 cd first-time-homebuyer/deck && python3 -m http.server 4173
 ```
 
-Open <http://localhost:4173/index.html>. It's static — any web server works, or
-open `index.html` over `file://` (the ES-module imports need a server in most
-browsers, so a local server is recommended).
+Open <http://localhost:4173/index.html>. Static ES modules — needs a local
+server (don't open over `file://`).
 
 ## Controls
 
 | Key | Action |
 |---|---|
-| → / Space / PageDown | Next slide |
-| ← / PageUp | Previous slide |
-| Home / End | First / last slide |
-| **P** | Open presenter view (second window) |
-| **F** | Fullscreen |
-| **G** | Toggle layout guides (shows the webcam safe area) |
-| Esc | Close a popout |
+| → / Space | Next · ← Previous · Home/End first/last |
+| **P** | Presenter view (second window) |
+| **F** | Fullscreen · **G** layout guides · **Esc** close popout |
 
-Cards and chips open popouts on click; every popout traps focus and closes on
-✕ / Esc / backdrop click.
+Cards open popouts on click; each traps focus and closes on ✕ / Esc / backdrop.
 
-## Presenter view
+## The deck
 
-Press **P** (or the ▤ button). A second window opens with the current slide's
-speaker notes, the one-concept line, next-slide preview, the popouts available on
-this slide, and four clocks: time on this slide, the slide's target, **pace**
-(how far ahead/behind the spec's run of show you are), and total elapsed.
+| # | Slide | Popouts |
+|---|---|---|
+| 1 | Opening — Seth + contact | — |
+| 2 | **Myths** (grid) | 5 myths → pros/cons |
+| 3 | The lowest rate myth → closing costs & APR | — |
+| 4 | Rent vs buy / cost of waiting (two-panel) | — |
+| 5 | What's in the payment (combined) | — |
+| 6 | Keep the payment in your comfort zone | — |
+| 7 | **Most Common Loan Programs** (grid) | 5 programs → pros/cons |
+| 8 | Cash to close: where it comes from (grid) | 6 sources → Fannie rules |
+| 9 | Closing costs vs cash to close | — |
+| 10 | Meet the players (grid) | 8 roles → what they do |
+| 11 | The loan process (stepper) | — |
+| 12 | **Don't** (mistakes) | — |
+| 13 | **Do** (mistakes) | — |
+| 14 | Don't assume the lowest rate wins | — |
+| 15 | The most expensive mistakes are small assumptions (grid) | 6 → details |
+| 16 | The questions everyone asks (5) | — |
+| 17 | Wrap — contact + apply links | — |
 
-**Share the main window; keep the presenter window on your own screen.** The two
-sync over `BroadcastChannel` — arrow keys and the popout buttons work from either.
+"Your Next Step" removed. In the PowerPoint version, each popout becomes a linked
+slide with a "← Back" (not built yet — see below).
 
-## How it's built
+## Design system (Ridgeline)
 
-Content is **data**, rendered by exactly two components — this is what makes "all
-53 popouts use the same two components, no duplication" actually true.
+Encoded in `css/tokens.css` — the source of truth:
+
+- **Two backgrounds:** Deep Forest `#0C3335` and White/Mist `#F5F7F4`, alternating.
+- **One green accent** (`#8cc63E`) per slide — a shape, never body text.
+- **Montserrat** (display) + **Open Sans** (body). Nothing below 21px.
+- Squared geometry, no drop shadows, **no emoji**.
+- Footer (logo on white plate + NMLS + license line) on titled slides, from data.
+- Photography = **labeled drop-placeholders** until real images are supplied.
+
+Guardrails wired into code, not discipline:
+- No green-text token exists (the accent can't become body text).
+- The footer + any disclaimer inject from slide data — can't be forgotten.
+- Console logs `17 slides · 30 popouts` and flags any unreachable/missing popout.
+
+## Architecture (unchanged engine)
 
 ```
-index.html          shell + nav + modal root
-presenter.html      the second window
-css/
-  tokens.css        palette, type scale, semantic colour lock, the lime rule
-  base.css          reset, the 1600×900 stage, compliance furniture, responsive
-  components.css     the card and the modal — the only two components
-  slides.css        per-layout styling
-js/
-  deck.js           renders slides from data, injects compliance, nav, scaling
-  modal.js          ONE modal: focus trap, Esc, backdrop, scale-fade
-  card.js           ONE card: aria-label, hover lift, opens a modal
-  figures.js        8 inline-SVG diagrams, banded, semantic-locked
-  presenter.js      presenter view + sync
-content/
-  slides.js         the 22 main slides
-  modals.js         the 53 popouts (text verbatim from the spec)
-  presenters.js     presenter component + placeholder register + compliance strings
-assets/
-  brand/            logos (SVG), MSFG QR
-  portraits/        Seth, Robert (Zachary portrait is a visible placeholder)
+content/  slides.js · modals.js · presenters.js      ← all copy lives here
+js/       deck.js · modal.js · card.js · figures.js · presenter.js
+css/      tokens · base · components · slides
 ```
 
-### Guardrails wired into the code, not left to discipline
-
-- **The lime rule.** There is no lime *text* token in `tokens.css` — lime exists
-  only as `--fill-accent` and the band ramp. You can't accidentally set lime type
-  on a light ground because the token doesn't exist.
-- **Semantic colour lock.** Principal is `--sem-principal` everywhere — the same
-  teal in the payment stack and the amortization chart, by construction.
-- **Compliance can't be forgotten.** The footer + NMLS render on every slide
-  (except the emotional-beat section titles) from the presenter component. Any
-  slide or popout whose data carries `hasNumbers` / a program flag gets the 16pt
-  hypothetical or general-guidelines disclaimer automatically.
-- **Spec conformance check.** The console logs `22 slides · 53 popouts` and flags
-  a mismatch. It also warns on any unreachable popout or any card pointing at a
-  missing popout.
+One card component + one modal component render everything. Two diagrams only,
+both number-free: `paymentBands()` and `processStepper()` in `figures.js`.
 
 ## Swapping the presenter
 
-Edit `ACTIVE_PRESENTER` in `content/presenters.js` (`'seth'` | `'robert'` |
-`'zachary'`). Only three things change: the footer line, Slide 1, and the final
-slide. Nothing re-lays-out. Ships set to **Seth Angell**.
+`ACTIVE_PRESENTER` in `content/presenters.js` (`seth` | `robert` | `zachary`).
+Only the footer, Slide 1, and the final slide change. Ships as **Seth**.
 
-## Placeholders — fill these before delivery
+## Fill before delivery (visible placeholders)
 
-All 10 render as **visible** dashed chips so the deck can't ship with a silent
-blank. Fill each by replacing `null` with the real value in
-`content/presenters.js` → `PLACEHOLDERS`; the chip disappears automatically.
+In `content/presenters.js`: Seth's `phone`, `email2`; `LINKS.applyUrl`,
+`bookingUrl`, `qrTargetUrl`. Zachary has no portrait yet. Photo drop-zones on the
+opening and any hero. Confirm the process step names match the MSFG website.
 
-| # | Placeholder | Where |
-|---|---|---|
-| 1 | Seth's phone | Slide 1, final slide |
-| 2 | Secondary email | Slide 1 |
-| 3 | Website URL | Final slide |
-| 4 | Apply Now link | Final slide |
-| 5 | Booking link | Final slide |
-| 6 | QR target URL | Final slide (`QR_ASSET` also points here) |
-| 7 | Social handles | Final slide (omit cleanly if none) |
-| 8 | Presenter portraits ×3 | Slide 1 — **Zachary's is missing** |
-| 9 | MSFG loan-process screenshot | Process Slide 2 — **match step naming exactly** |
-| 10 | Brand fonts | Global — Inter until MSFG supplies the family |
+## Not built yet
 
-## Pre-flight before delivery
-
-Per the spec's own checklist:
-
-- [ ] Verify the rent/appreciation **source + year** on Budget Slide 1 on the
-      date of delivery — it is a placeholder source line right now.
-- [ ] Confirm the LE (3 business days) and CD (3 business days before signing)
-      timing against `../research/loan-estimate.md`.
-- [ ] Confirm down-payment-assistance program status the day you present.
-- [ ] Fill placeholders 1–9.
-- [ ] Match Process Slide 2 step names to the MSFG website screenshot exactly.
-
-## Known deviations from source docs
-
-- **Calculators are absent** — this is correct. v6 removed the three live
-  calculators deliberately (the numbers rule). `PROJECT_GOALS.md` predates that
-  redirect and still lists them; it was not updated.
-- **`branding/colors.md` and `fonts.md` are two generations stale** — they still
-  describe the v4 "Summit Navy / Alpenglow" placeholder palette. The live palette
-  is the v6 Deep Teal / Green / Lime / Charcoal system, encoded in
-  `css/tokens.css`. Treat tokens.css as the source of truth, not those files.
-- **Slide count:** the spec's count table totals "23 main," but its rows sum to
-  22 and PART 1 says "~22 main slides." This deck has 22.
-
-## PowerPoint
-
-Not built yet. The spec calls for a ~76-slide `.pptx` (every popout becomes a
-linked slide with a "← Back"). Worth doing as a separate pass once this HTML is
-signed off — building both now means maintaining two decks through every revision.
+- **PowerPoint** (~47 slides — 17 main + 30 popout slides with "← Back").
+- **Real photography** — placeholders are wired; drop images into `assets/`.
