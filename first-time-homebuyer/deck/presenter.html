@@ -51,8 +51,9 @@
     .p-next-label { font-size: 16px; color: rgba(255,255,255,.82); align-self: center; }
 
     /* annotate controls */
-    .p-tools { display: flex; flex-wrap: wrap; gap: 6px; }
+    .p-tools { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
     .p-tools button.on { background: #8cc63E; color: #0C3335; border-color: #8cc63E; }
+    .p-tools .ic { font-size: 20px; min-width: 44px; line-height: 1; }
     .p-tools .csw { width: 30px; height: 30px; padding: 0; border: 2px solid rgba(255,255,255,.35); }
     .p-tools .csw.on { border-color: #fff; }
 
@@ -118,15 +119,18 @@
 
       <div class="p-h">Annotate the live slide</div>
       <div class="p-tools" id="p-tools">
-        <button id="p-annon" data-annon>Draw: Off</button>
-        <button data-tool="pen">Pen</button>
-        <button data-tool="box">Box</button>
-        <button data-tool="text">Text</button>
-        <button data-tool="laser">Laser</button>
-        <button class="csw" data-color="green" style="background:#8cc63E"></button>
-        <button class="csw" data-color="red" style="background:#C0392B"></button>
-        <button class="csw" data-color="white" style="background:#fff"></button>
-        <button data-annclear>Clear</button>
+        <button id="p-annon" data-annon title="Toggle drawing on the shared slide">Draw: Off</button>
+        <button class="ic" data-tool="pen" title="Pen" aria-label="Pen">✎</button>
+        <button class="ic" data-tool="box" title="Box" aria-label="Box">▭</button>
+        <button class="ic" data-tool="text" title="Text" aria-label="Text">T</button>
+        <button class="ic" data-tool="laser" title="Laser" aria-label="Laser">◉</button>
+        <button class="csw" data-color="green" style="background:#8cc63E" title="Green"></button>
+        <button class="csw" data-color="red" style="background:#C0392B" title="Red"></button>
+        <button class="csw" data-color="white" style="background:#fff" title="White"></button>
+        <button class="ic" data-annclear title="Clear all" aria-label="Clear">⌫</button>
+      </div>
+      <div class="p-tools" style="margin-top:6px">
+        <button id="p-anntoolbar" data-anntoolbar title="Show the tool bar on the shared slide too">On-slide tools: Off</button>
       </div>
 
       <div class="p-h">Popouts on this slide (<span id="p-popout-count">0</span>)</div>

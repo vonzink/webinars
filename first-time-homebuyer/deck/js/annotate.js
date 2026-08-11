@@ -44,6 +44,7 @@ function down(e) {
   if (tool === 'text') { addText(pt(e)); return; }
   if (tool === 'laser') return;
   drawing = true; start = pt(e);
+  try { layer.setPointerCapture(e.pointerId); } catch {}   // reliable drags
   if (tool === 'pen') {
     cur = elNS('path'); cur.setAttribute('d', `M ${start.x} ${start.y}`); strokeAttrs(cur, 5);
   } else if (tool === 'box') {
@@ -73,7 +74,11 @@ function addText(p) {
   box.contentEditable = 'true';
   box.style.left = p.x + 'px'; box.style.top = p.y + 'px'; box.style.color = color;
   layer.appendChild(box);
-  box.focus();
+  requestAnimationFrame(() => {
+    box.focus();
+    const r = document.createRange(); r.selectNodeContents(box); r.collapse(false);
+    const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r);
+  });
   box.addEventListener('blur', () => { if (!box.textContent.trim()) box.remove(); });
 }
 
@@ -107,14 +112,17 @@ function syncToolbar() {
     b.classList.toggle('is-active', COLORS[b.dataset.color] === color));
 }
 
-/* ---- public API ---- */
+/* ---- public API ----
+   The on-screen toolbar is HIDDEN by default so it never shows on the shared
+   slide. Tools are driven from the presenter view; showToolbar() opts it back
+   in for solo use. */
 export function enable(on) {
   mode = on;
   layer.classList.toggle('is-on', on);
-  toolbar.hidden = !on;
-  if (!on) laserDot.hidden = true;
+  if (!on) { laserDot.hidden = true; showToolbar(false); }
 }
 export function toggle() { enable(!mode); }
+export function showToolbar(on) { toolbar.hidden = !on; }
 export function setTool(t) { tool = t; syncToolbar(); if (tool !== 'laser') laserDot.hidden = true; }
 export function setColor(c) { color = COLORS[c] || c; syncToolbar(); }
 export function clear() { [...svg.childNodes].forEach(n => n.remove());

@@ -294,6 +294,7 @@ function handleAnnotate(m) {
   if (m.toggle) annotate.toggle();
   if (m.tool) annotate.setTool(m.tool);
   if (m.color) annotate.setColor(m.color);
+  if (m.toolbar !== undefined) annotate.showToolbar(m.toolbar);
   if (m.clear) annotate.clear();
 }
 

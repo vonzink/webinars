@@ -244,20 +244,24 @@ em, i { font-style: normal; font-weight: var(--fw-800); }
 /* ---------------------------------------------------------------------------
    ANNOTATION overlay + toolbar
    ------------------------------------------------------------------------ */
-#annotate-layer { position: fixed; inset: 0; z-index: 60; pointer-events: none; }
+/* Above the modal (z 100) so you can draw over popouts too. Off = no pointer
+   events, so popouts stay interactive; On = captures the whole screen. */
+#annotate-layer { position: fixed; inset: 0; z-index: 200; pointer-events: none; }
 #annotate-layer.is-on { pointer-events: auto; cursor: crosshair; }
 #annotate-layer svg { width: 100%; height: 100%; overflow: visible; }
 .annotate-text {
-  position: absolute; min-width: 40px; font-family: var(--font-display);
-  font-weight: 700; font-size: 34px; outline: none; white-space: nowrap;
+  position: absolute; min-width: 24px; min-height: 42px; padding: 2px 4px;
+  font-family: var(--font-display); font-weight: 700; font-size: 34px;
+  outline: none; white-space: nowrap; caret-color: currentColor;
   text-shadow: 0 2px 10px rgba(0,0,0,.35);
 }
+.annotate-text:empty::before { content: "Type…"; opacity: .5; }
 .laser-dot { position: fixed; width: 22px; height: 22px; border-radius: 50%;
   transform: translate(-50%, -50%); box-shadow: 0 0 18px 6px rgba(140,198,62,.6); pointer-events: none; }
 
 #annotate-bar {
   position: fixed; bottom: 74px; left: 50%; transform: translateX(-50%);
-  display: flex; align-items: center; gap: 6px; padding: 8px 10px; z-index: 70;
+  display: flex; align-items: center; gap: 6px; padding: 8px 10px; z-index: 210;
   background: rgba(12,51,53,.95); border: 1px solid rgba(255,255,255,.16);
 }
 #annotate-bar[hidden] { display: none; }

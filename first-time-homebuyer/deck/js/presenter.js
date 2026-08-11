@@ -10,7 +10,7 @@ import { activePresenter, COMPANY } from '../content/presenters.js';
 
 const channel = new BroadcastChannel('msfg-deck');
 const P = activePresenter();
-let index = 0, startedAt = null, slideAt = null, tick = null, annOn = false;
+let index = 0, startedAt = null, slideAt = null, tick = null, annOn = false, barOn = false;
 const $ = s => document.querySelector(s);
 const fmt = sec => { const s = Math.max(0, Math.round(sec));
   return `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`; };
@@ -93,7 +93,12 @@ function addNote() {
 
 /* ---- annotation controls (drive the shared slide) ---- */
 function ann(msg) { channel.postMessage({ type: 'annotate', ...msg }); }
-function setAnnOn(on) { annOn = on; $('#p-annon').textContent = `Draw: ${on ? 'On' : 'Off'}`; $('#p-annon').classList.toggle('on', on); ann({ on }); }
+function setAnnOn(on) {
+  annOn = on; $('#p-annon').textContent = `Draw: ${on ? 'On' : 'Off'}`;
+  $('#p-annon').classList.toggle('on', on); ann({ on });
+  if (!on) { barOn = false; const t = $('#p-anntoolbar');
+    if (t) { t.textContent = 'On-slide tools: Off'; t.classList.remove('on'); } }
+}
 
 export function initPresenter() {
   $('#p-who').textContent = `${P.name} · ${P.title} · ${P.nmls}`;
@@ -109,12 +114,18 @@ export function initPresenter() {
   $('#p-note-save').addEventListener('click', addNote);
 
   $('#p-annon').addEventListener('click', () => setAnnOn(!annOn));
-  $('#p-tools').addEventListener('click', e => {
-    const b = e.target.closest('button'); if (!b) return;
+  $('#p-anntoolbar').addEventListener('click', () => {
+    barOn = !barOn; if (barOn && !annOn) setAnnOn(true);
+    $('#p-anntoolbar').textContent = `On-slide tools: ${barOn ? 'On' : 'Off'}`;
+    $('#p-anntoolbar').classList.toggle('on', barOn);
+    ann({ toolbar: barOn });
+  });
+  document.querySelector('.p-right').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b || !b.closest('.p-tools')) return;
     if (b.dataset.tool) { if (!annOn) setAnnOn(true); ann({ tool: b.dataset.tool });
-      $('#p-tools').querySelectorAll('[data-tool]').forEach(x => x.classList.toggle('on', x === b)); }
+      document.querySelectorAll('[data-tool]').forEach(x => x.classList.toggle('on', x === b)); }
     else if (b.dataset.color) { ann({ color: b.dataset.color });
-      $('#p-tools').querySelectorAll('.csw').forEach(x => x.classList.toggle('on', x === b)); }
+      document.querySelectorAll('.csw').forEach(x => x.classList.toggle('on', x === b)); }
     else if (b.hasAttribute('data-annclear')) ann({ clear: true });
   });
 
