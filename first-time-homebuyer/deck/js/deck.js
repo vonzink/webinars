@@ -298,6 +298,8 @@ function handleAnnotate(m) {
   if (m.color) annotate.setColor(m.color);
   if (m.autoOff !== undefined) annotate.setAutoOff(m.autoOff);
   if (m.toolbar !== undefined) annotate.showToolbar(m.toolbar);
+  if (m.undo) annotate.undo();
+  if (m.redo) annotate.redo();
   if (m.clear) annotate.clear();
 }
 
@@ -334,6 +336,10 @@ export function initDeck() {
         case 'End': show(SLIDES.length - 1); break;
         case 'p': case 'P': openPresenter(); break;
         case 'a': case 'A': annotate.toggle(); break;
+        case 'z': case 'Z':
+          if (e.metaKey || e.ctrlKey) { e.preventDefault(); e.shiftKey ? annotate.redo() : annotate.undo(); } break;
+        case 'y': case 'Y':
+          if (e.metaKey || e.ctrlKey) { e.preventDefault(); annotate.redo(); } break;
         case 'g': case 'G': document.body.classList.toggle('show-guides'); break;
         case 'f': case 'F':
           if (document.fullscreenElement) document.exitFullscreen();

@@ -140,6 +140,8 @@ export function initPresenter() {
       document.querySelectorAll('[data-tool]').forEach(x => x.classList.toggle('on', x === b)); }
     else if (b.dataset.color) { ann({ color: b.dataset.color });
       document.querySelectorAll('.csw').forEach(x => x.classList.toggle('on', x === b)); }
+    else if (b.hasAttribute('data-annundo')) ann({ undo: true });
+    else if (b.hasAttribute('data-annredo')) ann({ redo: true });
     else if (b.hasAttribute('data-annclear')) ann({ clear: true });
   });
 

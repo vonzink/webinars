@@ -21,6 +21,10 @@ let layer, svg, toolbar, laserDot, laserTrail = [];
 let mode = false, tool = 'pen', color = COLORS.green;
 let drawing = false, cur = null, start = null;
 let autoOff = false, onState = null;
+let undoStack = [], redoStack = [];   // each entry: { node, parent }
+
+/* Record a completed mark; a new mark invalidates the redo history. */
+function pushMark(node) { undoStack.push({ node, parent: node.parentNode }); redoStack.length = 0; }
 
 function elNS(t) { return document.createElementNS(NS, t); }
 function pt(e) { return { x: e.clientX, y: e.clientY }; }
@@ -89,7 +93,7 @@ function mv(e) {
     cur.setAttribute('width', Math.abs(p.x - start.x)); cur.setAttribute('height', Math.abs(p.y - start.y));
   }
 }
-function up() { if (!drawing) return; drawing = false; cur = null; afterStroke(); }
+function up() { if (!drawing) return; drawing = false; if (cur) pushMark(cur); cur = null; afterStroke(); }
 
 /* Auto-off: after finishing one mark, drop out of drawing so clicks work. */
 function afterStroke() { if (autoOff) { enable(false); if (onState) onState(false); } }
@@ -131,7 +135,10 @@ function addText(p) {
     const r = document.createRange(); r.selectNodeContents(box); r.collapse(false);
     const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r);
   });
-  box.addEventListener('blur', () => { if (!box.textContent.trim()) box.remove(); });
+  box.addEventListener('blur', () => {
+    if (!box.textContent.trim()) box.remove();
+    else if (!box.dataset.committed) { box.dataset.committed = '1'; pushMark(box); }
+  });
 }
 
 /* ---- toolbar (on-screen, appears while annotating) ---- */
@@ -193,9 +200,17 @@ export function setTool(t) {
 export function setColor(c) { color = COLORS[c] || c; syncToolbar(); }
 export function setAutoOff(on) { autoOff = on; }
 export function onStateChange(fn) { onState = fn; }
+export function undo() {
+  if (!undoStack.length) return;
+  const m = undoStack.pop(); m.node.remove(); redoStack.push(m);
+}
+export function redo() {
+  if (!redoStack.length) return;
+  const m = redoStack.pop(); m.parent.appendChild(m.node); undoStack.push(m);
+}
 export function clear() {
   [...svg.childNodes].forEach(n => n.remove());
   layer.querySelectorAll('.annotate-text').forEach(n => n.remove());
-  laserTrail = [];
+  laserTrail = []; undoStack.length = 0; redoStack.length = 0;
 }
 export function isOn() { return mode; }
