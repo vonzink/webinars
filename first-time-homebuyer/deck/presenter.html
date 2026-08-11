@@ -51,11 +51,14 @@
     .p-next-label { font-size: 16px; color: rgba(255,255,255,.82); align-self: center; }
 
     /* annotate controls */
-    .p-tools { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+    /* Compact toolbar — slim buttons, tight spacing. */
+    .p-tools { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; }
+    .p-tools button { padding: 5px 9px; font-size: 12px; height: 30px; border-radius: 3px; }
     .p-tools button.on { background: #8cc63E; color: #0C3335; border-color: #8cc63E; }
-    .p-tools .ic { font-size: 20px; min-width: 44px; line-height: 1; }
-    .p-tools .csw { width: 30px; height: 30px; padding: 0; border: 2px solid rgba(255,255,255,.35); }
+    .p-tools .ic { font-size: 16px; min-width: 32px; height: 30px; padding: 0; line-height: 1; }
+    .p-tools .csw { width: 22px; height: 22px; min-width: 22px; padding: 0; border: 2px solid rgba(255,255,255,.35); }
     .p-tools .csw.on { border-color: #fff; }
+    .p-tools .sep { width: 1px; height: 22px; background: rgba(255,255,255,.2); margin: 0 3px; }
 
     /* notes */
     .p-note-add { display: flex; flex-direction: column; gap: 8px; }
@@ -116,6 +119,9 @@
         <div class="p-preview"><iframe id="p-preview-frame" src="./index.html?preview" title="Next slide preview" tabindex="-1"></iframe></div>
         <div class="p-next-label" id="p-next"></div>
       </div>
+      <div class="p-tools" style="margin-top:8px">
+        <button id="p-fs" data-fs title="Fullscreen the shared slide window">⛶ Fullscreen slide: Off</button>
+      </div>
 
       <div class="p-h">Annotate the live slide</div>
       <div class="p-tools" id="p-tools">
@@ -125,7 +131,7 @@
         <button class="ic" data-tool="box" title="Box" aria-label="Box">▭</button>
         <button class="ic" data-tool="text" title="Text" aria-label="Text">T</button>
         <button class="ic" data-tool="laser" title="Laser" aria-label="Laser">◉</button>
-        <span style="width:1px;height:26px;background:rgba(255,255,255,.2);margin:0 2px"></span>
+        <span class="sep"></span>
         <button class="ic" data-annundo title="Undo" aria-label="Undo">↶</button>
         <button class="ic" data-annredo title="Redo" aria-label="Redo">↷</button>
       </div>

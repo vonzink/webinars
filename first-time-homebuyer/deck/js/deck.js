@@ -288,7 +288,28 @@ function initChannel() {
     if (m.type === 'open') openModal(m.id);
     if (m.type === 'hello') broadcast();
     if (m.type === 'annotate') handleAnnotate(m);
+    if (m.type === 'fullscreen') setFullscreen(m.on);
   };
+}
+
+/* Fullscreen the shared slide window. Entering needs a user gesture in THIS
+   window, so a remote (presenter) request can be blocked — we surface a hint if
+   so. Exiting always works. State is broadcast back so the presenter stays synced. */
+function setFullscreen(on) {
+  if (on) {
+    const p = document.documentElement.requestFullscreen();
+    if (p && p.catch) p.catch(() => toast('Click the slide, then press F for fullscreen'));
+  } else if (document.fullscreenElement) {
+    document.exitFullscreen();
+  }
+}
+window.__deckFullscreen = setFullscreen;   // direct path for the presenter's opener
+
+function toast(msg) {
+  let t = document.getElementById('deck-toast');
+  if (!t) { t = document.createElement('div'); t.id = 'deck-toast'; document.body.appendChild(t); }
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), 2600);
 }
 
 function handleAnnotate(m) {
@@ -325,6 +346,11 @@ export function initDeck() {
     document.querySelector('[data-nav="next"]').addEventListener('click', next);
     document.querySelector('[data-nav="prev"]').addEventListener('click', prev);
     document.querySelector('[data-nav="presenter"]').addEventListener('click', openPresenter);
+    const fsBtn = document.querySelector('[data-nav="fullscreen"]');
+    if (fsBtn) fsBtn.addEventListener('click', () => setFullscreen(!document.fullscreenElement));
+    document.addEventListener('fullscreenchange', () => {
+      if (channel) channel.postMessage({ type: 'fsstate', on: !!document.fullscreenElement });
+    });
 
     document.addEventListener('keydown', e => {
       if (isModalOpen()) return;
@@ -341,9 +367,7 @@ export function initDeck() {
         case 'y': case 'Y':
           if (e.metaKey || e.ctrlKey) { e.preventDefault(); annotate.redo(); } break;
         case 'g': case 'G': document.body.classList.toggle('show-guides'); break;
-        case 'f': case 'F':
-          if (document.fullscreenElement) document.exitFullscreen();
-          else document.documentElement.requestFullscreen(); break;
+        case 'f': case 'F': setFullscreen(!document.fullscreenElement); break;
       }
     });
   }

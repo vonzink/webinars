@@ -269,6 +269,16 @@ em, i { font-style: normal; font-weight: var(--fw-800); }
   background: rgba(12,51,53,.95); border: 1px solid rgba(255,255,255,.16);
 }
 #annotate-bar[hidden] { display: none; }
+
+/* Transient hint (e.g. when a remote fullscreen request is blocked) */
+#deck-toast {
+  position: fixed; bottom: 78px; left: 50%; transform: translateX(-50%) translateY(8px);
+  background: rgba(12,51,53,.96); color: #fff; border: 1px solid rgba(255,255,255,.16);
+  font-family: var(--font-display); font-weight: 700; font-size: 16px;
+  padding: 12px 20px; z-index: 220; opacity: 0; pointer-events: none;
+  transition: opacity var(--dur-base) var(--ease-out), transform var(--dur-base) var(--ease-out);
+}
+#deck-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 #annotate-bar button {
   min-width: 40px; height: 40px; padding: 0 10px; color: #fff;
   font-family: var(--font-display); font-weight: 700; font-size: 18px;

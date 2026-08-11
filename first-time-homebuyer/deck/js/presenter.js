@@ -105,6 +105,7 @@ export function initPresenter() {
   $('#p-company').textContent = `${COMPANY.name} · ${COMPANY.nmls}`;
   $('#p-total').textContent = fmt(TARGET_RUNTIME_SECONDS);
 
+  let fsOn = false;
   channel.onmessage = e => {
     if (e.data.type === 'slide') setIndex(e.data.index);
     if (e.data.type === 'annstate') {   // auto-off flipped drawing off on the shared slide
@@ -112,8 +113,24 @@ export function initPresenter() {
       $('#p-annon').textContent = `Draw: ${annOn ? 'On' : 'Off'}`;
       $('#p-annon').classList.toggle('on', annOn);
     }
+    if (e.data.type === 'fsstate') {    // slide window entered/left fullscreen
+      fsOn = e.data.on;
+      $('#p-fs').textContent = `⛶ Fullscreen slide: ${fsOn ? 'On' : 'Off'}`;
+      $('#p-fs').classList.toggle('on', fsOn);
+    }
   };
   channel.postMessage({ type: 'hello' });
+
+  $('#p-fs').addEventListener('click', () => {
+    const target = !fsOn;
+    /* Prefer a direct call into the opener (runs inside this click gesture);
+       fall back to the channel if there's no opener reference. */
+    if (window.opener && !window.opener.closed && window.opener.__deckFullscreen) {
+      window.opener.__deckFullscreen(target);
+    } else {
+      channel.postMessage({ type: 'fullscreen', on: target });
+    }
+  });
 
   $('#p-prev').addEventListener('click', () => channel.postMessage({ type: 'prev' }));
   $('#p-next-btn').addEventListener('click', () => channel.postMessage({ type: 'next' }));
