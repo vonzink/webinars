@@ -19,6 +19,8 @@
   --charcoal:    #404041;  /* body copy on light */
   --mist:        #F5F7F4;  /* light neutral background */
   --white:       #FFFFFF;
+  --red:         #C0392B;  /* DON'T on the Do/Don't handout slides only */
+  --do-green:    #3E8E41;  /* DO on the handout — readable green */
 
   /* ---- Text ----------------------------------------------------------- */
   --text-on-light:        var(--charcoal);
