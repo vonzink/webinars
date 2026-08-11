@@ -25,7 +25,7 @@ export function makeCard(spec) {
   parts.push(`<span class="card-title">${spec.title}</span>`);
   if (spec.meta) parts.push(`<span class="card-meta">${spec.meta}</span>`);
   if (spec.stat) parts.push(`<span class="card-stat">${spec.stat}</span>`);
-  if (spec.variant !== 'row') parts.push(`<span class="card-open" aria-hidden="true">+</span>`);
+  /* No "+" cue — the whole block is clickable (or drive it from Presenter View). */
 
   el.innerHTML = parts.join('');
   el.addEventListener('click', () => openModal(spec.modal, el));

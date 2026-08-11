@@ -1,0 +1,82 @@
+/* Shared print styles for the download kit.
+   Inlined into each HTML file so every download is self-contained.
+   Kept here as the canonical source — edit here, then re-inline. */
+
+@page { size: letter; margin: 0.6in 0.7in; }
+
+* { box-sizing: border-box; }
+
+body {
+  font-family: Inter, "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 10.5pt;
+  line-height: 1.45;
+  color: #3D4650;
+  margin: 0;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+  font-feature-settings: "tnum";
+}
+
+h1 {
+  font-size: 21pt; line-height: 1.1; color: #12233A;
+  margin: 0 0 2pt; letter-spacing: -0.4px;
+}
+.sub { font-size: 10pt; color: #8A9099; margin: 0 0 14pt; }
+
+h2 {
+  font-size: 12.5pt; color: #12233A; margin: 16pt 0 6pt;
+  padding-bottom: 3pt; border-bottom: 2px solid #12233A;
+  page-break-after: avoid;
+}
+h3 { font-size: 10.5pt; color: #12233A; margin: 11pt 0 4pt; page-break-after: avoid; }
+
+p { margin: 0 0 7pt; }
+ul, ol { margin: 0 0 8pt; padding-left: 16pt; }
+li { margin-bottom: 3pt; }
+
+table { width: 100%; border-collapse: collapse; margin: 6pt 0 10pt; font-size: 9.5pt; }
+th {
+  background: #12233A; color: #fff; text-align: left;
+  padding: 5pt 7pt; font-size: 8.5pt; text-transform: uppercase; letter-spacing: 0.5px;
+}
+td { padding: 5pt 7pt; border-bottom: 1px solid #E2E6EA; vertical-align: top; }
+tr:nth-child(even) td { background: #F4F6F8; }
+.num { text-align: right; white-space: nowrap; }
+.total td { background: #12233A !important; color: #fff; font-weight: 700; }
+
+.box {
+  background: #F4F6F8; border-left: 4px solid #E8703A;
+  padding: 9pt 12pt; margin: 10pt 0; page-break-inside: avoid;
+}
+.box.key { border-left-color: #2F7D5C; }
+.box.warn { border-left-color: #C4482F; }
+.box p:last-child { margin-bottom: 0; }
+
+.accent { color: #E8703A; font-weight: 700; }
+.good   { color: #2F7D5C; font-weight: 700; }
+.bad    { color: #C4482F; font-weight: 700; }
+.big    { font-size: 17pt; font-weight: 700; color: #12233A; }
+
+.check { list-style: none; padding-left: 0; }
+.check li { padding-left: 20pt; position: relative; margin-bottom: 5pt; }
+.check li::before {
+  content: ""; position: absolute; left: 0; top: 1.5pt;
+  width: 11pt; height: 11pt; border: 1.5px solid #8A9099; border-radius: 2px;
+}
+
+.fill {
+  display: inline-block; min-width: 78pt;
+  border-bottom: 1px solid #8A9099; height: 13pt;
+}
+
+.two { display: flex; gap: 16pt; }
+.two > div { flex: 1; }
+
+.pagebreak { page-break-before: always; }
+.nobreak   { page-break-inside: avoid; }
+
+footer {
+  margin-top: 18pt; padding-top: 8pt; border-top: 1px solid #E2E6EA;
+  font-size: 7.5pt; color: #8A9099; line-height: 1.4;
+}
+footer strong { color: #3D4650; }

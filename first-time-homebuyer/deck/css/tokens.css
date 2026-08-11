@@ -72,7 +72,7 @@
   --fs-eyebrow:    23px;   /* ALL CAPS label        (700) */
   --fs-body:       30px;   /* body copy             (400) */
   --fs-body-s:     26px;   /* dense body — the 26px floor for content */
-  --fs-footer:     22px;   /* footer / legal        (400) */
+  --fs-footer:     18px;   /* footer / legal        (400) — reduced per client */
   --fs-min:        21px;   /* HARD FLOOR — nothing below this, anywhere */
 
   --ls-title:  -0.035em;

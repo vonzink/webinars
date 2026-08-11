@@ -5,33 +5,37 @@
    Squared, banded, no gradients, no emoji.
    ========================================================================= */
 
+export const PAY_SEGMENTS = [
+  { label: 'Principal',          w: 21, fill: 'var(--pay-principal)' },
+  { label: 'Interest',           w: 30, fill: 'var(--pay-interest)' },
+  { label: 'Taxes',              w: 17, fill: 'var(--pay-taxes)' },
+  { label: 'Insurance',          w: 12, fill: 'var(--pay-insurance)' },
+  { label: 'Mortgage insurance', w: 11, fill: 'var(--pay-mi)' },
+  { label: 'HOA',                w: 9,  fill: 'var(--pay-hoa)' },
+];
+
+/* Clean stacked bar only — no leader lines, no overlap. The legend is rendered
+   separately as HTML chips (see the payment layout in deck.js). */
 export function paymentBands() {
-  const segs = [
-    { label: 'Principal',          w: 210, fill: 'var(--pay-principal)' },
-    { label: 'Interest',           w: 300, fill: 'var(--pay-interest)' },
-    { label: 'Taxes',              w: 170, fill: 'var(--pay-taxes)' },
-    { label: 'Insurance',          w: 120, fill: 'var(--pay-insurance)' },
-    { label: 'Mortgage insurance', w: 110, fill: 'var(--pay-mi)' },
-    { label: 'HOA',                w: 90,  fill: 'var(--pay-hoa)' },
-  ];
+  const total = PAY_SEGMENTS.reduce((a, s) => a + s.w, 0);
   let x = 0;
-  const bars = segs.map(s => { const r =
-    `<rect x="${x}" y="0" width="${s.w}" height="120" fill="${s.fill}"/>`; x += s.w; return r; }).join('');
-  x = 0;
-  const labels = segs.map((s, i) => {
-    const cx = x + s.w / 2; const row = i % 2; const y = row ? 210 : 168;
-    const out = `
-      <line x1="${cx}" y1="128" x2="${cx}" y2="${y - 26}" stroke="#C9D2CC" stroke-width="2"/>
-      <rect x="${cx - 8}" y="${y - 20}" width="16" height="16" fill="${s.fill}"/>
-      <text x="${cx}" y="${y}" text-anchor="middle" font-family="Montserrat, sans-serif"
-            font-weight="700" font-size="22" fill="#404041">${s.label}</text>`;
-    x += s.w; return out;
+  const bars = PAY_SEGMENTS.map(s => {
+    const w = (s.w / total) * 1000;
+    const r = `<rect x="${x}" y="0" width="${w}" height="100" fill="${s.fill}"/>`;
+    x += w; return r;
   }).join('');
   return `
-  <svg viewBox="0 0 1000 230" role="img"
+  <svg viewBox="0 0 1000 100" preserveAspectRatio="none" role="img"
        aria-label="The parts of a mortgage payment in proportion: principal, interest, taxes, insurance, mortgage insurance, and HOA. No dollar amounts.">
-    ${bars}${labels}
+    ${bars}
   </svg>`;
+}
+
+/* Legend chips as HTML — swatch + label, evenly laid out, no collision. */
+export function paymentLegend() {
+  return `<div class="pay-legend">` + PAY_SEGMENTS.map(s =>
+    `<div class="pay-chip"><span class="pay-sw" style="background:${s.fill}"></span>${s.label}</div>`
+  ).join('') + `</div>`;
 }
 
 export function processStepper(steps) {
@@ -60,4 +64,4 @@ export function processStepper(steps) {
   </svg>`;
 }
 
-export const FIGURES = { paymentBands, processStepper };
+export const FIGURES = { paymentBands, paymentLegend, processStepper };

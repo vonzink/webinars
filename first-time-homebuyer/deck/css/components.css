@@ -105,13 +105,25 @@
   display: flex; flex-direction: column;
   background: var(--white); border-radius: 0;
   opacity: 0; transform: scale(0.97);
-  transition: opacity var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+  transition: opacity var(--dur-fast) var(--ease-out);
+  overflow: hidden;
 }
-.modal-root.is-visible .modal { opacity: 1; transform: scale(1); }
+.modal--wide { width: min(1500px, 100%); }
+.modal-root.is-visible .modal { opacity: 1; }
 
+/* drag handle = the header */
 .modal-head {
   flex: none; padding: 44px 96px 34px 56px;
   background: var(--forest); color: var(--white);
+  cursor: grab; touch-action: none;
+}
+.modal-head:active { cursor: grabbing; }
+
+/* resize handle, bottom-right */
+.modal-resize {
+  position: absolute; right: 0; bottom: 0; width: 26px; height: 26px;
+  cursor: nwse-resize; touch-action: none;
+  background: linear-gradient(135deg, transparent 50%, var(--green) 50%);
 }
 .modal-eyebrow { font-family: var(--font-display); font-weight: var(--fw-700);
   font-size: var(--fs-eyebrow); letter-spacing: var(--ls-eyebrow); text-transform: uppercase;
@@ -154,6 +166,22 @@
 
 .modal-foot { flex: none; padding: 22px 56px; border-top: 2px solid var(--card-border-light);
   font-family: var(--font-body); font-size: var(--fs-min); font-style: italic; color: var(--text-meta-light); }
+
+.modal-intro { font-size: 26px; color: var(--charcoal); margin-bottom: 24px; }
+
+/* Comparison table (loan compare popout) */
+.modal-table-wrap { overflow-x: auto; margin-bottom: 8px; }
+.modal-table { width: 100%; border-collapse: collapse; font-family: var(--font-body); }
+.modal-table th, .modal-table td { text-align: left; padding: 16px 20px; font-size: 23px;
+  border-bottom: 1px solid var(--card-border-light); }
+.modal-table thead th { font-family: var(--font-display); font-weight: var(--fw-800);
+  font-size: 26px; color: var(--white); background: var(--forest); border-bottom: 0; }
+.modal-table thead th:first-child { background: var(--forest); }
+.modal-table tbody th { font-family: var(--font-display); font-weight: var(--fw-700);
+  color: var(--forest); font-size: 22px; }
+.modal-table td { color: var(--charcoal); }
+.modal-table tbody tr:nth-child(odd) td, .modal-table tbody tr:nth-child(odd) th { background: var(--mist); }
+.modal-table td strong { color: var(--forest); }
 
 /* ---------------------------------------------------------------------------
    LAYOUT ATOMS

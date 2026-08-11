@@ -1,6 +1,8 @@
 /* ============================================================================
    MODAL — the one popout. Deep Forest header band, green accent bar.
-   Backdrop, fade+scale, close on ✕ / Esc / backdrop, focus trapped + returned.
+   Closes on ✕ / Esc / backdrop. Focus trapped + returned.
+   The panel is DRAGGABLE (by its header) and RESIZABLE (corner handle).
+   Supports bulleted sections and an optional comparison table.
    ========================================================================= */
 
 import { MODALS } from '../content/modals.js';
@@ -8,6 +10,7 @@ import { COMPLIANCE } from '../content/presenters.js';
 
 const FOCUSABLE = 'a[href],button:not([disabled]),input,select,textarea,[tabindex]:not([tabindex="-1"])';
 let root, panel, closeBtn, headEl, bodyEl, footEl, lastFocused = null, isOpen = false;
+let pos = { x: 0, y: 0 };   // drag offset from centre
 
 export function initModal() {
   root = document.getElementById('modal-root');
@@ -15,9 +18,10 @@ export function initModal() {
     <div class="modal-backdrop" data-close></div>
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
       <button class="modal-close" data-close aria-label="Close">✕</button>
-      <div class="modal-head"></div>
+      <div class="modal-head" data-drag></div>
       <div class="modal-body"></div>
       <div class="modal-foot" hidden></div>
+      <div class="modal-resize" aria-hidden="true"></div>
     </div>`;
   panel = root.querySelector('.modal');
   closeBtn = root.querySelector('.modal-close');
@@ -31,6 +35,47 @@ export function initModal() {
     if (e.key === 'Escape') { e.stopPropagation(); closeModal(); return; }
     if (e.key === 'Tab') trap(e);
   }, true);
+
+  initDrag();
+  initResize();
+}
+
+/* ---- drag by header ---- */
+function initDrag() {
+  let dragging = false, sx = 0, sy = 0, ox = 0, oy = 0;
+  headEl.addEventListener('pointerdown', e => {
+    if (e.target.closest('.modal-close')) return;
+    dragging = true; sx = e.clientX; sy = e.clientY; ox = pos.x; oy = pos.y;
+    headEl.setPointerCapture(e.pointerId); headEl.style.cursor = 'grabbing';
+  });
+  headEl.addEventListener('pointermove', e => {
+    if (!dragging) return;
+    pos.x = ox + (e.clientX - sx); pos.y = oy + (e.clientY - sy);
+    applyPos();
+  });
+  const end = () => { dragging = false; headEl.style.cursor = ''; };
+  headEl.addEventListener('pointerup', end);
+  headEl.addEventListener('pointercancel', end);
+}
+function applyPos() { panel.style.transform = `translate(${pos.x}px, ${pos.y}px)`; }
+
+/* ---- resize by corner handle ---- */
+function initResize() {
+  const handle = root.querySelector('.modal-resize');
+  let resizing = false, sx = 0, sy = 0, sw = 0, sh = 0;
+  handle.addEventListener('pointerdown', e => {
+    resizing = true; sx = e.clientX; sy = e.clientY;
+    const r = panel.getBoundingClientRect(); sw = r.width; sh = r.height;
+    handle.setPointerCapture(e.pointerId); e.preventDefault();
+  });
+  handle.addEventListener('pointermove', e => {
+    if (!resizing) return;
+    panel.style.width = Math.max(520, sw + (e.clientX - sx)) + 'px';
+    panel.style.height = Math.max(300, sh + (e.clientY - sy)) + 'px';
+  });
+  const end = () => { resizing = false; };
+  handle.addEventListener('pointerup', end);
+  handle.addEventListener('pointercancel', end);
 }
 
 function trap(e) {
@@ -39,6 +84,13 @@ function trap(e) {
   const first = nodes[0], last = nodes[nodes.length - 1];
   if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
   else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+}
+
+function renderTable(t) {
+  const head = `<tr><th></th>${t.columns.map(c => `<th>${c}</th>`).join('')}</tr>`;
+  const rows = t.rows.map(r =>
+    `<tr><th scope="row">${r.label}</th>${r.cells.map(c => `<td>${c}</td>`).join('')}</tr>`).join('');
+  return `<div class="modal-table-wrap"><table class="modal-table"><thead>${head}</thead><tbody>${rows}</tbody></table></div>`;
 }
 
 function section(s) {
@@ -59,15 +111,25 @@ export function openModal(id, opener) {
     ${d.eyebrow ? `<div class="modal-eyebrow">${d.eyebrow}</div>` : ''}
     <h2 class="modal-title" id="modal-title">${d.title}</h2>
     <div class="modal-title-bar"></div>`;
-  bodyEl.innerHTML = d.sections.map(section).join('');
+
+  let body = '';
+  if (d.intro) body += `<p class="modal-intro">${d.intro}</p>`;
+  if (d.table) body += renderTable(d.table);
+  if (d.sections) body += d.sections.map(section).join('');
+  bodyEl.innerHTML = body;
   bodyEl.scrollTop = 0;
 
   const lines = (d.compliance || []).map(k => COMPLIANCE[k]).filter(Boolean);
   if (lines.length) { footEl.textContent = lines.join('  '); footEl.hidden = false; }
   else footEl.hidden = true;
 
+  /* reset size + position each open */
+  pos = { x: 0, y: 0 };
+  panel.style.width = ''; panel.style.height = '';
+  panel.classList.toggle('modal--wide', !!d.table);
+
   root.classList.add('is-open');
-  requestAnimationFrame(() => { root.classList.add('is-visible'); closeBtn.focus(); });
+  requestAnimationFrame(() => { root.classList.add('is-visible'); applyPos(); closeBtn.focus(); });
   isOpen = true;
   document.body.classList.add('modal-open');
 }
@@ -79,6 +141,7 @@ export function closeModal() {
   document.body.classList.remove('modal-open');
   const done = () => {
     root.classList.remove('is-open');
+    panel.style.transform = '';
     if (lastFocused && document.contains(lastFocused)) lastFocused.focus();
     lastFocused = null;
   };

@@ -7,23 +7,25 @@
 import { SLIDES, TARGET_RUNTIME_SECONDS } from '../content/slides.js';
 import { MODALS, MODAL_COUNT } from '../content/modals.js';
 import {
-  activePresenter, COMPANY, COMPLIANCE, LINKS, FOOTER_LOGO,
+  activePresenter, COMPANY, COMPLIANCE, LINKS, LOGO,
 } from '../content/presenters.js';
 import { initModal, openModal, closeModal, isModalOpen } from './modal.js';
 import { makeCard, makeCardGrid } from './card.js';
 import { FIGURES } from './figures.js';
+import * as annotate from './annotate.js';
 
 const P = activePresenter();
+const PREVIEW = new URLSearchParams(location.search).has('preview');
 let current = 0, scaler, stage, channel;
 
 /* ---- helpers -------------------------------------------------------------- */
 const ph = (val, label) => val ? esc(val) : `<span class="ph">${label}</span>`;
 function esc(s){ return String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
 
-function photo(label, dir = 'v', src = null) {
-  if (src) return `<div class="photo"><img src="${src}" alt=""><div class="wash" data-dir="${dir}"></div></div>`;
-  return `<div class="photo"><div class="photo-placeholder"><span>${label}</span></div>
-          <div class="wash" data-dir="${dir}"></div></div>`;
+function photo(label, dir = 'v', src = null, wash = true) {
+  const w = wash ? `<div class="wash" data-dir="${dir}"></div>` : '';
+  if (src) return `<div class="photo"><img src="${src}" alt="">${w}</div>`;
+  return `<div class="photo"><div class="photo-placeholder"><span>${label}</span></div>${w}</div>`;
 }
 
 function header(d) {
@@ -40,10 +42,11 @@ function header(d) {
 function furniture(el, d) {
   if (d.footer) {
     const [l1, l2] = COMPLIANCE.footerLines(P);
+    const dark = d.bg === 'dark';
     const f = document.createElement('div');
     f.className = 'slide-footer';
     f.innerHTML = `
-      <div class="footer-logo-plate"><img src="${FOOTER_LOGO}" alt="Mountain State Financial Group"></div>
+      <div class="footer-logo"><img src="${dark ? LOGO.onDark : LOGO.onLight}" alt="Mountain State Financial Group"></div>
       <div class="footer-lines"><div>${l1}</div><div>${l2}</div></div>`;
     el.appendChild(f);
     el.dataset.footer = 'true';
@@ -79,7 +82,7 @@ const layouts = {
             <li><span class="c-label">Also</span> ${ph(P.email2, 'SECONDARY EMAIL')}</li>
           </ul>
         </div>
-        <div class="split-photo build">${photo('Presenter portrait', 'h', P.portrait)}</div>
+        <div class="split-photo build">${photo('Presenter portrait', 'h', P.portrait, false)}</div>
       </div>`;
   },
 
@@ -98,8 +101,15 @@ const layouts = {
         <ul class="points build measure" style="max-width:1300px">
           ${d.points.map(p => `<li>${p}</li>`).join('')}
         </ul>
-        ${d.callout ? `<div class="callout build" style="margin-top:48px;align-self:flex-start">${d.callout}</div>` : ''}
+        ${d.callout ? `<div class="callout build" style="margin-top:44px;align-self:flex-start">${d.callout}</div>` : ''}
       </div>`;
+    if (d.compareModal) {
+      const b = document.createElement('button');
+      b.className = 'compare-cta build';
+      b.innerHTML = 'Compare loans: Conventional · FHA · VA <span aria-hidden="true">→</span>';
+      b.addEventListener('click', () => openModal(d.compareModal, b));
+      el.querySelector('.slide-body').appendChild(b);
+    }
   },
 
   compare(el, d) {
@@ -121,8 +131,11 @@ const layouts = {
 
   payment(el, d) {
     el.innerHTML = header(d) + `
-      <div class="slide-body" style="gap:40px;justify-content:center">
-        <div class="figure-wrap build" style="max-width:1500px">${FIGURES.paymentBands()}</div>
+      <div class="slide-body" style="gap:34px;justify-content:center">
+        <div class="build" style="width:100%">
+          <div class="pay-bar">${FIGURES.paymentBands()}</div>
+          ${FIGURES.paymentLegend()}
+        </div>
         <div class="two-col build">
           <div class="col">
             <p class="col-head col-head--lock">What's locked</p>
@@ -240,13 +253,16 @@ function shell(d, i) {
 
 function show(i) {
   if (isModalOpen()) closeModal();
+  if (!PREVIEW) annotate.clear();               // marks don't carry to the next slide
   current = Math.max(0, Math.min(SLIDES.length - 1, i));
   const slides = document.querySelectorAll('.slide');
   slides.forEach((s, idx) => s.classList.toggle('is-active', idx === current));
   runBuild(slides[current]);
-  document.querySelector('.nav-count').textContent = `${current + 1} / ${SLIDES.length}`;
-  document.querySelector('.deck-progress').style.width = `${((current + 1) / SLIDES.length) * 100}%`;
-  location.hash = SLIDES[current].id;
+  const nav = document.querySelector('.nav-count');
+  if (nav) nav.textContent = `${current + 1} / ${SLIDES.length}`;
+  const prog = document.querySelector('.deck-progress');
+  if (prog) prog.style.width = `${((current + 1) / SLIDES.length) * 100}%`;
+  if (location.hash.slice(1) !== SLIDES[current].id) location.hash = SLIDES[current].id;
   broadcast();
 }
 const next = () => show(current + 1);
@@ -260,7 +276,7 @@ function fit() {
 
 function broadcast() { if (channel) channel.postMessage({ type: 'slide', index: current }); }
 function initChannel() {
-  if (!('BroadcastChannel' in window)) return;
+  if (!('BroadcastChannel' in window) || PREVIEW) return;   // preview instance stays silent
   channel = new BroadcastChannel('msfg-deck');
   channel.onmessage = e => {
     const m = e.data;
@@ -269,13 +285,24 @@ function initChannel() {
     if (m.type === 'prev') prev();
     if (m.type === 'open') openModal(m.id);
     if (m.type === 'hello') broadcast();
+    if (m.type === 'annotate') handleAnnotate(m);
   };
+}
+
+function handleAnnotate(m) {
+  if (m.on !== undefined) annotate.enable(m.on);
+  if (m.toggle) annotate.toggle();
+  if (m.tool) annotate.setTool(m.tool);
+  if (m.color) annotate.setColor(m.color);
+  if (m.clear) annotate.clear();
 }
 
 export function initDeck() {
   stage = document.querySelector('.stage');
   scaler = document.querySelector('.slide-scaler');
+  if (PREVIEW) document.body.classList.add('is-preview');
   initModal();
+  if (!PREVIEW) annotate.initAnnotate();
 
   SLIDES.forEach((d, i) => {
     const el = shell(d, i);
@@ -284,24 +311,33 @@ export function initDeck() {
     scaler.appendChild(el);
   });
 
-  document.querySelector('[data-nav="next"]').addEventListener('click', next);
-  document.querySelector('[data-nav="prev"]').addEventListener('click', prev);
-  document.querySelector('[data-nav="presenter"]').addEventListener('click', openPresenter);
+  if (!PREVIEW) {
+    document.querySelector('[data-nav="next"]').addEventListener('click', next);
+    document.querySelector('[data-nav="prev"]').addEventListener('click', prev);
+    document.querySelector('[data-nav="presenter"]').addEventListener('click', openPresenter);
 
-  document.addEventListener('keydown', e => {
-    if (isModalOpen()) return;
-    if (e.target instanceof Element && e.target.matches('input, textarea, button')) return;
-    switch (e.key) {
-      case 'ArrowRight': case 'PageDown': case ' ': e.preventDefault(); next(); break;
-      case 'ArrowLeft':  case 'PageUp': e.preventDefault(); prev(); break;
-      case 'Home': show(0); break;
-      case 'End': show(SLIDES.length - 1); break;
-      case 'p': case 'P': openPresenter(); break;
-      case 'g': case 'G': document.body.classList.toggle('show-guides'); break;
-      case 'f': case 'F':
-        if (document.fullscreenElement) document.exitFullscreen();
-        else document.documentElement.requestFullscreen(); break;
-    }
+    document.addEventListener('keydown', e => {
+      if (isModalOpen()) return;
+      if (e.target instanceof Element && e.target.matches('input, textarea, button, [contenteditable="true"]')) return;
+      switch (e.key) {
+        case 'ArrowRight': case 'PageDown': case ' ': e.preventDefault(); next(); break;
+        case 'ArrowLeft':  case 'PageUp': e.preventDefault(); prev(); break;
+        case 'Home': show(0); break;
+        case 'End': show(SLIDES.length - 1); break;
+        case 'p': case 'P': openPresenter(); break;
+        case 'a': case 'A': annotate.toggle(); break;
+        case 'g': case 'G': document.body.classList.toggle('show-guides'); break;
+        case 'f': case 'F':
+          if (document.fullscreenElement) document.exitFullscreen();
+          else document.documentElement.requestFullscreen(); break;
+      }
+    });
+  }
+
+  /* The preview iframe is driven by its URL hash. */
+  window.addEventListener('hashchange', () => {
+    const i = SLIDES.findIndex(s => s.id === location.hash.slice(1));
+    if (i >= 0 && i !== current) show(i);
   });
 
   window.addEventListener('resize', fit);

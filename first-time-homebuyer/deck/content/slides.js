@@ -44,6 +44,7 @@ export const SLIDES = [
       'Where lenders really differ is <strong>origination and fees</strong> — not the headline rate',
     ],
     callout: 'Ask for rate AND total cost. Compare Loan Estimates from the same day.',
+    compareModal: 'compare-loans',
     time: 150,
     notes: 'The rate is the number everyone shops. Closing costs are the number that decides it. APR exists to make two loans comparable — a low rate with high fees can carry a higher APR than a slightly higher rate with none.',
   },

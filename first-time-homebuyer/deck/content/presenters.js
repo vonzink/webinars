@@ -13,9 +13,9 @@ export const PRESENTERS = {
   seth: {
     key: 'seth', name: 'Seth Angell', title: 'Executive VP', nmls: 'NMLS# 912881',
     portrait: './assets/portraits/seth-angell.png',
-    phone: null,               // PLACEHOLDER — Seth's phone
-    email: 'info@msfgmortgage.com',
-    email2: null,              // PLACEHOLDER — secondary email
+    phone: '303-883-8519',
+    email: 'Seth.angell@msfg.us',
+    email2: 'info@msfgmortgage.com',
   },
   robert: {
     key: 'robert', name: 'Robert Hoff', title: 'President', nmls: 'NMLS# 608235',
@@ -33,8 +33,8 @@ export function activePresenter() { return PRESENTERS[ACTIVE_PRESENTER]; }
 
 /* Links / assets — fill before delivery. null renders a visible placeholder. */
 export const LINKS = {
-  applyUrl: null,      // Apply Now
-  bookingUrl: null,    // Schedule a consultation
+  applyUrl: 'https://www.blink.mortgage/app/signup/p/mountainstatefinancialgroupllc/sethangell',
+  bookingUrl: null,    // Schedule a consultation — pending from client
   website: 'msfg.us',
   qrAsset: './assets/brand/qr-seth.png',
   qrTargetUrl: null,
@@ -54,5 +54,9 @@ export const COMPLIANCE = {
   notAForecast: 'General long-term patterns, not a forecast or guarantee. Individual results vary by market and time period.',
 };
 
-/* Logo used on the footer white plate */
-export const FOOTER_LOGO = './assets/brand/logo-horizontal.png';
+/* Logo — vector, transparent, no plate. Knockout (light) on dark backgrounds,
+   full-colour on light. */
+export const LOGO = {
+  onDark:  './assets/brand/logo-horizontal-knockout.svg',
+  onLight: './assets/brand/logo-horizontal.svg',
+};

@@ -95,6 +95,29 @@ export const MODALS = {
     ],
   },
 
+  'compare-loans': {
+    eyebrow: 'Compare', title: 'Conventional vs FHA vs VA',
+    intro: 'Same borrower, same price — the rate is only part of the story. APR folds in mortgage insurance and fees, so the lowest rate isn\'t always the lowest APR.',
+    table: {
+      columns: ['Conventional', 'FHA', 'VA'],
+      rows: [
+        { label: 'Minimum down',       cells: ['3%', '3.5%', '0%'] },
+        { label: 'Mortgage insurance', cells: ['Removable', 'Often life of loan', 'None'] },
+        { label: 'Illustrative rate',  cells: ['6.75%', '6.50%', '6.25%'] },
+        { label: 'Illustrative APR',   cells: ['<strong>6.90%</strong>', '<strong>7.40%</strong>', '<strong>6.45%</strong>'] },
+        { label: 'Best for',           cells: ['Strong credit', 'Credit flexibility', 'Eligible veterans'] },
+      ],
+    },
+    compliance: ['hypothetical'],
+    sections: [
+      { head: 'The takeaway', items: [
+        'FHA\'s lower rate can carry a <strong>higher APR</strong> — upfront and monthly MI',
+        'VA often wins on APR — no monthly MI',
+        'Ask for <strong>rate AND APR</strong> on every quote',
+      ]},
+    ],
+  },
+
   /* ---- LOAN PROGRAMS --------------------------------------------------- */
   'prog-conventional': {
     eyebrow: 'Loan program', title: 'Conventional', compliance: ['generalGuidelines'],
