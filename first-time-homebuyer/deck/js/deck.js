@@ -228,8 +228,10 @@ const layouts = {
 };
 
 function btn(label, url, variant) {
+  /* A real link renders; a not-yet-supplied link is omitted so no placeholder
+     shows on the public site. It reappears automatically once the URL is set. */
   if (url) return `<a class="btn btn--${variant}" href="${url}" target="_blank" rel="noopener">${label}</a>`;
-  return `<span class="btn btn--${variant}" aria-disabled="true">${label}<small>LINK NEEDED</small></span>`;
+  return '';
 }
 
 /* ---- build sequencing ----------------------------------------------------- */
