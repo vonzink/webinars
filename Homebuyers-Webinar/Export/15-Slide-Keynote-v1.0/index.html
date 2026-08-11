@@ -1,0 +1,493 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>The Homebuyer's Playbook - 19 Slide Keynote</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath fill='%23104547' d='M4 56 32 8l28 48z'/%3E%3Cpath fill='%238cc63e' d='M4 56 32 8 18 56z'/%3E%3C/svg%3E" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="deck-viewport" aria-label="The Homebuyer's Playbook">
+      <div class="deck-frame" id="deckFrame">
+        <div class="deck" id="deck">
+          <section class="slide active dark title-slide" data-title="The Homebuyer's Playbook">
+            <div class="slide-inner title-composition">
+              <div class="title-main">
+                <div class="kicker build"><span></span> Free webinar</div>
+                <h1 class="build delay-1">The Homebuyer's <em>Playbook</em></h1>
+                <p class="title-sub build delay-2">Everything first-time buyers need to know. Thirty minutes today could save you thousands.</p>
+              </div>
+              <aside class="speaker-portrait build delay-2" aria-label="Presented by Seth Angell">
+                <img src="./assets/brand/seth-angell.png" alt="Seth Angell" />
+                <div>
+                  <span>Presented by</span>
+                  <strong>Seth Angell</strong>
+                  <small>NMLS #912881</small>
+                </div>
+              </aside>
+              <div class="title-footer build delay-3" data-draggable-logo>
+                <img src="./assets/brand/msfg-home-loans-horizontal.png" alt="Mountain State Financial Group, LLC" />
+                <div class="title-contact">
+                  <strong>Mountain State Financial Group, LLC</strong>
+                  <a href="https://msfgmortgage.com/webinars">msfgmortgage.com/webinars</a>
+                  <span>Presented by Seth Angell · NMLS #912881</span>
+                  <span>Company NMLS #1314257</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="slide light roadmap-reference-slide" data-title="Today's Roadmap" data-space-reveal="roadmap">
+            <div class="slide-inner reference-roadmap-layout">
+              <div class="roadmap-copy build">
+                <div class="accent-rule"></div>
+                <h2>Today's Roadmap</h2>
+                <p>Knowledge builds confidence. By the end you'll know exactly what your next step is.</p>
+                <strong>30 minutes · no sales pitch</strong>
+              </div>
+              <ol class="roadmap-topic-list" aria-label="Today's roadmap topics">
+                <li data-reveal-item><span>01</span><strong>Myths</strong></li>
+                <li data-reveal-item><span>02</span><strong>Budget</strong></li>
+                <li data-reveal-item><span>03</span><strong>Loan Programs</strong></li>
+                <li data-reveal-item><span>04</span><strong>The Process</strong></li>
+                <li data-reveal-item><span>05</span><strong>Mistakes to Avoid</strong></li>
+                <li data-reveal-item><span>06</span><strong>Your Next Steps</strong></li>
+              </ol>
+              <p class="space-cue">Space reveals one topic at a time.</p>
+            </div>
+          </section>
+
+          <section class="slide dark myth-slide" data-title="The 20 Percent Myth">
+            <div class="slide-inner myth-layout">
+              <div>
+                <div class="kicker build">01 Myths</div>
+                <h2 class="build delay-1">20% is a strategy. Not the entrance fee.</h2>
+              </div>
+              <div class="poll-row build delay-1" aria-label="Down payment poll">
+                <button type="button" data-myth-guess="20">20%</button>
+                <button type="button" data-myth-guess="10">10%</button>
+                <button type="button" data-myth-guess="5">5%</button>
+                <button type="button" data-myth-guess="unsure">Not sure</button>
+              </div>
+              <div class="myth-reveal build delay-2">
+                <div class="giant-percent">20%</div>
+                <div class="path-cards">
+                  <article>0%<span>eligible paths</span></article>
+                  <article>3%<span>some programs</span></article>
+                  <article>3.5%<span>FHA path</span></article>
+                  <article>DPA<span>verify locally</span></article>
+                </div>
+              </div>
+              <p class="dark-note build delay-3" id="mythAnswerOut" aria-live="polite">Ask the room what they have heard, then reveal that the right path depends on buyer, property, program, timing, and verified eligibility.</p>
+            </div>
+          </section>
+
+          <section class="slide light rate-myth-slide" data-title="Lowest Rate Myth">
+            <div class="slide-inner rate-myth-layout">
+              <div class="rate-myth-copy build">
+                <div class="kicker">01 Myths</div>
+                <h2>The lowest rate can hide a more expensive loan.</h2>
+                <p>Rate matters. It just does not live alone.</p>
+              </div>
+              <div class="apr-simulator build delay-1" aria-label="APR fee simulator">
+                <div class="rate-ticket-board">
+                  <article class="rate-ticket low-rate">
+                    <span>Note rate</span>
+                    <strong id="aprNoteRateOut">6.250%</strong>
+                    <small id="aprLoanOut">$500,000 loan</small>
+                  </article>
+                  <article class="rate-ticket full-cost">
+                    <span>Estimated APR</span>
+                    <strong id="aprLiveOut">6.453%</strong>
+                    <small id="aprDeltaOut">Fees add 0.203%</small>
+                  </article>
+                </div>
+                <label class="apr-fee-slider">APR fees <b id="aprFeeOut">$8,000</b><input id="aprFeeInput" type="range" min="0" max="20000" step="500" value="8000" /></label>
+                <button type="button" class="apr-info-button" data-apr-popout>Typical APR fees</button>
+                <aside class="apr-popout" id="aprPopout">
+                  <strong>Typical APR fees can include</strong>
+                  <span>Discount points</span>
+                  <span>Origination or lender charges</span>
+                  <span>Mortgage insurance</span>
+                  <span>Prepaid interest and certain third-party charges</span>
+                </aside>
+              </div>
+              <p class="bottom-line build delay-3" id="rateMythOut">Fees do not always mean bad. They do mean the rate alone is not the full price of the loan.</p>
+            </div>
+          </section>
+
+          <section class="slide split-slide" data-title="Rent vs Buy Is a Comparison">
+            <div class="split-half copy-side">
+              <div class="kicker build">02 Budget</div>
+              <h2 class="build delay-1">Renting is not failure. Buying is not automatically wisdom.</h2>
+              <div class="door-row build delay-2">
+                <article>Keep renting</article>
+                <article>Explore buying</article>
+              </div>
+            </div>
+            <div class="split-half calculator-side dark-panel">
+              <div class="calc-shell build delay-3">
+                <span class="calc-label">Live calculator slot</span>
+                <h3>Rent vs Buy</h3>
+                <div class="mini-calc-list">
+                  <label>Current rent <b id="rentOut">$2,200</b><input id="rentInput" type="range" min="1000" max="5000" step="50" value="2200" /></label>
+                  <label>Target price <b id="rentPriceOut">$525,000</b><input id="rentPriceInput" type="range" min="250000" max="850000" step="5000" value="525000" /></label>
+                  <label>Years in home <b id="yearsHomeOut">5 years</b><input id="yearsHomeInput" type="range" min="1" max="10" step="1" value="5" /></label>
+                </div>
+                <div class="break-even">
+                  <span id="rentBreakEvenBar"></span>
+                  <strong id="rentDecisionOut">Buying needs time to catch rent.</strong>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="slide light" data-title="Price Is Not the Number">
+            <div class="slide-inner payment-layout">
+              <div class="build">
+                <div class="kicker">02 Budget</div>
+                <h2>Price is not the number.</h2>
+                <p>You live inside a monthly payment.</p>
+              </div>
+              <div class="price-to-payment build delay-1">
+                <div class="price-block">$450,000</div>
+                <div class="arrow-line"></div>
+                <div class="payment-side">
+                  <div class="payment-stack">
+                    <button type="button" class="principal active" data-component="principal">Principal</button>
+                    <button type="button" class="interest" data-component="interest">Interest</button>
+                    <button type="button" class="taxes" data-component="taxes">Taxes</button>
+                    <button type="button" class="insurance" data-component="insurance">Insurance</button>
+                    <button type="button" class="mi" data-component="mi">Mortgage insurance</button>
+                  </div>
+                  <div class="payment-makeup" aria-label="Sample monthly payment makeup">
+                    <span class="payment-segment principal active" data-component-segment="principal" style="--segment-width: 27%"><b>$850</b><small>principal</small></span>
+                    <span class="payment-segment interest" data-component-segment="interest" style="--segment-width: 49%"><b>$1,540</b><small>interest</small></span>
+                    <span class="payment-segment taxes" data-component-segment="taxes" style="--segment-width: 13%"><b>$410</b><small>taxes</small></span>
+                    <span class="payment-segment insurance" data-component-segment="insurance" style="--segment-width: 7%"><b>$220</b><small>insurance</small></span>
+                    <span class="payment-segment mi" data-component-segment="mi" style="--segment-width: 4%"><b>$125</b><small>MI</small></span>
+                    <strong>$3,145 sample payment</strong>
+                  </div>
+                </div>
+              </div>
+              <aside class="teaching-note build delay-2" id="componentNote">Principal is the borrowed money being paid back over time.</aside>
+            </div>
+          </section>
+
+          <section class="slide light" data-title="Payment Calculator">
+            <div class="slide-inner live-payment-layout">
+              <div class="payment-hero build">
+                <div class="kicker">Live demo</div>
+                <h2>A payment is built.</h2>
+                <strong id="paymentHero">$3,754</strong>
+                <span>estimated monthly payment</span>
+              </div>
+              <div class="live-calculator build delay-1">
+                <label>Home price <b id="priceOut">$525,000</b><input id="priceInput" type="range" min="250000" max="850000" step="5000" value="525000" /></label>
+                <label>Down payment <b id="downOut">5%</b><input id="downInput" type="range" min="3" max="25" step="1" value="5" /></label>
+                <label>Interest rate <b id="rateOut">6.500%</b><input id="rateInput" type="range" min="4.5" max="8.5" step="0.125" value="6.5" /></label>
+                <div class="scenario-row" aria-label="Payment scenarios">
+                  <button type="button" data-payment-scenario="base">Base case</button>
+                  <button type="button" data-payment-scenario="lower-price">Lower price</button>
+                  <button type="button" data-payment-scenario="higher-down">Higher down</button>
+                  <button type="button" data-payment-scenario="rate-up">Rate moves up</button>
+                  <button type="button" data-payment-scenario="remove-mi">Remove MI</button>
+                </div>
+                <div class="calc-output-grid">
+                  <article><span>Principal and interest</span><strong id="piOut">$3,152</strong></article>
+                  <article><span>Taxes and insurance</span><strong id="escrowOut">$392</strong></article>
+                  <article><span>Mortgage insurance</span><strong id="miOut">$210</strong></article>
+                </div>
+              </div>
+              <p class="compliance-note build delay-2">Hypothetical illustration for education only. Not a quote, offer, or commitment to lend.</p>
+            </div>
+          </section>
+
+          <section class="slide light" data-title="Approved Is Not Comfortable">
+            <div class="slide-inner comfort-layout">
+              <div class="build">
+                <div class="kicker">02 Budget</div>
+                <h2>Approved is not the same as comfortable.</h2>
+              </div>
+              <div class="house-section build delay-1">
+                <div class="roofline"></div>
+                <div class="approval-line">Approved ceiling</div>
+                <div class="comfort-zone" id="comfortZone">Comfortable plan</div>
+                <div class="foundation-line">Your real life</div>
+                <label class="comfort-slider">Comfort payment <b id="comfortPercentOut">62%</b><input id="comfortPercentInput" type="range" min="40" max="90" step="1" value="62" /></label>
+              </div>
+              <aside class="quote-box build delay-2">A good lender does not cheer every approval. They help you choose a payment you can live with.</aside>
+            </div>
+          </section>
+
+          <section class="slide dark" data-title="Affordability Calculator">
+            <div class="slide-inner affordability-layout">
+              <div class="build">
+                <div class="kicker">Live demo</div>
+                <h2>Find both numbers.</h2>
+              </div>
+              <div class="affordability-calc build delay-1">
+                <div class="range-column">
+                  <label>Monthly income <b id="incomeOut">$9,800</b><input id="incomeInput" type="range" min="5000" max="18000" step="100" value="9800" /></label>
+                  <label>Monthly debts <b id="debtOut">$780</b><input id="debtInput" type="range" min="0" max="2500" step="25" value="780" /></label>
+                </div>
+                <div class="afford-results">
+                  <article><span>Can pass</span><strong id="passOut">$3,630</strong></article>
+                  <article><span>Can live with</span><strong id="comfortOut">$2,356</strong></article>
+                  <div class="gap-bar"><span id="gapBar"></span></div>
+                  <p id="gapOut">$1,274 of breathing room</p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="slide light" data-title="Monthly Budget">
+            <div class="slide-inner budget-layout">
+              <div class="budget-copy build">
+                <div class="kicker">02 Budget worksheet</div>
+                <h2>A home should not erase your life.</h2>
+                <p>Put the mortgage inside the month before you put it inside an offer.</p>
+              </div>
+              <div class="budget-dashboard build delay-1" aria-label="Monthly budget allocator">
+                <article class="housing">Housing <strong id="budgetHousingOut">32%</strong><input id="budgetHousing" type="range" min="20" max="45" step="1" value="32" /></article>
+                <article>Debt <strong id="budgetDebtOut">8%</strong><input id="budgetDebt" type="range" min="0" max="20" step="1" value="8" /></article>
+                <article>Food <strong id="budgetFoodOut">12%</strong><input id="budgetFood" type="range" min="5" max="25" step="1" value="12" /></article>
+                <article>Childcare <strong id="budgetChildcareOut">10%</strong><input id="budgetChildcare" type="range" min="0" max="25" step="1" value="10" /></article>
+                <article>Savings <strong id="budgetSavingsOut">10%</strong><input id="budgetSavings" type="range" min="0" max="25" step="1" value="10" /></article>
+                <article>Maintenance <strong id="budgetMaintenanceOut">5%</strong><input id="budgetMaintenance" type="range" min="0" max="15" step="1" value="5" /></article>
+                <article class="life">Life <strong id="budgetLifeOut">23%</strong></article>
+              </div>
+              <div class="room-meter build delay-2"><span id="roomMeterBar"></span><strong id="roomMeterOut">23% room left.</strong></div>
+            </div>
+          </section>
+
+          <section class="slide dark program-slide" data-title="Loan Programs">
+            <div class="slide-inner program-layout">
+              <div class="program-copy build">
+                <div class="kicker">03 Loan Programs</div>
+                <h2>Loan programs are paths. Not promises.</h2>
+                <p>The right option is the one that matches the buyer, property, cash, service history, and goals.</p>
+              </div>
+              <div class="program-paths build delay-1" aria-label="Loan program paths">
+                <button type="button" class="active" data-program-path="conventional"><span>Conventional</span><strong>Flexible</strong><small>Strong all-around path</small></button>
+                <button type="button" data-program-path="fha"><span>FHA</span><strong>Accessible</strong><small>Often useful for credit or cash</small></button>
+                <button type="button" data-program-path="va"><span>VA</span><strong>Earned</strong><small>Veteran and service-member benefit</small></button>
+                <button type="button" data-program-path="usda"><span>USDA</span><strong>Place-based</strong><small>Eligible rural areas</small></button>
+                <button type="button" data-program-path="assistance"><span>DPA</span><strong>Local</strong><small>Assistance rules vary</small></button>
+              </div>
+              <aside class="program-detail build delay-2">
+                <span id="programName">Conventional</span>
+                <p id="programText">Often a flexible starting point when credit, income, property type, and down payment line up cleanly.</p>
+              </aside>
+              <p class="dark-note build delay-3">Program details must be verified on the delivery date. This slide teaches comparison, not eligibility.</p>
+            </div>
+          </section>
+
+          <section class="slide light down-payment-slide" data-title="Down Payment Options">
+            <div class="slide-inner down-payment-layout">
+              <div class="build">
+                <div class="kicker">03 Loan Programs</div>
+                <h2>Your cash can come from more than one place.</h2>
+              </div>
+              <div class="down-payment-map build delay-1" aria-label="Down payment source map">
+                <button type="button" class="active" data-down-path="savings"><span>01</span><strong>Savings</strong><small>Money you control</small></button>
+                <button type="button" data-down-path="gift"><span>02</span><strong>Gift funds</strong><small>Documented help</small></button>
+                <button type="button" data-down-path="credit"><span>03</span><strong>Seller credits</strong><small>Offset closing costs</small></button>
+                <button type="button" data-down-path="assistance"><span>04</span><strong>Assistance</strong><small>Program specific</small></button>
+              </div>
+              <aside class="down-path-detail build delay-2">
+                <strong id="downPathName">Savings</strong>
+                <p id="downPathText">Savings is the cleanest source because the buyer already controls it. The next question is whether using it protects enough emergency cash.</p>
+              </aside>
+              <p class="compliance-note build delay-3">Gift, seller-credit, and assistance examples need documentation and program review before use.</p>
+            </div>
+          </section>
+
+          <section class="slide light" data-title="The Buying Team">
+            <div class="slide-inner relation-layout">
+              <div class="slide-copy build">
+                <div class="kicker">04 The Process</div>
+                <h2>You are not supposed to know everyone's job.</h2>
+                <p>Homebuying feels easier when each role has a name and a purpose.</p>
+              </div>
+              <div class="orbit-map build delay-1" aria-label="Homebuying team map">
+                <div class="buyer-node">
+                  <svg viewBox="0 0 64 64" aria-hidden="true">
+                    <path d="M10 34 32 14l22 20" />
+                    <path d="M16 31v22h32V31" />
+                    <path d="M26 53V39h12v14" />
+                  </svg>
+                  <span>Buyer</span>
+                </div>
+                <button type="button" class="orbit orbit-1 active" data-role="Lender">Lender</button>
+                <button type="button" class="orbit orbit-2" data-role="Realtor">Realtor</button>
+                <button type="button" class="orbit orbit-3" data-role="Seller">Seller</button>
+                <button type="button" class="orbit orbit-4" data-role="Underwriter">Underwriter</button>
+                <button type="button" class="orbit orbit-5" data-role="Title">Title</button>
+                <button type="button" class="orbit orbit-6" data-role="Insurance">Insurance</button>
+                <aside class="role-card">
+                  <span id="roleName">Lender</span>
+                  <p id="roleText">Translates your income, credit, cash, and goals into loan options you can compare.</p>
+                </aside>
+              </div>
+            </div>
+          </section>
+
+          <section class="slide light" data-title="Cash to Close">
+            <div class="slide-inner cash-layout">
+              <div class="build">
+                <div class="kicker">04 The Process</div>
+                <h2>Cash to close is calculated. Not guessed.</h2>
+              </div>
+              <div class="worksheet build delay-1">
+                <h3>Closing cost worksheet</h3>
+                <div><span>Down payment</span><strong id="cashDownOut">$26,250</strong></div>
+                <div><span>Closing costs</span><strong id="cashCostsOut">$9,800</strong></div>
+                <div><span>Prepaids and escrow</span><strong id="cashPrepaidsOut">$5,400</strong></div>
+                <div><span>Credits</span><strong id="cashCreditsOut">-$2,000</strong></div>
+                <div class="toggle-row">
+                  <button type="button" data-cash-toggle="credit">Seller credit</button>
+                  <button type="button" data-cash-toggle="assistance">Assistance</button>
+                  <button type="button" data-cash-toggle="later-close">Later close</button>
+                </div>
+              </div>
+              <div class="waterfall build delay-2">
+                <span id="cashDownBar"></span>
+                <span id="cashCostsBar"></span>
+                <span id="cashPrepaidsBar"></span>
+                <span id="cashCreditsBar" class="negative"></span>
+                <strong id="cashTotalOut">$39,450</strong>
+              </div>
+              <p class="compliance-note build delay-3">Hypothetical illustration for education only. Actual cash to close depends on final loan terms.</p>
+            </div>
+          </section>
+
+          <section class="slide light" data-title="APR Comparison">
+            <div class="slide-inner apr-layout">
+              <div class="apr-copy build">
+                <div class="kicker">05 Mistakes to Avoid</div>
+                <h2>The lowest rate is not always the cheapest loan.</h2>
+              </div>
+              <div class="loan-compare build delay-1">
+                <article id="loanA" class="winner">
+                  <span>Loan A</span>
+                  <strong>6.50%</strong>
+                  <p>$2,000 fees · lower cash</p>
+                </article>
+                <article id="loanB">
+                  <span>Loan B</span>
+                  <strong>6.25%</strong>
+                  <p>$8,000 fees · lower payment</p>
+                </article>
+              </div>
+              <div class="timeline-slider build delay-2">
+                <div class="mode-switch" aria-label="Comparison mode">
+                  <button type="button" class="active" data-apr-mode="cash">Lowest cash</button>
+                  <button type="button" data-apr-mode="payment">Lowest payment</button>
+                  <button type="button" data-apr-mode="time">Best over time</button>
+                </div>
+                <label>Expected time in loan <b id="holdOut">3 years</b><input id="holdInput" type="range" min="1" max="10" step="1" value="3" /></label>
+                <p id="winnerOut">Loan A wins before the extra fee pays back.</p>
+              </div>
+            </div>
+          </section>
+
+          <section class="slide light" data-title="Buydown Break-Even">
+            <div class="slide-inner buydown-layout">
+              <div class="build">
+                <div class="kicker">05 Mistakes to Avoid</div>
+                <h2>A buydown needs a break-even point.</h2>
+              </div>
+              <div class="breakeven-calc build delay-1">
+                <label>Upfront cost <b id="buydownCostOut">$6,000</b><input id="buydownCost" type="range" min="1000" max="12000" step="500" value="6000" /></label>
+                <label>Monthly savings <b id="buydownSavingsOut">$150</b><input id="buydownSavings" type="range" min="25" max="400" step="25" value="150" /></label>
+                <div class="breakeven-line">
+                  <span id="breakEvenMarker"></span>
+                </div>
+                <strong id="breakEvenOut">Break-even: 40 months</strong>
+              </div>
+              <p class="teaching-note build delay-2">If you leave before break-even, the lower rate may not help.</p>
+            </div>
+          </section>
+
+          <section class="slide dark mistake-checkpoints-slide" data-title="Mistakes to Avoid">
+            <div class="slide-inner mistake-layout">
+              <div class="build">
+                <div class="kicker">05 Mistakes to Avoid</div>
+                <h2>Most expensive mistakes start as small assumptions.</h2>
+              </div>
+              <div class="mistake-grid build delay-1" aria-label="Mistake checkpoints">
+                <button type="button" class="active" data-mistake="payment"><span>01</span><strong>Payment shock</strong><small>Online number was incomplete</small></button>
+                <button type="button" data-mistake="cash"><span>02</span><strong>Cash surprise</strong><small>Closing costs were not mapped</small></button>
+                <button type="button" data-mistake="documents"><span>03</span><strong>Document delay</strong><small>The file was not ready</small></button>
+              </div>
+              <aside class="mistake-detail build delay-2">
+                <strong id="mistakeName">Payment shock</strong>
+                <p id="mistakeText">Before shopping homes, build a full payment with principal, interest, taxes, insurance, and mortgage insurance when applicable.</p>
+              </aside>
+              <p class="dark-note build delay-3">Ask which assumption feels most likely to surprise them, then connect it back to the calculators already shown.</p>
+            </div>
+          </section>
+
+          <section class="slide light" data-title="Your Seven-Day Plan">
+            <div class="slide-inner plan-layout">
+              <div class="build">
+                <div class="kicker">06 Your Next Steps</div>
+                <h2>You do not need to buy this week. You need to get clear this week.</h2>
+              </div>
+              <div class="week-plan build delay-1">
+                <button type="button" class="active" data-action-step="Gather numbers"><span>1</span>Gather numbers</button>
+                <button type="button" data-action-step="Check credit"><span>2</span>Check credit</button>
+                <button type="button" data-action-step="Set comfort payment"><span>3</span>Set comfort payment</button>
+                <button type="button" data-action-step="Review cash"><span>4</span>Review cash</button>
+                <button type="button" data-action-step="Check programs"><span>5</span>Check programs</button>
+                <button type="button" data-action-step="Compare lenders"><span>6</span>Compare lenders</button>
+                <button type="button" data-action-step="Ask questions"><span>7</span>Ask questions</button>
+              </div>
+              <p class="commitment-line build delay-2" id="commitmentOut">First commitment: gather the numbers.</p>
+            </div>
+          </section>
+
+          <section class="slide cta-slide" data-title="Questions Before Applications">
+            <div class="cta-left">
+              <div class="kicker build">Next step</div>
+              <h2 class="build delay-1">Bring us your questions before you bring us your application.</h2>
+              <p class="build delay-2">We will review your numbers, map your options, and help you understand the plan before you commit.</p>
+              <div class="cta-brand build delay-3">
+                <img src="./assets/brand/msfg-home-loans-horizontal.png" alt="Mountain State Financial Group, LLC" />
+                <span>Mountain State Financial Group, LLC · Company NMLS #1314257</span>
+              </div>
+            </div>
+            <div class="cta-right dark-panel">
+              <div class="contact-card build delay-2">
+                <img class="headshot" src="./assets/brand/seth-angell.png" alt="Seth Angell" />
+                <div>
+                  <strong>Seth Angell</strong>
+                  <span>Mortgage educator · NMLS #912881</span>
+                </div>
+              </div>
+              <img class="qr" src="./assets/brand/seth-contact-qr.png" alt="Contact QR code" />
+              <div class="question-chips build delay-3" aria-label="Question prompts">
+                <button type="button" data-question="payment">Payment</button>
+                <button type="button" data-question="cash">Cash to close</button>
+                <button type="button" data-question="comfort">Comfort range</button>
+              </div>
+              <p class="build delay-3" id="questionPrompt">What number should we calculate together?</p>
+            </div>
+          </section>
+          <img class="equal-housing-badge" src="./assets/brand/equal-housing-lender.png" alt="Equal Housing Lender" />
+        </div>
+      </div>
+    </main>
+
+    <nav class="deck-controls" aria-label="Presentation controls">
+      <button id="prevSlide" type="button" aria-label="Previous slide">&lsaquo;</button>
+      <div class="slide-status"><span id="slideIndex">01</span><span id="slideTitle">The Homebuyer's Playbook</span></div>
+      <button id="nextSlide" type="button" aria-label="Next slide">&rsaquo;</button>
+    </nav>
+    <div class="progress-track" aria-hidden="true"><span id="progressBar"></span></div>
+
+    <script src="./script.js"></script>
+  </body>
+</html>

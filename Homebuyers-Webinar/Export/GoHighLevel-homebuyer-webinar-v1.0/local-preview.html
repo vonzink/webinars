@@ -1,0 +1,2919 @@
+<!doctype html>
+<html lang="en" class="msfg-webinar-root">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GHL Local Preview - The Homebuyer's Playbook</title>
+  <style>
+#msfg-homebuyer-webinar {
+  --evergreen: #104547;
+  --forest: #2f5e4c;
+  --pine: #4b7b4d;
+  --moss: #6a9b48;
+  --signal: #8cc63e;
+  --graphite: #404041;
+  --paper: #ffffff;
+  --mist: #f4f7f4;
+  --line: #dce5dc;
+  --font-display: Raleway, "Raleway ExtraBold", "Aptos Display", Aptos, "Helvetica Neue", Arial, sans-serif;
+  --font-body: "Source Sans Pro", Inter, Aptos, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-data: "IBM Plex Mono", "SF Mono", Consolas, monospace;
+  --shadow: 0 28px 74px rgba(16, 69, 71, 0.16);
+  width: 100%;
+  height: 100%;
+  color: var(--graphite);
+  font-family: var(--font-body);
+  letter-spacing: 0;
+}
+
+#msfg-homebuyer-webinar,
+#msfg-homebuyer-webinar * {
+  box-sizing: border-box;
+}
+
+html.msfg-webinar-root,
+body.msfg-webinar-body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}
+
+body.msfg-webinar-body {
+  overflow: hidden;
+  background: #071716;
+}
+
+#msfg-homebuyer-webinar button,
+#msfg-homebuyer-webinar input {
+  font: inherit;
+}
+
+#msfg-homebuyer-webinar button {
+  border: 0;
+  letter-spacing: 0;
+}
+
+#msfg-homebuyer-webinar button:focus-visible,
+#msfg-homebuyer-webinar input:focus-visible {
+  outline: 4px solid rgba(140, 198, 62, 0.75);
+  outline-offset: 4px;
+}
+
+.deck-viewport {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+.deck-frame {
+  width: calc(1600px * var(--deck-scale, 1));
+  height: calc(900px * var(--deck-scale, 1));
+}
+
+.deck {
+  position: relative;
+  width: 1600px;
+  height: 900px;
+  transform: scale(var(--deck-scale, 1));
+  transform-origin: top left;
+  background: var(--paper);
+  box-shadow: 0 42px 130px rgba(0, 0, 0, 0.42);
+}
+
+.slide {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.986);
+  transition: opacity 420ms ease, transform 520ms ease;
+  background: var(--paper);
+}
+
+.slide.active {
+  opacity: 1;
+  pointer-events: auto;
+  transform: scale(1);
+  z-index: 2;
+}
+
+.slide::after {
+  content: "Mountain State Financial Group, LLC  |  Company NMLS #1314257";
+  position: absolute;
+  left: 80px;
+  right: 156px;
+  bottom: 28px;
+  z-index: 5;
+  color: rgba(64, 64, 65, 0.5);
+  font-family: var(--font-data);
+  font-size: 14px;
+  text-align: right;
+}
+
+.title-slide::after,
+.cta-slide::after {
+  content: none;
+}
+
+.dark::after {
+  color: rgba(255, 255, 255, 0.42);
+}
+
+.slide-inner {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  padding: 76px 80px;
+}
+
+.dark {
+  background: var(--evergreen);
+  color: var(--paper);
+}
+
+.light {
+  background: var(--paper);
+}
+
+.kicker {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: var(--pine);
+  font-size: 17px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.dark .kicker {
+  color: var(--signal);
+}
+
+.kicker span,
+.accent-rule {
+  display: inline-block;
+  width: 80px;
+  height: 6px;
+  background: var(--signal);
+}
+
+#msfg-homebuyer-webinar h1,
+#msfg-homebuyer-webinar h2,
+#msfg-homebuyer-webinar h3,
+#msfg-homebuyer-webinar p {
+  margin: 0;
+}
+
+#msfg-homebuyer-webinar h1,
+#msfg-homebuyer-webinar h2 {
+  color: var(--evergreen);
+  font-family: var(--font-display);
+  font-weight: 900;
+  letter-spacing: 0;
+  line-height: 0.95;
+}
+
+.dark h1,
+.dark h2,
+.dark h3 {
+  color: var(--paper);
+}
+
+#msfg-homebuyer-webinar h1 {
+  max-width: 760px;
+  font-size: 92px;
+}
+
+h1 em {
+  display: block;
+  color: var(--signal);
+  font-style: normal;
+}
+
+#msfg-homebuyer-webinar h2 {
+  max-width: 1000px;
+  font-size: 72px;
+}
+
+#msfg-homebuyer-webinar h3 {
+  color: var(--evergreen);
+  font-size: 32px;
+  line-height: 1.05;
+}
+
+#msfg-homebuyer-webinar p {
+  color: rgba(64, 64, 65, 0.76);
+  font-size: 27px;
+  line-height: 1.28;
+}
+
+.dark p {
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.build {
+  opacity: 0;
+  transform: translateY(22px);
+}
+
+.active .build {
+  animation: buildIn 620ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+.active .delay-1 { animation-delay: 110ms; }
+.active .delay-2 { animation-delay: 240ms; }
+.active .delay-3 { animation-delay: 380ms; }
+
+@keyframes buildIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.title-composition {
+  display: grid;
+  grid-template-columns: 0.92fr 0.78fr;
+  grid-template-rows: 1fr auto;
+  gap: 36px 70px;
+  padding: 86px 92px 60px;
+}
+
+.title-slide h1 {
+  margin-top: 120px;
+}
+
+.title-main {
+  align-self: center;
+}
+
+.title-sub {
+  max-width: 820px;
+  margin-top: 28px;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.mood-pulse {
+  width: 780px;
+  display: grid;
+  grid-template-columns: repeat(4, max-content);
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.mood-pulse button,
+.scenario-row button,
+.poll-row button,
+.mode-switch button,
+.toggle-row button,
+.question-chips button,
+.rate-myth-actions button,
+.program-paths button,
+.down-payment-map button,
+.mistake-grid button {
+  min-height: 42px;
+  padding: 10px 16px;
+  border: 1px solid rgba(16, 69, 71, 0.16);
+  background: var(--paper);
+  color: var(--evergreen);
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.mood-pulse button {
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--paper);
+}
+
+.mood-pulse button.active,
+.scenario-row button.active,
+.poll-row button.active,
+.mode-switch button.active,
+.toggle-row button.active,
+.question-chips button.active,
+.rate-myth-actions button.active,
+.program-paths button.active,
+.down-payment-map button.active,
+.mistake-grid button.active {
+  background: var(--signal);
+  color: var(--evergreen);
+  box-shadow: 0 14px 34px rgba(140, 198, 62, 0.18);
+}
+
+.pulse-track {
+  grid-column: 1 / -1;
+  height: 8px;
+  margin-top: 4px;
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.pulse-track span {
+  display: block;
+  width: 24%;
+  height: 100%;
+  background: var(--signal);
+  transition: width 260ms ease;
+}
+
+.mood-pulse p {
+  grid-column: 1 / -1;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 18px;
+}
+
+.title-footer {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 286px 1fr;
+  gap: 72px;
+  align-items: center;
+}
+
+.speaker-portrait {
+  grid-column: 2;
+  grid-row: 1;
+  align-self: center;
+  justify-self: center;
+  position: relative;
+  width: 520px;
+  min-height: 560px;
+  display: grid;
+  justify-items: center;
+  align-content: end;
+}
+
+.speaker-portrait::before {
+  content: "";
+  position: absolute;
+  inset: 56px 30px 84px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(140, 198, 62, 0.24), rgba(255, 255, 255, 0.04) 62%, transparent 68%);
+}
+
+.speaker-portrait img {
+  position: relative;
+  z-index: 2;
+  width: 410px;
+  height: 410px;
+  object-fit: contain;
+  filter: drop-shadow(0 28px 44px rgba(0, 0, 0, 0.28));
+}
+
+.speaker-portrait div {
+  position: relative;
+  z-index: 3;
+  width: 440px;
+  margin-top: -30px;
+  padding: 24px 28px;
+  background: rgba(255, 255, 255, 0.11);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  backdrop-filter: blur(18px);
+}
+
+.speaker-portrait span,
+.speaker-portrait small {
+  display: block;
+  color: rgba(255, 255, 255, 0.66);
+  font-size: 18px;
+}
+
+.speaker-portrait strong {
+  display: block;
+  margin: 4px 0 8px;
+  color: var(--paper);
+  font-size: 34px;
+}
+
+.title-footer img,
+.cta-brand img {
+  width: 286px;
+  height: 100px;
+  object-fit: contain;
+  background: var(--paper);
+  padding: 14px 20px;
+}
+
+.title-footer strong {
+  display: block;
+  color: var(--paper);
+  font-size: 24px;
+}
+
+.title-footer span {
+  display: block;
+  margin-top: 8px;
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 19px;
+}
+
+.equal-housing-badge {
+  position: absolute;
+  right: 66px;
+  bottom: 18px;
+  z-index: 8;
+  width: 62px;
+  height: 62px;
+  object-fit: contain;
+  padding: 6px;
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid rgba(16, 69, 71, 0.16);
+}
+
+.relation-layout {
+  display: grid;
+  grid-template-columns: 0.75fr 1.25fr;
+  gap: 70px;
+  align-items: center;
+}
+
+.slide-copy p {
+  margin-top: 26px;
+  max-width: 480px;
+  font-size: 36px;
+}
+
+.orbit-map {
+  position: relative;
+  height: 620px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(140, 198, 62, 0.12) 0 23%, transparent 24% 31%, rgba(16, 69, 71, 0.09) 32% 33%, transparent 34% 48%, rgba(16, 69, 71, 0.08) 49% 50%, transparent 51%);
+}
+
+.buyer-node,
+.orbit {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  font-weight: 900;
+}
+
+.buyer-node {
+  left: 50%;
+  top: 50%;
+  width: 170px;
+  height: 170px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: var(--evergreen);
+  color: var(--paper);
+  box-shadow: var(--shadow);
+}
+
+.buyer-node svg {
+  width: 58px;
+  height: 58px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 4;
+}
+
+.buyer-node span {
+  font-size: 24px;
+}
+
+.orbit {
+  width: 148px;
+  height: 62px;
+  background: var(--mist);
+  border-left: 5px solid var(--signal);
+  color: var(--evergreen);
+  cursor: pointer;
+  font-size: 20px;
+}
+
+.orbit.active,
+.orbit:hover {
+  background: var(--evergreen);
+  color: var(--paper);
+  box-shadow: var(--shadow);
+}
+
+.orbit-1 { left: 48%; top: 4%; }
+.orbit-2 { right: 8%; top: 22%; }
+.orbit-3 { right: 10%; bottom: 20%; }
+.orbit-4 { left: 44%; bottom: 3%; }
+.orbit-5 { left: 6%; bottom: 22%; }
+.orbit-6 { left: 8%; top: 24%; }
+
+.role-card {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 430px;
+  min-height: 112px;
+  padding: 18px 22px;
+  transform: translate(-50%, 92px);
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+}
+
+.role-card span {
+  display: block;
+  color: var(--evergreen);
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.role-card p {
+  margin-top: 8px;
+  color: rgba(64, 64, 65, 0.74);
+  font-size: 18px;
+}
+
+.reference-roadmap-layout {
+  display: grid;
+  grid-template-columns: 0.78fr 1.22fr;
+  gap: 92px;
+  align-items: center;
+  padding: 84px 80px;
+}
+
+.roadmap-copy {
+  display: grid;
+  align-content: center;
+}
+
+.roadmap-copy .accent-rule {
+  margin-bottom: 34px;
+}
+
+.roadmap-copy h2 {
+  max-width: 520px;
+  font-size: 68px;
+}
+
+.roadmap-copy p {
+  max-width: 540px;
+  margin-top: 34px;
+  color: rgba(64, 64, 65, 0.86);
+  font-size: 28px;
+}
+
+.roadmap-copy strong {
+  width: max-content;
+  margin-top: 42px;
+  padding: 22px 28px;
+  background: var(--evergreen);
+  color: var(--signal);
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.roadmap-topic-list {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.roadmap-topic-list li {
+  display: grid;
+  grid-template-columns: 76px 1fr;
+  align-items: center;
+  min-height: 96px;
+  border-bottom: 1px solid var(--line);
+  opacity: 0;
+  transform: translateX(72px);
+}
+
+.roadmap-reference-slide.roadmap-revealed .roadmap-topic-list li {
+  animation: roadmapFlyIn 520ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+.roadmap-topic-list li:nth-child(1) { animation-delay: 40ms; }
+.roadmap-topic-list li:nth-child(2) { animation-delay: 120ms; }
+.roadmap-topic-list li:nth-child(3) { animation-delay: 200ms; }
+.roadmap-topic-list li:nth-child(4) { animation-delay: 280ms; }
+.roadmap-topic-list li:nth-child(5) { animation-delay: 360ms; }
+.roadmap-topic-list li:nth-child(6) { animation-delay: 440ms; }
+
+.roadmap-topic-list span {
+  color: var(--signal);
+  font-family: var(--font-data);
+  font-size: 31px;
+  font-weight: 900;
+}
+
+.roadmap-topic-list strong {
+  color: var(--evergreen);
+  font-size: 36px;
+}
+
+.space-cue {
+  position: absolute;
+  right: 80px;
+  bottom: 84px;
+  color: rgba(64, 64, 65, 0.48);
+  font-size: 16px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.roadmap-reference-slide.roadmap-revealed .space-cue {
+  opacity: 0;
+}
+
+@keyframes roadmapFlyIn {
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.audience-prompt,
+.teaching-note,
+.quote-box,
+.bottom-line {
+  padding: 22px 28px;
+  border-left: 6px solid var(--signal);
+  background: var(--mist);
+  color: var(--evergreen);
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.audience-prompt {
+  grid-column: 1 / -1;
+}
+
+.roadmap-layout {
+  display: grid;
+  grid-template-rows: auto auto 1fr auto;
+  gap: 34px;
+}
+
+.section-label {
+  color: var(--pine);
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.decision-path {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  align-items: stretch;
+  gap: 16px;
+  margin-top: 36px;
+}
+
+.decision-path.six-topic-path {
+  grid-template-columns: repeat(6, 1fr);
+  gap: 12px;
+}
+
+.decision-path button {
+  min-height: 310px;
+  padding: 30px;
+  background: var(--mist);
+  border-top: 6px solid var(--evergreen);
+  cursor: pointer;
+  text-align: left;
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+
+.decision-path button.active,
+.decision-path button:hover {
+  border-top-color: var(--signal);
+  box-shadow: var(--shadow);
+  transform: translateY(-8px);
+}
+
+.decision-path span {
+  color: var(--signal);
+  font-family: var(--font-data);
+  font-size: 20px;
+  font-weight: 900;
+}
+
+.decision-path strong {
+  display: block;
+  margin-top: 90px;
+  color: var(--evergreen);
+  font-size: 32px;
+}
+
+.six-topic-path button {
+  min-height: 292px;
+  padding: 24px;
+}
+
+.six-topic-path strong {
+  margin-top: 76px;
+  font-size: 27px;
+}
+
+.decision-path small {
+  display: block;
+  margin-top: 12px;
+  color: rgba(64, 64, 65, 0.68);
+  font-size: 19px;
+}
+
+.bottom-line {
+  width: max-content;
+  max-width: 900px;
+}
+
+.rate-myth-layout {
+  display: grid;
+  grid-template-columns: 0.76fr 1.24fr;
+  grid-template-rows: 1fr auto auto;
+  gap: 34px 58px;
+  align-items: center;
+}
+
+.rate-myth-copy p {
+  max-width: 620px;
+  margin-top: 26px;
+  font-size: 35px;
+}
+
+.rate-ticket-board {
+  display: grid;
+  grid-template-columns: 0.86fr 1.14fr;
+  gap: 22px;
+  align-items: stretch;
+}
+
+.rate-ticket {
+  min-height: 440px;
+  padding: 42px;
+  display: grid;
+  align-content: center;
+  background: var(--mist);
+  border-top: 8px solid var(--line);
+  color: var(--evergreen);
+}
+
+.rate-ticket.full-cost {
+  border-top-color: var(--signal);
+  box-shadow: var(--shadow);
+}
+
+.rate-ticket span {
+  color: var(--pine);
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.rate-ticket strong {
+  display: block;
+  margin-top: 48px;
+  font-family: var(--font-display);
+  font-size: 92px;
+  font-weight: 900;
+  line-height: 0.9;
+}
+
+.rate-ticket small {
+  display: block;
+  margin-top: 28px;
+  color: rgba(64, 64, 65, 0.66);
+  font-size: 25px;
+  font-weight: 900;
+}
+
+.rate-myth-actions {
+  grid-column: 2;
+  align-self: start;
+}
+
+.rate-myth-layout .bottom-line {
+  grid-column: 1 / -1;
+}
+
+.split-slide,
+.cta-slide {
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+}
+
+.split-half,
+.cta-left,
+.cta-right {
+  padding: 86px 80px;
+}
+
+.copy-side {
+  display: grid;
+  align-content: center;
+  gap: 34px;
+}
+
+.door-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+  max-width: 620px;
+}
+
+.door-row article {
+  min-height: 150px;
+  display: grid;
+  place-items: center;
+  background: var(--mist);
+  color: var(--evergreen);
+  border-top: 6px solid var(--signal);
+  font-size: 28px;
+  font-weight: 900;
+}
+
+.dark-panel {
+  background: var(--evergreen);
+  color: var(--paper);
+}
+
+.calc-shell {
+  height: 100%;
+  display: grid;
+  align-content: center;
+  padding: 52px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.calc-label {
+  color: var(--signal);
+  font-family: var(--font-data);
+  font-size: 16px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.calc-shell h3 {
+  margin-top: 20px;
+  color: var(--paper);
+  font-size: 54px;
+}
+
+.input-list,
+.mini-calc-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 38px;
+}
+
+.input-list span {
+  padding: 16px 18px;
+  background: rgba(255, 255, 255, 0.12);
+  font-size: 23px;
+  font-weight: 800;
+}
+
+.mini-calc-list label {
+  margin-bottom: 8px;
+  color: var(--paper);
+  font-size: 18px;
+}
+
+.mini-calc-list input {
+  accent-color: var(--signal);
+}
+
+.break-even {
+  margin-top: 42px;
+}
+
+.break-even span {
+  display: block;
+  width: 100%;
+  height: 8px;
+  background: linear-gradient(90deg, var(--signal) 0 56%, rgba(255,255,255,.28) 56%);
+  transition: background 220ms ease;
+}
+
+.break-even strong {
+  display: block;
+  margin-top: 16px;
+  color: var(--paper);
+  font-size: 26px;
+}
+
+.payment-layout {
+  display: grid;
+  grid-template-columns: 0.85fr 1.15fr;
+  gap: 74px;
+  align-items: center;
+}
+
+.payment-layout p {
+  margin-top: 24px;
+  font-size: 36px;
+}
+
+.price-to-payment {
+  display: grid;
+  grid-template-columns: 1fr 110px 1fr;
+  align-items: center;
+  gap: 22px;
+}
+
+.price-block {
+  color: var(--evergreen);
+  font-family: var(--font-display);
+  font-size: 76px;
+  font-weight: 900;
+}
+
+.arrow-line {
+  height: 4px;
+  background: var(--line);
+  position: relative;
+}
+
+.arrow-line::after {
+  content: "";
+  position: absolute;
+  right: -2px;
+  top: -8px;
+  border-left: 18px solid var(--line);
+  border-top: 10px solid transparent;
+  border-bottom: 10px solid transparent;
+}
+
+.payment-stack {
+  display: grid;
+  gap: 8px;
+}
+
+.payment-stack button {
+  padding: 18px 24px;
+  color: var(--paper);
+  cursor: pointer;
+  font-size: 24px;
+  font-weight: 900;
+  text-align: left;
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.payment-stack button.active {
+  transform: translateX(-12px);
+  box-shadow: 18px 20px 42px rgba(16, 69, 71, 0.18);
+}
+
+.principal { background: var(--evergreen); }
+.interest { background: var(--forest); }
+.taxes { background: var(--pine); }
+.insurance { background: var(--moss); }
+.mi { background: var(--signal); color: var(--evergreen) !important; }
+
+.payment-layout .teaching-note {
+  grid-column: 1 / -1;
+}
+
+.live-payment-layout {
+  display: grid;
+  grid-template-columns: 0.78fr 1.22fr;
+  gap: 54px;
+  align-items: center;
+}
+
+.payment-hero strong {
+  display: block;
+  margin-top: 48px;
+  color: var(--evergreen);
+  font-family: var(--font-display);
+  font-size: 106px;
+  font-weight: 900;
+  line-height: 0.9;
+}
+
+.payment-hero span {
+  display: block;
+  margin-top: 18px;
+  color: rgba(64, 64, 65, 0.65);
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.live-calculator,
+.affordability-calc,
+.breakeven-calc {
+  padding: 38px;
+  background: var(--mist);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+}
+
+#msfg-homebuyer-webinar label {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 14px;
+  margin-bottom: 28px;
+  color: var(--evergreen);
+  font-size: 21px;
+  font-weight: 900;
+}
+
+#msfg-homebuyer-webinar label input {
+  grid-column: 1 / -1;
+  width: 100%;
+  accent-color: var(--evergreen);
+}
+
+#msfg-homebuyer-webinar label b {
+  font-family: var(--font-data);
+}
+
+.scenario-row,
+.poll-row,
+.mode-switch,
+.toggle-row,
+.question-chips,
+.rate-myth-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.scenario-row {
+  margin: -8px 0 24px;
+}
+
+.calc-output-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.calc-output-grid article,
+.afford-results article {
+  padding: 20px;
+  background: var(--paper);
+}
+
+.calc-output-grid span,
+.afford-results span {
+  color: rgba(64, 64, 65, 0.62);
+  font-size: 14px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.calc-output-grid strong,
+.afford-results strong {
+  display: block;
+  margin-top: 12px;
+  color: var(--evergreen);
+  font-size: 30px;
+}
+
+.compliance-note {
+  grid-column: 1 / -1;
+  max-width: 970px;
+  color: rgba(64, 64, 65, 0.58);
+  font-size: 18px;
+}
+
+.comfort-layout {
+  display: grid;
+  grid-template-columns: 0.95fr 1.05fr;
+  gap: 62px;
+  align-items: center;
+}
+
+.house-section {
+  position: relative;
+  height: 560px;
+  border: 2px solid var(--line);
+  background: linear-gradient(180deg, #fff, var(--mist));
+}
+
+.roofline {
+  position: absolute;
+  left: 130px;
+  right: 130px;
+  top: 56px;
+  height: 140px;
+  background: var(--evergreen);
+  clip-path: polygon(0 100%, 50% 0, 100% 100%);
+}
+
+.approval-line,
+.comfort-zone,
+.foundation-line {
+  position: absolute;
+  left: 70px;
+  right: 70px;
+  display: grid;
+  place-items: center;
+  font-weight: 900;
+}
+
+.approval-line {
+  top: 228px;
+  height: 4px;
+  background: var(--graphite);
+  color: var(--graphite);
+  transform: translateY(-20px);
+}
+
+.comfort-zone {
+  bottom: 112px;
+  height: 150px;
+  background: rgba(140, 198, 62, 0.24);
+  color: var(--evergreen);
+  font-size: 28px;
+  transition: height 220ms ease;
+}
+
+.foundation-line {
+  bottom: 56px;
+  height: 4px;
+  background: var(--evergreen);
+  color: var(--evergreen);
+  transform: translateY(28px);
+}
+
+.comfort-slider {
+  position: absolute;
+  left: 70px;
+  right: 70px;
+  bottom: 20px;
+  margin: 0;
+  padding: 14px 16px;
+  background: rgba(255, 255, 255, 0.78);
+  color: var(--evergreen);
+  font-size: 17px;
+}
+
+.quote-box {
+  grid-column: 1;
+}
+
+.affordability-layout {
+  display: grid;
+  grid-template-columns: 0.82fr 1.18fr;
+  gap: 60px;
+  align-items: center;
+}
+
+.affordability-calc {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.18);
+  box-shadow: none;
+}
+
+.affordability-calc label {
+  color: var(--paper);
+}
+
+.affordability-calc input {
+  accent-color: var(--signal);
+}
+
+.afford-results {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+  margin-top: 20px;
+}
+
+.afford-results article {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.afford-results span,
+.afford-results strong {
+  color: var(--paper);
+}
+
+.gap-bar {
+  grid-column: 1 / -1;
+  height: 12px;
+  background: rgba(255,255,255,.2);
+}
+
+.gap-bar span {
+  display: block;
+  width: 52%;
+  height: 100%;
+  background: var(--signal);
+}
+
+.afford-results p {
+  grid-column: 1 / -1;
+  color: rgba(255, 255, 255, 0.76);
+  font-size: 24px;
+}
+
+.budget-layout {
+  display: grid;
+  grid-template-columns: 0.72fr 1.28fr;
+  gap: 52px;
+  align-items: center;
+}
+
+.budget-copy p {
+  margin-top: 24px;
+}
+
+.budget-dashboard {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+
+.budget-dashboard article {
+  min-height: 142px;
+  padding: 24px;
+  background: var(--mist);
+  border-top: 6px solid var(--line);
+  color: var(--evergreen);
+  font-size: 21px;
+  font-weight: 900;
+}
+
+.budget-dashboard input {
+  width: 100%;
+  margin-top: 16px;
+  accent-color: var(--evergreen);
+}
+
+.budget-dashboard .housing,
+.budget-dashboard .life {
+  grid-column: span 2;
+  border-top-color: var(--signal);
+}
+
+.budget-dashboard strong {
+  display: block;
+  margin-top: 26px;
+  font-size: 48px;
+}
+
+.room-meter {
+  grid-column: 2;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 22px;
+  align-items: center;
+}
+
+.room-meter span {
+  height: 10px;
+  background: linear-gradient(90deg, var(--signal) 0 72%, var(--line) 72%);
+  transition: background 220ms ease;
+}
+
+.room-meter strong {
+  color: var(--evergreen);
+  font-size: 25px;
+}
+
+.myth-layout {
+  display: grid;
+  grid-template-rows: auto auto 1fr auto;
+  gap: 24px;
+}
+
+.poll-row {
+  align-self: start;
+}
+
+.dark .poll-row button,
+.dark .mode-switch button,
+.dark .question-chips button,
+.dark-panel .question-chips button,
+.dark .program-paths button,
+.dark .mistake-grid button {
+  border-color: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--paper);
+}
+
+.myth-reveal {
+  display: grid;
+  grid-template-columns: 0.75fr 1.25fr;
+  gap: 50px;
+  align-items: center;
+}
+
+.giant-percent {
+  color: var(--signal);
+  font-family: var(--font-display);
+  font-size: 190px;
+  font-weight: 900;
+  line-height: 0.8;
+}
+
+.path-cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+
+.path-cards article {
+  min-height: 220px;
+  padding: 28px;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--paper);
+  border-left: 6px solid var(--signal);
+  font-size: 56px;
+  font-weight: 900;
+  opacity: 0.24;
+  transform: translateY(16px);
+  transition: opacity 240ms ease, transform 240ms ease;
+}
+
+.myth-slide.revealed .path-cards article {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.myth-slide.revealed .giant-percent {
+  text-decoration: line-through;
+  text-decoration-color: rgba(255, 255, 255, 0.28);
+}
+
+.path-cards span {
+  display: block;
+  margin-top: 28px;
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 20px;
+}
+
+.dark-note {
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 20px;
+}
+
+.program-layout {
+  display: grid;
+  grid-template-rows: auto 1fr auto auto;
+  gap: 30px;
+}
+
+.program-copy {
+  display: grid;
+  grid-template-columns: 0.78fr 1fr;
+  gap: 54px;
+  align-items: end;
+}
+
+.program-copy p {
+  max-width: 610px;
+  font-size: 31px;
+}
+
+.program-paths {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 14px;
+  align-items: stretch;
+}
+
+.program-paths button {
+  min-height: 278px;
+  padding: 26px;
+  display: grid;
+  align-content: start;
+  border-top: 6px solid rgba(255, 255, 255, 0.16);
+  text-align: left;
+  transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.program-paths button.active,
+.program-paths button:hover {
+  border-top-color: var(--signal);
+  transform: translateY(-8px);
+}
+
+.program-paths span {
+  color: var(--signal);
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.program-paths strong {
+  display: block;
+  margin-top: 78px;
+  color: var(--paper);
+  font-size: 31px;
+}
+
+.program-paths small {
+  display: block;
+  margin-top: 14px;
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 18px;
+  line-height: 1.2;
+}
+
+.program-detail {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 28px;
+  align-items: center;
+  padding: 26px 32px;
+  border-left: 6px solid var(--signal);
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.program-detail span {
+  color: var(--signal);
+  font-size: 25px;
+  font-weight: 900;
+}
+
+.program-detail p {
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 23px;
+}
+
+.down-payment-layout {
+  display: grid;
+  grid-template-rows: auto 1fr auto auto;
+  gap: 34px;
+}
+
+.down-payment-layout h2 {
+  max-width: 1180px;
+}
+
+.down-payment-map {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+}
+
+.down-payment-map button {
+  min-height: 300px;
+  padding: 30px;
+  background: var(--mist);
+  border-top: 6px solid var(--evergreen);
+  color: var(--evergreen);
+  cursor: pointer;
+  text-align: left;
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+
+.down-payment-map button.active,
+.down-payment-map button:hover {
+  border-top-color: var(--signal);
+  transform: translateY(-8px);
+}
+
+.down-payment-map span {
+  color: var(--signal);
+  font-family: var(--font-data);
+  font-size: 20px;
+  font-weight: 900;
+}
+
+.down-payment-map strong {
+  display: block;
+  margin-top: 110px;
+  font-size: 32px;
+}
+
+.down-payment-map small {
+  display: block;
+  margin-top: 12px;
+  color: rgba(64, 64, 65, 0.68);
+  font-size: 20px;
+}
+
+.down-path-detail {
+  display: grid;
+  grid-template-columns: 270px 1fr;
+  gap: 30px;
+  align-items: center;
+  padding: 26px 32px;
+  border-left: 6px solid var(--signal);
+  background: var(--mist);
+}
+
+.down-path-detail strong {
+  color: var(--evergreen);
+  font-size: 28px;
+}
+
+.down-path-detail p {
+  color: rgba(64, 64, 65, 0.76);
+  font-size: 24px;
+}
+
+.cash-layout {
+  display: grid;
+  grid-template-columns: 0.95fr 0.68fr;
+  grid-template-rows: auto 1fr auto;
+  gap: 38px 52px;
+}
+
+.cash-layout h2 {
+  max-width: 1260px;
+}
+
+.cash-layout > .build:first-child {
+  grid-column: 1 / -1;
+}
+
+.worksheet {
+  padding: 34px;
+  background: var(--mist);
+  border: 1px solid var(--line);
+}
+
+.worksheet h3 {
+  margin-bottom: 28px;
+}
+
+.worksheet div {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 20px;
+  padding: 19px 0;
+  border-top: 1px solid var(--line);
+  color: var(--graphite);
+  font-size: 24px;
+}
+
+.worksheet .toggle-row {
+  display: flex;
+  grid-template-columns: none;
+  border-top: 1px solid var(--line);
+  padding-top: 22px;
+}
+
+.worksheet strong {
+  color: var(--evergreen);
+  font-family: var(--font-data);
+}
+
+.waterfall {
+  height: 420px;
+  display: flex;
+  align-items: end;
+  gap: 14px;
+  padding: 34px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+}
+
+.waterfall span {
+  flex: 1;
+  background: var(--evergreen);
+  transition: height 220ms ease;
+}
+
+.waterfall .negative {
+  background: var(--signal);
+}
+
+.waterfall strong {
+  align-self: center;
+  color: var(--evergreen);
+  font-size: 42px;
+}
+
+.apr-layout {
+  display: grid;
+  grid-template-columns: 0.86fr 1.14fr;
+  grid-template-rows: 1fr auto;
+  gap: 42px 56px;
+  align-items: center;
+}
+
+.loan-compare {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 22px;
+}
+
+.loan-compare article {
+  min-height: 310px;
+  padding: 34px;
+  background: var(--mist);
+  border-top: 8px solid var(--line);
+}
+
+.loan-compare article.winner {
+  border-top-color: var(--signal);
+  box-shadow: var(--shadow);
+}
+
+.loan-compare span {
+  color: var(--pine);
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.loan-compare strong {
+  display: block;
+  margin-top: 42px;
+  color: var(--evergreen);
+  font-size: 72px;
+}
+
+.loan-compare p {
+  margin-top: 20px;
+}
+
+.timeline-slider {
+  grid-column: 1 / -1;
+  padding: 28px;
+  background: var(--mist);
+}
+
+.mode-switch {
+  margin-bottom: 18px;
+}
+
+.timeline-slider p {
+  margin-top: 14px;
+  color: var(--evergreen);
+  font-weight: 900;
+}
+
+.buydown-layout {
+  display: grid;
+  grid-template-columns: 0.82fr 1.18fr;
+  gap: 64px;
+  align-items: center;
+}
+
+.breakeven-calc {
+  min-height: 500px;
+}
+
+.breakeven-line {
+  position: relative;
+  height: 12px;
+  margin: 54px 0 30px;
+  background: var(--line);
+}
+
+.breakeven-line span {
+  position: absolute;
+  left: 40%;
+  top: -18px;
+  width: 8px;
+  height: 48px;
+  background: var(--signal);
+}
+
+.breakeven-calc > strong {
+  display: block;
+  color: var(--evergreen);
+  font-size: 46px;
+}
+
+.mistake-layout {
+  display: grid;
+  grid-template-rows: auto 1fr auto auto;
+  gap: 36px;
+}
+
+.mistake-layout h2 {
+  max-width: 1220px;
+}
+
+.mistake-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  align-items: stretch;
+}
+
+.mistake-grid button {
+  min-height: 330px;
+  padding: 34px;
+  display: grid;
+  align-content: start;
+  border-top: 6px solid rgba(255, 255, 255, 0.16);
+  text-align: left;
+  transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.mistake-grid button.active,
+.mistake-grid button:hover {
+  border-top-color: var(--signal);
+  transform: translateY(-8px);
+}
+
+.mistake-grid span {
+  color: var(--signal);
+  font-family: var(--font-data);
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.mistake-grid strong {
+  display: block;
+  margin-top: 118px;
+  color: var(--paper);
+  font-size: 38px;
+}
+
+.mistake-grid small {
+  display: block;
+  margin-top: 14px;
+  color: rgba(255, 255, 255, 0.66);
+  font-size: 20px;
+}
+
+.mistake-detail {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 30px;
+  align-items: center;
+  padding: 28px 34px;
+  border-left: 6px solid var(--signal);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.mistake-detail strong {
+  color: var(--signal);
+  font-size: 30px;
+}
+
+.mistake-detail p {
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 24px;
+}
+
+.plan-layout {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: 54px;
+}
+
+.week-plan {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 12px;
+  align-items: end;
+}
+
+.week-plan button {
+  min-height: 330px;
+  padding: 22px;
+  background: var(--mist);
+  border-top: 6px solid var(--evergreen);
+  color: var(--evergreen);
+  cursor: pointer;
+  font-size: 22px;
+  font-weight: 900;
+  text-align: left;
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+
+.week-plan button:last-child,
+.week-plan button.active,
+.week-plan button:hover {
+  border-top-color: var(--signal);
+  box-shadow: var(--shadow);
+  transform: translateY(-10px);
+}
+
+.week-plan span {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  margin-bottom: 130px;
+  border-radius: 50%;
+  background: var(--evergreen);
+  color: var(--paper);
+  font-family: var(--font-data);
+}
+
+.commitment-line {
+  align-self: end;
+  color: var(--evergreen);
+  font-size: 30px;
+  font-weight: 900;
+}
+
+.cta-slide {
+  background: var(--paper);
+}
+
+.cta-left {
+  display: grid;
+  align-content: center;
+  gap: 38px;
+}
+
+.cta-left h2 {
+  font-size: 70px;
+}
+
+.cta-brand {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+  padding-top: 28px;
+  border-top: 2px solid var(--line);
+}
+
+.cta-brand img {
+  width: 220px;
+  padding: 8px 12px;
+}
+
+.cta-brand span {
+  color: rgba(64, 64, 65, 0.7);
+  font-size: 18px;
+}
+
+.cta-right {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 34px;
+}
+
+.contact-card {
+  width: 410px;
+  display: grid;
+  grid-template-columns: 86px 1fr;
+  gap: 20px;
+  align-items: center;
+  padding: 18px;
+  background: rgba(255,255,255,.1);
+}
+
+.headshot {
+  width: 86px;
+  height: 86px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--paper);
+}
+
+.contact-card strong {
+  display: block;
+  color: var(--paper);
+  font-size: 28px;
+}
+
+.contact-card span {
+  color: rgba(255,255,255,.68);
+  font-size: 20px;
+}
+
+.qr {
+  width: 300px;
+  height: 300px;
+  background: var(--paper);
+  padding: 18px;
+}
+
+.question-chips {
+  justify-content: center;
+  max-width: 430px;
+}
+
+.question-chips button.active {
+  background: var(--signal);
+  color: var(--evergreen);
+}
+
+.cta-right p {
+  max-width: 410px;
+  min-height: 74px;
+  color: rgba(255,255,255,.78);
+  text-align: center;
+}
+
+.deck-controls {
+  position: fixed;
+  left: 50%;
+  bottom: 20px;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  transform: translateX(-50%);
+  opacity: 0;
+  transition: opacity 180ms ease;
+}
+
+.deck-controls:hover,
+.deck-controls:focus-within {
+  opacity: 1;
+}
+
+.deck-controls button {
+  width: 42px;
+  height: 42px;
+  border: 1px solid rgba(255,255,255,.24);
+  border-radius: 50%;
+  background: rgba(255,255,255,.1);
+  color: var(--paper);
+  cursor: pointer;
+  font-size: 34px;
+  line-height: 1;
+}
+
+.slide-status {
+  min-width: 268px;
+  display: grid;
+  grid-template-columns: 42px 1fr;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 14px;
+  border: 1px solid rgba(255,255,255,.18);
+  background: rgba(255,255,255,.08);
+  color: var(--paper);
+  font-size: 13px;
+  backdrop-filter: blur(14px);
+}
+
+#slideIndex {
+  font-family: var(--font-data);
+  font-weight: 900;
+}
+
+#slideTitle {
+  color: rgba(255,255,255,.76);
+  white-space: nowrap;
+}
+
+.progress-track {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 21;
+  height: 4px;
+  background: rgba(255,255,255,.12);
+}
+
+.progress-track span {
+  display: block;
+  width: 0;
+  height: 100%;
+  background: var(--signal);
+  transition: width 300ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .build {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+  </style>
+</head>
+<body class="msfg-webinar-body">
+<!-- GoHighLevel Custom HTML/Javascript element
+Paste this entire file into the Custom HTML/Javascript block on /webinar/homebuyer-webinar.
+Do not paste the CSS or JS files here; those go into Tracking Code.
+Replace the {{...}} image placeholders after uploading assets to Media Storage.
+-->
+<div id="msfg-homebuyer-webinar" class="msfg-webinar-host">
+<main class="deck-viewport" aria-label="The Homebuyer's Playbook">
+  <div class="deck-frame" id="deckFrame">
+    <div class="deck" id="deck">
+      <section class="slide active dark title-slide" data-title="The Homebuyer's Playbook">
+        <div class="slide-inner title-composition">
+          <div class="title-main">
+            <div class="kicker build"><span></span> Free webinar</div>
+            <h1 class="build delay-1">The Homebuyer's <em>Playbook</em></h1>
+            <p class="title-sub build delay-2">Everything first-time buyers need to know. Thirty minutes today could save you thousands.</p>
+          </div>
+          <aside class="speaker-portrait build delay-2" aria-label="Presented by Seth Angell">
+            <img src="./assets-to-upload/seth-angell.png" alt="Seth Angell" />
+            <div>
+              <span>Presented by</span>
+              <strong>Seth Angell</strong>
+              <small>NMLS #912881</small>
+            </div>
+          </aside>
+          <div class="title-footer build delay-3">
+            <img src="./assets-to-upload/msfg-home-loans-horizontal.png" alt="Mountain State Financial Group, LLC" />
+            <div>
+              <strong>Mountain State Financial Group, LLC</strong>
+              <span>Company NMLS #1314257</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide light roadmap-reference-slide" data-title="Today's Roadmap" data-space-reveal="roadmap">
+        <div class="slide-inner reference-roadmap-layout">
+          <div class="roadmap-copy build">
+            <div class="accent-rule"></div>
+            <h2>Today's Roadmap</h2>
+            <p>Knowledge builds confidence. By the end you'll know exactly what your next step is.</p>
+            <strong>30 minutes · no sales pitch</strong>
+          </div>
+          <ol class="roadmap-topic-list" aria-label="Today's roadmap topics">
+            <li data-reveal-item><span>01</span><strong>Myths</strong></li>
+            <li data-reveal-item><span>02</span><strong>Budget</strong></li>
+            <li data-reveal-item><span>03</span><strong>Loan Programs</strong></li>
+            <li data-reveal-item><span>04</span><strong>The Process</strong></li>
+            <li data-reveal-item><span>05</span><strong>Mistakes to Avoid</strong></li>
+            <li data-reveal-item><span>06</span><strong>Your Next Steps</strong></li>
+          </ol>
+          <p class="space-cue">Press space to reveal the roadmap.</p>
+        </div>
+      </section>
+
+      <section class="slide dark myth-slide" data-title="The 20 Percent Myth">
+        <div class="slide-inner myth-layout">
+          <div>
+            <div class="kicker build">01 Myths</div>
+            <h2 class="build delay-1">20% is a strategy. Not the entrance fee.</h2>
+          </div>
+          <div class="poll-row build delay-1" aria-label="Down payment poll">
+            <button type="button" data-myth-guess="20">20%</button>
+            <button type="button" data-myth-guess="10">10%</button>
+            <button type="button" data-myth-guess="5">5%</button>
+            <button type="button" data-myth-guess="unsure">Not sure</button>
+          </div>
+          <div class="myth-reveal build delay-2">
+            <div class="giant-percent">20%</div>
+            <div class="path-cards">
+              <article>0%<span>eligible paths</span></article>
+              <article>3%<span>some programs</span></article>
+              <article>3.5%<span>FHA path</span></article>
+              <article>DPA<span>verify locally</span></article>
+            </div>
+          </div>
+          <p class="dark-note build delay-3">Ask the room what they have heard, then reveal that the right path depends on buyer, property, program, timing, and verified eligibility.</p>
+        </div>
+      </section>
+
+      <section class="slide light rate-myth-slide" data-title="Lowest Rate Myth">
+        <div class="slide-inner rate-myth-layout">
+          <div class="rate-myth-copy build">
+            <div class="kicker">01 Myths</div>
+            <h2>The lowest rate can hide a more expensive loan.</h2>
+            <p>Rate matters. It just does not live alone.</p>
+          </div>
+          <div class="rate-ticket-board build delay-1" aria-label="Rate myth comparison">
+            <article class="rate-ticket low-rate">
+              <span>Looks lower</span>
+              <strong>6.25%</strong>
+              <small>More upfront cost</small>
+            </article>
+            <article class="rate-ticket full-cost">
+              <span>Compare fully</span>
+              <strong>APR</strong>
+              <small>Rate + fees + time</small>
+            </article>
+          </div>
+          <div class="rate-myth-actions build delay-2">
+            <button type="button" class="active" data-rate-myth="rate">Show rate</button>
+            <button type="button" data-rate-myth="fees">Show fees</button>
+            <button type="button" data-rate-myth="time">Show time</button>
+          </div>
+          <p class="bottom-line build delay-3" id="rateMythOut">At first glance, the lower rate looks better. Later we will test whether it actually wins.</p>
+        </div>
+      </section>
+
+      <section class="slide split-slide" data-title="Rent vs Buy Is a Comparison">
+        <div class="split-half copy-side">
+          <div class="kicker build">02 Budget</div>
+          <h2 class="build delay-1">Renting is not failure. Buying is not automatically wisdom.</h2>
+          <div class="door-row build delay-2">
+            <article>Keep renting</article>
+            <article>Explore buying</article>
+          </div>
+        </div>
+        <div class="split-half calculator-side dark-panel">
+          <div class="calc-shell build delay-3">
+            <span class="calc-label">Live calculator slot</span>
+            <h3>Rent vs Buy</h3>
+            <div class="mini-calc-list">
+              <label>Current rent <b id="rentOut">$2,200</b><input id="rentInput" type="range" min="1000" max="5000" step="50" value="2200" /></label>
+              <label>Target price <b id="rentPriceOut">$525,000</b><input id="rentPriceInput" type="range" min="250000" max="850000" step="5000" value="525000" /></label>
+              <label>Years in home <b id="yearsHomeOut">5 years</b><input id="yearsHomeInput" type="range" min="1" max="10" step="1" value="5" /></label>
+            </div>
+            <div class="break-even">
+              <span id="rentBreakEvenBar"></span>
+              <strong id="rentDecisionOut">Buying needs time to catch rent.</strong>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide light" data-title="Price Is Not the Number">
+        <div class="slide-inner payment-layout">
+          <div class="build">
+            <div class="kicker">02 Budget</div>
+            <h2>Price is not the number.</h2>
+            <p>You live inside a monthly payment.</p>
+          </div>
+          <div class="price-to-payment build delay-1">
+            <div class="price-block">$450,000</div>
+            <div class="arrow-line"></div>
+            <div class="payment-stack">
+              <button type="button" class="principal active" data-component="principal">Principal</button>
+              <button type="button" class="interest" data-component="interest">Interest</button>
+              <button type="button" class="taxes" data-component="taxes">Taxes</button>
+              <button type="button" class="insurance" data-component="insurance">Insurance</button>
+              <button type="button" class="mi" data-component="mi">Mortgage insurance</button>
+            </div>
+          </div>
+          <aside class="teaching-note build delay-2" id="componentNote">Principal is the borrowed money being paid back over time.</aside>
+        </div>
+      </section>
+
+      <section class="slide light" data-title="Payment Calculator">
+        <div class="slide-inner live-payment-layout">
+          <div class="payment-hero build">
+            <div class="kicker">Live demo</div>
+            <h2>A payment is built.</h2>
+            <strong id="paymentHero">$3,754</strong>
+            <span>estimated monthly payment</span>
+          </div>
+          <div class="live-calculator build delay-1">
+            <label>Home price <b id="priceOut">$525,000</b><input id="priceInput" type="range" min="250000" max="850000" step="5000" value="525000" /></label>
+            <label>Down payment <b id="downOut">5%</b><input id="downInput" type="range" min="3" max="25" step="1" value="5" /></label>
+            <label>Interest rate <b id="rateOut">6.500%</b><input id="rateInput" type="range" min="4.5" max="8.5" step="0.125" value="6.5" /></label>
+            <div class="scenario-row" aria-label="Payment scenarios">
+              <button type="button" data-payment-scenario="base">Base case</button>
+              <button type="button" data-payment-scenario="lower-price">Lower price</button>
+              <button type="button" data-payment-scenario="higher-down">Higher down</button>
+              <button type="button" data-payment-scenario="rate-up">Rate moves up</button>
+              <button type="button" data-payment-scenario="remove-mi">Remove MI</button>
+            </div>
+            <div class="calc-output-grid">
+              <article><span>Principal and interest</span><strong id="piOut">$3,152</strong></article>
+              <article><span>Taxes and insurance</span><strong id="escrowOut">$392</strong></article>
+              <article><span>Mortgage insurance</span><strong id="miOut">$210</strong></article>
+            </div>
+          </div>
+          <p class="compliance-note build delay-2">Hypothetical illustration for education only. Not a quote, offer, or commitment to lend.</p>
+        </div>
+      </section>
+
+      <section class="slide light" data-title="Approved Is Not Comfortable">
+        <div class="slide-inner comfort-layout">
+          <div class="build">
+            <div class="kicker">02 Budget</div>
+            <h2>Approved is not the same as comfortable.</h2>
+          </div>
+          <div class="house-section build delay-1">
+            <div class="roofline"></div>
+            <div class="approval-line">Approved ceiling</div>
+            <div class="comfort-zone" id="comfortZone">Comfortable plan</div>
+            <div class="foundation-line">Your real life</div>
+            <label class="comfort-slider">Comfort payment <b id="comfortPercentOut">62%</b><input id="comfortPercentInput" type="range" min="40" max="90" step="1" value="62" /></label>
+          </div>
+          <aside class="quote-box build delay-2">A good lender does not cheer every approval. They help you choose a payment you can live with.</aside>
+        </div>
+      </section>
+
+      <section class="slide dark" data-title="Affordability Calculator">
+        <div class="slide-inner affordability-layout">
+          <div class="build">
+            <div class="kicker">Live demo</div>
+            <h2>Find both numbers.</h2>
+          </div>
+          <div class="affordability-calc build delay-1">
+            <div class="range-column">
+              <label>Monthly income <b id="incomeOut">$9,800</b><input id="incomeInput" type="range" min="5000" max="18000" step="100" value="9800" /></label>
+              <label>Monthly debts <b id="debtOut">$780</b><input id="debtInput" type="range" min="0" max="2500" step="25" value="780" /></label>
+            </div>
+            <div class="afford-results">
+              <article><span>Can pass</span><strong id="passOut">$3,630</strong></article>
+              <article><span>Can live with</span><strong id="comfortOut">$2,356</strong></article>
+              <div class="gap-bar"><span id="gapBar"></span></div>
+              <p id="gapOut">$1,274 of breathing room</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide light" data-title="Monthly Budget">
+        <div class="slide-inner budget-layout">
+          <div class="budget-copy build">
+            <div class="kicker">02 Budget worksheet</div>
+            <h2>A home should not erase your life.</h2>
+            <p>Put the mortgage inside the month before you put it inside an offer.</p>
+          </div>
+          <div class="budget-dashboard build delay-1" aria-label="Monthly budget allocator">
+            <article class="housing">Housing <strong id="budgetHousingOut">32%</strong><input id="budgetHousing" type="range" min="20" max="45" step="1" value="32" /></article>
+            <article>Debt <strong id="budgetDebtOut">8%</strong><input id="budgetDebt" type="range" min="0" max="20" step="1" value="8" /></article>
+            <article>Food <strong id="budgetFoodOut">12%</strong><input id="budgetFood" type="range" min="5" max="25" step="1" value="12" /></article>
+            <article>Childcare <strong id="budgetChildcareOut">10%</strong><input id="budgetChildcare" type="range" min="0" max="25" step="1" value="10" /></article>
+            <article>Savings <strong id="budgetSavingsOut">10%</strong><input id="budgetSavings" type="range" min="0" max="25" step="1" value="10" /></article>
+            <article>Maintenance <strong id="budgetMaintenanceOut">5%</strong><input id="budgetMaintenance" type="range" min="0" max="15" step="1" value="5" /></article>
+            <article class="life">Life <strong id="budgetLifeOut">23%</strong></article>
+          </div>
+          <div class="room-meter build delay-2"><span id="roomMeterBar"></span><strong id="roomMeterOut">23% room left.</strong></div>
+        </div>
+      </section>
+
+      <section class="slide dark program-slide" data-title="Loan Programs">
+        <div class="slide-inner program-layout">
+          <div class="program-copy build">
+            <div class="kicker">03 Loan Programs</div>
+            <h2>Loan programs are paths. Not promises.</h2>
+            <p>The right option is the one that matches the buyer, property, cash, service history, and goals.</p>
+          </div>
+          <div class="program-paths build delay-1" aria-label="Loan program paths">
+            <button type="button" class="active" data-program-path="conventional"><span>Conventional</span><strong>Flexible</strong><small>Strong all-around path</small></button>
+            <button type="button" data-program-path="fha"><span>FHA</span><strong>Accessible</strong><small>Often useful for credit or cash</small></button>
+            <button type="button" data-program-path="va"><span>VA</span><strong>Earned</strong><small>Veteran and service-member benefit</small></button>
+            <button type="button" data-program-path="usda"><span>USDA</span><strong>Place-based</strong><small>Eligible rural areas</small></button>
+            <button type="button" data-program-path="assistance"><span>DPA</span><strong>Local</strong><small>Assistance rules vary</small></button>
+          </div>
+          <aside class="program-detail build delay-2">
+            <span id="programName">Conventional</span>
+            <p id="programText">Often a flexible starting point when credit, income, property type, and down payment line up cleanly.</p>
+          </aside>
+          <p class="dark-note build delay-3">Program details must be verified on the delivery date. This slide teaches comparison, not eligibility.</p>
+        </div>
+      </section>
+
+      <section class="slide light down-payment-slide" data-title="Down Payment Options">
+        <div class="slide-inner down-payment-layout">
+          <div class="build">
+            <div class="kicker">03 Loan Programs</div>
+            <h2>Your cash can come from more than one place.</h2>
+          </div>
+          <div class="down-payment-map build delay-1" aria-label="Down payment source map">
+            <button type="button" class="active" data-down-path="savings"><span>01</span><strong>Savings</strong><small>Money you control</small></button>
+            <button type="button" data-down-path="gift"><span>02</span><strong>Gift funds</strong><small>Documented help</small></button>
+            <button type="button" data-down-path="credit"><span>03</span><strong>Seller credits</strong><small>Offset closing costs</small></button>
+            <button type="button" data-down-path="assistance"><span>04</span><strong>Assistance</strong><small>Program specific</small></button>
+          </div>
+          <aside class="down-path-detail build delay-2">
+            <strong id="downPathName">Savings</strong>
+            <p id="downPathText">Savings is the cleanest source because the buyer already controls it. The next question is whether using it protects enough emergency cash.</p>
+          </aside>
+          <p class="compliance-note build delay-3">Gift, seller-credit, and assistance examples need documentation and program review before use.</p>
+        </div>
+      </section>
+
+      <section class="slide light" data-title="The Buying Team">
+        <div class="slide-inner relation-layout">
+          <div class="slide-copy build">
+            <div class="kicker">04 The Process</div>
+            <h2>You are not supposed to know everyone's job.</h2>
+            <p>Homebuying feels easier when each role has a name and a purpose.</p>
+          </div>
+          <div class="orbit-map build delay-1" aria-label="Homebuying team map">
+            <div class="buyer-node">
+              <svg viewBox="0 0 64 64" aria-hidden="true">
+                <path d="M10 34 32 14l22 20" />
+                <path d="M16 31v22h32V31" />
+                <path d="M26 53V39h12v14" />
+              </svg>
+              <span>Buyer</span>
+            </div>
+            <button type="button" class="orbit orbit-1 active" data-role="Lender">Lender</button>
+            <button type="button" class="orbit orbit-2" data-role="Realtor">Realtor</button>
+            <button type="button" class="orbit orbit-3" data-role="Seller">Seller</button>
+            <button type="button" class="orbit orbit-4" data-role="Underwriter">Underwriter</button>
+            <button type="button" class="orbit orbit-5" data-role="Title">Title</button>
+            <button type="button" class="orbit orbit-6" data-role="Insurance">Insurance</button>
+            <aside class="role-card">
+              <span id="roleName">Lender</span>
+              <p id="roleText">Translates your income, credit, cash, and goals into loan options you can compare.</p>
+            </aside>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide light" data-title="Cash to Close">
+        <div class="slide-inner cash-layout">
+          <div class="build">
+            <div class="kicker">04 The Process</div>
+            <h2>Cash to close is calculated. Not guessed.</h2>
+          </div>
+          <div class="worksheet build delay-1">
+            <h3>Closing cost worksheet</h3>
+            <div><span>Down payment</span><strong id="cashDownOut">$26,250</strong></div>
+            <div><span>Closing costs</span><strong id="cashCostsOut">$9,800</strong></div>
+            <div><span>Prepaids and escrow</span><strong id="cashPrepaidsOut">$5,400</strong></div>
+            <div><span>Credits</span><strong id="cashCreditsOut">-$2,000</strong></div>
+            <div class="toggle-row">
+              <button type="button" data-cash-toggle="credit">Seller credit</button>
+              <button type="button" data-cash-toggle="assistance">Assistance</button>
+              <button type="button" data-cash-toggle="later-close">Later close</button>
+            </div>
+          </div>
+          <div class="waterfall build delay-2">
+            <span id="cashDownBar"></span>
+            <span id="cashCostsBar"></span>
+            <span id="cashPrepaidsBar"></span>
+            <span id="cashCreditsBar" class="negative"></span>
+            <strong id="cashTotalOut">$39,450</strong>
+          </div>
+          <p class="compliance-note build delay-3">Hypothetical illustration for education only. Actual cash to close depends on final loan terms.</p>
+        </div>
+      </section>
+
+      <section class="slide light" data-title="APR Comparison">
+        <div class="slide-inner apr-layout">
+          <div class="apr-copy build">
+            <div class="kicker">05 Mistakes to Avoid</div>
+            <h2>The lowest rate is not always the cheapest loan.</h2>
+          </div>
+          <div class="loan-compare build delay-1">
+            <article id="loanA" class="winner">
+              <span>Loan A</span>
+              <strong>6.50%</strong>
+              <p>$2,000 fees · lower cash</p>
+            </article>
+            <article id="loanB">
+              <span>Loan B</span>
+              <strong>6.25%</strong>
+              <p>$8,000 fees · lower payment</p>
+            </article>
+          </div>
+          <div class="timeline-slider build delay-2">
+            <div class="mode-switch" aria-label="Comparison mode">
+              <button type="button" class="active" data-apr-mode="cash">Lowest cash</button>
+              <button type="button" data-apr-mode="payment">Lowest payment</button>
+              <button type="button" data-apr-mode="time">Best over time</button>
+            </div>
+            <label>Expected time in loan <b id="holdOut">3 years</b><input id="holdInput" type="range" min="1" max="10" step="1" value="3" /></label>
+            <p id="winnerOut">Loan A wins before the extra fee pays back.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide light" data-title="Buydown Break-Even">
+        <div class="slide-inner buydown-layout">
+          <div class="build">
+            <div class="kicker">05 Mistakes to Avoid</div>
+            <h2>A buydown needs a break-even point.</h2>
+          </div>
+          <div class="breakeven-calc build delay-1">
+            <label>Upfront cost <b id="buydownCostOut">$6,000</b><input id="buydownCost" type="range" min="1000" max="12000" step="500" value="6000" /></label>
+            <label>Monthly savings <b id="buydownSavingsOut">$150</b><input id="buydownSavings" type="range" min="25" max="400" step="25" value="150" /></label>
+            <div class="breakeven-line">
+              <span id="breakEvenMarker"></span>
+            </div>
+            <strong id="breakEvenOut">Break-even: 40 months</strong>
+          </div>
+          <p class="teaching-note build delay-2">If you leave before break-even, the lower rate may not help.</p>
+        </div>
+      </section>
+
+      <section class="slide dark mistake-checkpoints-slide" data-title="Mistakes to Avoid">
+        <div class="slide-inner mistake-layout">
+          <div class="build">
+            <div class="kicker">05 Mistakes to Avoid</div>
+            <h2>Most expensive mistakes start as small assumptions.</h2>
+          </div>
+          <div class="mistake-grid build delay-1" aria-label="Mistake checkpoints">
+            <button type="button" class="active" data-mistake="payment"><span>01</span><strong>Payment shock</strong><small>Online number was incomplete</small></button>
+            <button type="button" data-mistake="cash"><span>02</span><strong>Cash surprise</strong><small>Closing costs were not mapped</small></button>
+            <button type="button" data-mistake="documents"><span>03</span><strong>Document delay</strong><small>The file was not ready</small></button>
+          </div>
+          <aside class="mistake-detail build delay-2">
+            <strong id="mistakeName">Payment shock</strong>
+            <p id="mistakeText">Before shopping homes, build a full payment with principal, interest, taxes, insurance, and mortgage insurance when applicable.</p>
+          </aside>
+          <p class="dark-note build delay-3">Ask which assumption feels most likely to surprise them, then connect it back to the calculators already shown.</p>
+        </div>
+      </section>
+
+      <section class="slide light" data-title="Your Seven-Day Plan">
+        <div class="slide-inner plan-layout">
+          <div class="build">
+            <div class="kicker">06 Your Next Steps</div>
+            <h2>You do not need to buy this week. You need to get clear this week.</h2>
+          </div>
+          <div class="week-plan build delay-1">
+            <button type="button" class="active" data-action-step="Gather numbers"><span>1</span>Gather numbers</button>
+            <button type="button" data-action-step="Check credit"><span>2</span>Check credit</button>
+            <button type="button" data-action-step="Set comfort payment"><span>3</span>Set comfort payment</button>
+            <button type="button" data-action-step="Review cash"><span>4</span>Review cash</button>
+            <button type="button" data-action-step="Check programs"><span>5</span>Check programs</button>
+            <button type="button" data-action-step="Compare lenders"><span>6</span>Compare lenders</button>
+            <button type="button" data-action-step="Ask questions"><span>7</span>Ask questions</button>
+          </div>
+          <p class="commitment-line build delay-2" id="commitmentOut">First commitment: gather the numbers.</p>
+        </div>
+      </section>
+
+      <section class="slide cta-slide" data-title="Questions Before Applications">
+        <div class="cta-left">
+          <div class="kicker build">Next step</div>
+          <h2 class="build delay-1">Bring us your questions before you bring us your application.</h2>
+          <p class="build delay-2">We will review your numbers, map your options, and help you understand the plan before you commit.</p>
+          <div class="cta-brand build delay-3">
+            <img src="./assets-to-upload/msfg-home-loans-horizontal.png" alt="Mountain State Financial Group, LLC" />
+            <span>Mountain State Financial Group, LLC · Company NMLS #1314257</span>
+          </div>
+        </div>
+        <div class="cta-right dark-panel">
+          <div class="contact-card build delay-2">
+            <img class="headshot" src="./assets-to-upload/seth-angell.png" alt="Seth Angell" />
+            <div>
+              <strong>Seth Angell</strong>
+              <span>Mortgage educator · NMLS #912881</span>
+            </div>
+          </div>
+          <img class="qr" src="./assets-to-upload/seth-contact-qr.png" alt="Contact QR code" />
+          <div class="question-chips build delay-3" aria-label="Question prompts">
+            <button type="button" data-question="payment">Payment</button>
+            <button type="button" data-question="cash">Cash to close</button>
+            <button type="button" data-question="comfort">Comfort range</button>
+          </div>
+          <p class="build delay-3" id="questionPrompt">What number should we calculate together?</p>
+        </div>
+      </section>
+      <img class="equal-housing-badge" src="./assets-to-upload/equal-housing-lender.png" alt="Equal Housing Lender" />
+    </div>
+  </div>
+</main>
+
+<nav class="deck-controls" aria-label="Presentation controls">
+  <button id="prevSlide" type="button" aria-label="Previous slide">&lsaquo;</button>
+  <div class="slide-status"><span id="slideIndex">01</span><span id="slideTitle">The Homebuyer's Playbook</span></div>
+  <button id="nextSlide" type="button" aria-label="Next slide">&rsaquo;</button>
+</nav>
+<div class="progress-track" aria-hidden="true"><span id="progressBar"></span></div>
+</div>
+
+<script>
+(function () {
+  function startMsfgHomebuyerDeck() {
+    const root = document.getElementById("msfg-homebuyer-webinar");
+    if (!root || root.dataset.msfgDeckLoaded === "true") return;
+    root.dataset.msfgDeckLoaded = "true";
+    document.documentElement.classList.add("msfg-webinar-root");
+    document.body.classList.add("msfg-webinar-body");
+    const getById = (id) => root.querySelector("#" + id);
+
+    const deck = getById("deck");
+    const deckFrame = getById("deckFrame");
+    const slides = Array.from(root.querySelectorAll(".slide"));
+    const prevButton = getById("prevSlide");
+    const nextButton = getById("nextSlide");
+    const slideIndex = getById("slideIndex");
+    const slideTitle = getById("slideTitle");
+    const progressBar = getById("progressBar");
+    
+    const money = new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+      maximumFractionDigits: 0
+    });
+    
+    const roleDescriptions = {
+      Lender: "Translates your income, credit, cash, and goals into loan options you can compare.",
+      Realtor: "Helps you find the home, shape the offer, and understand the market around the property.",
+      Seller: "Chooses which offer to accept and can sometimes help with credits or terms.",
+      Underwriter: "Verifies the file meets program rules before the loan can close.",
+      Title: "Confirms ownership, coordinates signing, and helps transfer the property cleanly.",
+      Insurance: "Protects the home and affects the monthly payment through escrow."
+    };
+    
+    const componentNotes = {
+      principal: "Principal is the borrowed money being paid back over time.",
+      interest: "Interest is the cost of borrowing the money, and it changes with rate and loan size.",
+      taxes: "Property taxes are usually collected monthly so the annual bill is ready when due.",
+      insurance: "Homeowners insurance protects the property and is commonly included in escrow.",
+      mi: "Mortgage insurance may apply with a smaller down payment; it protects the lender, not the buyer."
+    };
+    
+    const moodData = {
+      confident: ["92%", "Good. Tonight turns confidence into a cleaner plan."],
+      curious: ["70%", "Curiosity is the right posture. The map will make the pieces visible."],
+      unsure: ["46%", "Unsure is normal. Most buyers have never seen the whole process laid out."],
+      overwhelmed: ["24%", "That is exactly why we start with six plain-English topics instead of mortgage jargon."]
+    };
+    
+    const rateMythNotes = {
+      rate: "At first glance, the lower rate looks better. Later we will test whether it actually wins.",
+      fees: "Fees change the story. A lower rate with higher upfront cost may need time to catch up.",
+      time: "Time is the deciding variable. The better offer depends on how long the buyer keeps the loan."
+    };
+    
+    const programDetails = {
+      conventional: ["Conventional", "Often a flexible starting point when credit, income, property type, and down payment line up cleanly."],
+      fha: ["FHA", "Often useful when the buyer needs more flexibility around credit profile or available cash."],
+      va: ["VA", "A powerful earned benefit for eligible veterans, service members, and surviving spouses."],
+      usda: ["USDA", "A place-based option for eligible properties and eligible buyers in designated areas."],
+      assistance: ["Down Payment Assistance", "Local and state programs can help with upfront cash, but rules and availability change."]
+    };
+    
+    const downPathDetails = {
+      savings: ["Savings", "Savings is the cleanest source because the buyer already controls it. The next question is whether using it protects enough emergency cash."],
+      gift: ["Gift funds", "Gift funds can help when properly documented. The source, paper trail, and program rules matter."],
+      credit: ["Seller credits", "Seller credits usually help with closing costs instead of the down payment, which can preserve buyer cash."],
+      assistance: ["Assistance", "Assistance can be excellent when it fits, but repayment terms, income limits, and program windows must be reviewed."]
+    };
+    
+    const mistakeDetails = {
+      payment: ["Payment shock", "Before shopping homes, build a full payment with principal, interest, taxes, insurance, and mortgage insurance when applicable."],
+      cash: ["Cash surprise", "Before writing an offer, estimate down payment, closing costs, prepaids, escrow, credits, and reserves together."],
+      documents: ["Document delay", "Before deadlines get tight, collect income, asset, credit, identity, and explanation documents in one clean file."]
+    };
+    
+    const paymentScenarios = {
+      base: { price: 525000, down: 5, rate: 6.5 },
+      "lower-price": { price: 475000, down: 5, rate: 6.5 },
+      "higher-down": { price: 525000, down: 10, rate: 6.5 },
+      "rate-up": { price: 525000, down: 5, rate: 7.25 },
+      "remove-mi": { price: 525000, down: 20, rate: 6.5 }
+    };
+    
+    const questionPrompts = {
+      payment: "Let's calculate the payment before the home search gets emotional.",
+      cash: "Let's turn cash to close into a visible savings target.",
+      comfort: "Let's find the number that protects your actual month."
+    };
+    
+    let currentSlide = 0;
+    let aprMode = "cash";
+    let cashToggles = {
+      credit: false,
+      assistance: false,
+      "later-close": false
+    };
+    
+    function setDeckScale() {
+      const scale = Math.min(window.innerWidth / 1600, window.innerHeight / 900);
+      deckFrame.style.setProperty("--deck-scale", String(scale));
+      deck.style.setProperty("--deck-scale", String(scale));
+    }
+    
+    function showSlide(index) {
+      currentSlide = Math.max(0, Math.min(index, slides.length - 1));
+      slides.forEach((slide, slideNumber) => {
+        slide.classList.toggle("active", slideNumber === currentSlide);
+        if (slideNumber === currentSlide && slide.dataset.spaceReveal) {
+          slide.classList.remove("roadmap-revealed");
+        }
+      });
+      slideIndex.textContent = String(currentSlide + 1).padStart(2, "0");
+      slideTitle.textContent = slides[currentSlide].dataset.title || "Slide";
+      progressBar.style.width = `${((currentSlide + 1) / slides.length) * 100}%`;
+    }
+    
+    function revealCurrentSlide() {
+      const activeSlide = slides[currentSlide];
+      if (!activeSlide.dataset.spaceReveal || activeSlide.classList.contains("roadmap-revealed")) {
+        return false;
+      }
+      activeSlide.classList.add("roadmap-revealed");
+      return true;
+    }
+    
+    function value(id) {
+      return Number(getById(id).value);
+    }
+    
+    function write(id, content) {
+      const element = getById(id);
+      if (element) element.textContent = content;
+    }
+    
+    function setRange(id, nextValue) {
+      const input = getById(id);
+      if (input) input.value = String(nextValue);
+    }
+    
+    function setActive(button, selector) {
+      root.querySelectorAll(selector).forEach((item) => item.classList.remove("active"));
+      button.classList.add("active");
+    }
+    
+    function monthlyPayment(principal, annualRate, months = 360) {
+      const rate = annualRate / 100 / 12;
+      const factor = Math.pow(1 + rate, months);
+      return principal * rate * factor / (factor - 1);
+    }
+    
+    function updateRentVsBuy() {
+      const rent = value("rentInput");
+      const price = value("rentPriceInput");
+      const years = value("yearsHomeInput");
+      const loan = price * 0.95;
+      const buyPayment = monthlyPayment(loan, 6.5) + price * 0.009 / 12 + loan * 0.0048 / 12;
+      const upfront = price * 0.05 + 9000;
+      const annualOwnershipOffset = price * 0.025 - Math.max(0, buyPayment - rent) * 12;
+      const breakEvenYears = Math.min(10, Math.max(1, Math.ceil(upfront / Math.max(annualOwnershipOffset, 3000))));
+      const progress = Math.min(100, Math.max(12, years / breakEvenYears * 100));
+    
+      write("rentOut", money.format(rent));
+      write("rentPriceOut", money.format(price));
+      write("yearsHomeOut", `${years} ${years === 1 ? "year" : "years"}`);
+      write("rentDecisionOut", years >= breakEvenYears ? "Buying has enough runway to compare seriously." : "Renting may preserve flexibility at this timeline.");
+      getById("rentBreakEvenBar").style.background = `linear-gradient(90deg, var(--signal) 0 ${progress}%, rgba(255,255,255,.28) ${progress}%)`;
+    }
+    
+    function updatePayment() {
+      const price = value("priceInput");
+      const down = value("downInput");
+      const rate = value("rateInput");
+      const loan = price * (1 - down / 100);
+      const pi = monthlyPayment(loan, rate);
+      const escrow = price * 0.009 / 12;
+      const mi = down < 20 ? loan * 0.0048 / 12 : 0;
+      const payment = pi + escrow + mi;
+    
+      write("priceOut", money.format(price));
+      write("downOut", `${down}%`);
+      write("rateOut", `${rate.toFixed(3)}%`);
+      write("paymentHero", money.format(payment));
+      write("piOut", money.format(pi));
+      write("escrowOut", money.format(escrow));
+      write("miOut", money.format(mi));
+    }
+    
+    function updateComfortZone() {
+      const percent = value("comfortPercentInput");
+      const zoneHeight = 82 + (percent - 40) * 3.1;
+      write("comfortPercentOut", `${percent}%`);
+      getById("comfortZone").style.height = `${zoneHeight}px`;
+    }
+    
+    function updateAffordability() {
+      const income = value("incomeInput");
+      const debt = value("debtInput");
+      const pass = income * 0.45 - debt;
+      const comfort = income * 0.32 - debt;
+      const gap = Math.max(0, pass - comfort);
+      const gapPercent = Math.min(100, Math.max(12, gap / Math.max(pass, 1) * 100));
+    
+      write("incomeOut", money.format(income));
+      write("debtOut", money.format(debt));
+      write("passOut", money.format(pass));
+      write("comfortOut", money.format(comfort));
+      write("gapOut", `${money.format(gap)} of breathing room`);
+      getById("gapBar").style.width = `${gapPercent}%`;
+    }
+    
+    function updateBudget() {
+      const ids = ["Housing", "Debt", "Food", "Childcare", "Savings", "Maintenance"];
+      const total = ids.reduce((sum, name) => sum + value(`budget${name}`), 0);
+      const life = 100 - total;
+      ids.forEach((name) => write(`budget${name}Out`, `${value(`budget${name}`)}%`));
+      write("budgetLifeOut", `${life}%`);
+    
+      const roomMeterBar = getById("roomMeterBar");
+      if (life >= 0) {
+        write("roomMeterOut", `${life}% room left.`);
+        roomMeterBar.style.background = `linear-gradient(90deg, var(--signal) 0 ${life}%, var(--line) ${life}%)`;
+      } else {
+        write("roomMeterOut", `${Math.abs(life)}% over the month.`);
+        roomMeterBar.style.background = "linear-gradient(90deg, #b64a40 0 100%, var(--line) 100%)";
+      }
+    }
+    
+    function updateApr() {
+      const years = value("holdInput");
+      const loanBExtraFee = 6000;
+      const monthlySavings = 72;
+      const paybackYears = loanBExtraFee / monthlySavings / 12;
+      let bWins = false;
+      let message = "Loan A uses less cash to close.";
+    
+      if (aprMode === "payment") {
+        bWins = true;
+        message = "Loan B lowers the monthly payment, but asks for more upfront cash.";
+      }
+      if (aprMode === "time") {
+        bWins = years >= Math.ceil(paybackYears);
+        message = bWins ? "Loan B wins after the lower payment catches up." : "Loan A wins before the extra fee pays back.";
+      }
+    
+      write("holdOut", `${years} ${years === 1 ? "year" : "years"}`);
+      write("winnerOut", message);
+      getById("loanA").classList.toggle("winner", !bWins);
+      getById("loanB").classList.toggle("winner", bWins);
+    }
+    
+    function updateBuydown() {
+      const cost = value("buydownCost");
+      const savings = value("buydownSavings");
+      const months = Math.ceil(cost / savings);
+      const marker = Math.min(94, Math.max(6, months / 84 * 100));
+    
+      write("buydownCostOut", money.format(cost));
+      write("buydownSavingsOut", money.format(savings));
+      write("breakEvenOut", `Break-even: ${months} months`);
+      getById("breakEvenMarker").style.left = `${marker}%`;
+    }
+    
+    function updateCashToClose() {
+      const down = 26250;
+      const costs = 9800;
+      const prepaids = cashToggles["later-close"] ? 4400 : 5400;
+      const credits = 2000 + (cashToggles.credit ? 4000 : 0) + (cashToggles.assistance ? 6000 : 0);
+      const total = down + costs + prepaids - credits;
+      const max = 30000;
+    
+      write("cashDownOut", money.format(down));
+      write("cashCostsOut", money.format(costs));
+      write("cashPrepaidsOut", money.format(prepaids));
+      write("cashCreditsOut", `-${money.format(credits)}`);
+      write("cashTotalOut", money.format(total));
+    
+      getById("cashDownBar").style.height = `${Math.max(18, down / max * 100)}%`;
+      getById("cashCostsBar").style.height = `${Math.max(18, costs / max * 100)}%`;
+      getById("cashPrepaidsBar").style.height = `${Math.max(18, prepaids / max * 100)}%`;
+      getById("cashCreditsBar").style.height = `${Math.max(18, credits / max * 100)}%`;
+    }
+    
+    function updateAll() {
+      updateRentVsBuy();
+      updatePayment();
+      updateComfortZone();
+      updateAffordability();
+      updateBudget();
+      updateApr();
+      updateBuydown();
+      updateCashToClose();
+    }
+    
+    prevButton.addEventListener("click", () => showSlide(currentSlide - 1));
+    nextButton.addEventListener("click", () => showSlide(currentSlide + 1));
+    
+    root.querySelectorAll("[data-mood]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const [width, text] = moodData[button.dataset.mood];
+        setActive(button, "[data-mood]");
+        getById("moodBar").style.width = width;
+        write("moodReadout", text);
+      });
+    });
+    
+    root.querySelectorAll("[data-role]").forEach((button) => {
+      button.addEventListener("click", () => {
+        setActive(button, "[data-role]");
+        write("roleName", button.dataset.role);
+        write("roleText", roleDescriptions[button.dataset.role]);
+      });
+    });
+    
+    root.querySelectorAll("[data-decision]").forEach((button) => {
+      button.addEventListener("click", () => {
+        setActive(button, "[data-decision]");
+        write("decisionFocus", button.dataset.focus);
+      });
+    });
+    
+    root.querySelectorAll("[data-component]").forEach((button) => {
+      button.addEventListener("click", () => {
+        setActive(button, "[data-component]");
+        write("componentNote", componentNotes[button.dataset.component]);
+      });
+    });
+    
+    root.querySelectorAll("[data-payment-scenario]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const scenario = paymentScenarios[button.dataset.paymentScenario];
+        setActive(button, "[data-payment-scenario]");
+        setRange("priceInput", scenario.price);
+        setRange("downInput", scenario.down);
+        setRange("rateInput", scenario.rate);
+        updatePayment();
+      });
+    });
+    
+    root.querySelectorAll("[data-myth-guess]").forEach((button) => {
+      button.addEventListener("click", () => {
+        setActive(button, "[data-myth-guess]");
+        button.closest(".myth-slide").classList.add("revealed");
+        const note = button.closest(".myth-slide").querySelector(".dark-note");
+        note.textContent = "The right path depends on buyer, property, program, timing, and verified eligibility.";
+      });
+    });
+    
+    root.querySelectorAll("[data-rate-myth]").forEach((button) => {
+      button.addEventListener("click", () => {
+        setActive(button, "[data-rate-myth]");
+        write("rateMythOut", rateMythNotes[button.dataset.rateMyth]);
+      });
+    });
+    
+    root.querySelectorAll("[data-program-path]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const [name, text] = programDetails[button.dataset.programPath];
+        setActive(button, "[data-program-path]");
+        write("programName", name);
+        write("programText", text);
+      });
+    });
+    
+    root.querySelectorAll("[data-down-path]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const [name, text] = downPathDetails[button.dataset.downPath];
+        setActive(button, "[data-down-path]");
+        write("downPathName", name);
+        write("downPathText", text);
+      });
+    });
+    
+    root.querySelectorAll("[data-cash-toggle]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const key = button.dataset.cashToggle;
+        cashToggles[key] = !cashToggles[key];
+        button.classList.toggle("active", cashToggles[key]);
+        updateCashToClose();
+      });
+    });
+    
+    root.querySelectorAll("[data-apr-mode]").forEach((button) => {
+      button.addEventListener("click", () => {
+        aprMode = button.dataset.aprMode;
+        setActive(button, "[data-apr-mode]");
+        updateApr();
+      });
+    });
+    
+    root.querySelectorAll("[data-action-step]").forEach((button) => {
+      button.addEventListener("click", () => {
+        setActive(button, "[data-action-step]");
+        write("commitmentOut", `First commitment: ${button.dataset.actionStep.toLowerCase()}.`);
+      });
+    });
+    
+    root.querySelectorAll("[data-mistake]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const [name, text] = mistakeDetails[button.dataset.mistake];
+        setActive(button, "[data-mistake]");
+        write("mistakeName", name);
+        write("mistakeText", text);
+      });
+    });
+    
+    root.querySelectorAll("[data-question]").forEach((button) => {
+      button.addEventListener("click", () => {
+        setActive(button, "[data-question]");
+        write("questionPrompt", questionPrompts[button.dataset.question]);
+      });
+    });
+    
+    window.addEventListener("keydown", (event) => {
+      const isControl = ["INPUT", "BUTTON"].includes(document.activeElement.tagName);
+      if (event.key === " " && !isControl) {
+        event.preventDefault();
+        if (!revealCurrentSlide()) {
+          showSlide(currentSlide + 1);
+        }
+      }
+      if ((event.key === "ArrowRight" || event.key === "PageDown") && !isControl) {
+        event.preventDefault();
+        showSlide(currentSlide + 1);
+      }
+      if ((event.key === "ArrowLeft" || event.key === "PageUp") && !isControl) {
+        event.preventDefault();
+        showSlide(currentSlide - 1);
+      }
+      if (event.key === "Home") {
+        event.preventDefault();
+        showSlide(0);
+      }
+      if (event.key === "End") {
+        event.preventDefault();
+        showSlide(slides.length - 1);
+      }
+    });
+    
+    root.querySelectorAll("input[type='range']").forEach((input) => {
+      input.addEventListener("input", updateAll);
+    });
+    
+    window.addEventListener("resize", setDeckScale);
+    
+    setDeckScale();
+    showSlide(0);
+    updateAll();
+    
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", startMsfgHomebuyerDeck);
+  } else {
+    startMsfgHomebuyerDeck();
+  }
+})();
+</script>
+</body>
+</html>

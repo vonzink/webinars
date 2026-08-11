@@ -1,0 +1,478 @@
+- generic [active] [ref=e1]:
+  - main "The Homebuyer's Playbook" [ref=e2]:
+    - generic [ref=e4]:
+      - generic [ref=e6]:
+        - generic [ref=e7]:
+          - generic [ref=e8]: Free webinar
+          - heading [level=1] [ref=e10]:
+            - text: The Homebuyer's
+            - emphasis [ref=e11]: Playbook
+          - paragraph [ref=e12]: Everything first-time buyers need to know. Thirty minutes today could save you thousands.
+        - complementary "Presented by Seth Angell" [ref=e13]:
+          - img "Seth Angell" [ref=e14]
+          - generic [ref=e15]:
+            - generic [ref=e16]: Presented by
+            - strong [ref=e17]: Seth Angell
+            - generic [ref=e18]: "NMLS # [add Seth NMLS]"
+        - generic [ref=e19]:
+          - img "Mountain State Financial Group, LLC" [ref=e20]
+          - generic [ref=e21]:
+            - strong [ref=e22]: Mountain State Financial Group, LLC
+            - generic [ref=e23]: "Company NMLS #1314257"
+      - generic:
+        - generic:
+          - generic:
+            - heading "Today's Roadmap" [level=2]
+            - paragraph: Knowledge builds confidence. By the end you'll know exactly what your next step is.
+            - strong: 30 minutes · no sales pitch
+          - list "Today's roadmap topics":
+            - listitem:
+              - generic: "01"
+              - strong: Myths
+            - listitem:
+              - generic: "02"
+              - strong: Budget
+            - listitem:
+              - generic: "03"
+              - strong: Loan Programs
+            - listitem:
+              - generic: "04"
+              - strong: The Process
+            - listitem:
+              - generic: "05"
+              - strong: Mistakes to Avoid
+            - listitem:
+              - generic: "06"
+              - strong: Your Next Steps
+          - paragraph: Press space to reveal the roadmap.
+        - text: "Mountain State Financial Group, LLC | Company NMLS #1314257"
+      - generic:
+        - generic:
+          - generic:
+            - generic: 01 Myths
+            - heading "20% is a strategy. Not the entrance fee." [level=2]
+          - generic "Down payment poll":
+            - button "20%"
+            - button "10%"
+            - button "5%"
+            - button "Not sure"
+          - generic:
+            - generic: 20%
+            - generic:
+              - article:
+                - text: 0%
+                - generic: eligible paths
+              - article:
+                - text: 3%
+                - generic: some programs
+              - article:
+                - text: 3.5%
+                - generic: FHA path
+              - article:
+                - text: DPA
+                - generic: verify locally
+          - paragraph: Ask the room what they have heard, then reveal that the right path depends on buyer, property, program, timing, and verified eligibility.
+        - text: "Mountain State Financial Group, LLC | Company NMLS #1314257"
+      - generic:
+        - generic:
+          - generic:
+            - generic: 01 Myths
+            - heading "The lowest rate can hide a more expensive loan." [level=2]
+            - paragraph: Rate matters. It just does not live alone.
+          - generic "Rate myth comparison":
+            - article:
+              - generic: Looks lower
+              - strong: 6.25%
+              - generic: More upfront cost
+            - article:
+              - generic: Compare fully
+              - strong: APR
+              - generic: Rate + fees + time
+          - generic:
+            - button "Show rate"
+            - button "Show fees"
+            - button "Show time"
+          - paragraph: At first glance, the lower rate looks better. Later we will test whether it actually wins.
+        - text: "Mountain State Financial Group, LLC | Company NMLS #1314257"
+      - generic:
+        - generic:
+          - generic: 02 Budget
+          - heading "Renting is not failure. Buying is not automatically wisdom." [level=2]
+          - generic:
+            - article: Keep renting
+            - article: Explore buying
+        - generic:
+          - generic:
+            - generic: Live calculator slot
+            - heading "Rent vs Buy" [level=3]
+            - generic:
+              - generic:
+                - text: Current rent
+                - generic: $2,200
+                - slider "Current rent $2,200": "2200"
+              - generic:
+                - text: Target price
+                - generic: $525,000
+                - slider "Target price $525,000": "525000"
+              - generic:
+                - text: Years in home
+                - generic: 5 years
+                - slider "Years in home 5 years": "5"
+            - generic:
+              - strong: Renting may preserve flexibility at this timeline.
+        - text: "Mountain State Financial Group, LLC | Company NMLS #1314257"
+      - generic:
+        - generic:
+          - generic:
+            - generic: 02 Budget
+            - heading "Price is not the number." [level=2]
+            - paragraph: You live inside a monthly payment.
+          - generic:
+            - generic: $450,000
+            - generic:
+              - button "Principal"
+              - button "Interest"
+              - button "Taxes"
+              - button "Insurance"
+              - button "Mortgage insurance"
+          - complementary: Principal is the borrowed money being paid back over time.
+        - text: "Mountain State Financial Group, LLC | Company NMLS #1314257"
+      - generic:
+        - generic:
+          - generic:
+            - generic: Live demo
+            - heading "A payment is built." [level=2]
+            - strong: $3,746
+            - generic: estimated monthly payment
+          - generic:
+            - generic:
+              - text: Home price
+              - generic: $525,000
+              - slider "Home price $525,000": "525000"
+            - generic:
+              - text: Down payment
+              - generic: 5%
+              - slider "Down payment 5%": "5"
+            - generic:
+              - text: Interest rate
+              - generic: 6.500%
+              - slider "Interest rate 6.500%": "6.5"
+            - generic "Payment scenarios":
+              - button "Base case"
+              - button "Lower price"
+              - button "Higher down"
+              - button "Rate moves up"
+              - button "Remove MI"
+            - generic:
+              - article:
+                - text: Principal and interest
+                - strong: $3,152
+              - article:
+                - text: Taxes and insurance
+                - strong: $394
+              - article:
+                - text: Mortgage insurance
+                - strong: $200
+          - paragraph: Hypothetical illustration for education only. Not a quote, offer, or commitment to lend.
+        - text: "Mountain State Financial Group, LLC | Company NMLS #1314257"
+      - generic:
+        - generic:
+          - generic:
+            - generic: 02 Budget
+            - heading "Approved is not the same as comfortable." [level=2]
+          - generic:
+            - generic: Approved ceiling
+            - generic: Comfortable plan
+            - generic: Your real life
+            - generic:
+              - text: Comfort payment
+              - generic: 62%
+              - slider "Comfort payment 62%": "62"
+          - complementary: A good lender does not cheer every approval. They help you choose a payment you can live with.
+        - text: "Mountain State Financial Group, LLC | Company NMLS #1314257"
+      - generic:
+        - generic:
+          - generic:
+            - generic: Live demo
+            - heading "Find both numbers." [level=2]
+          - generic:
+            - generic:
+              - generic:
+                - text: Monthly income
+                - generic: $9,800
+                - slider "Monthly income $9,800": "9800"
+              - generic:
+                - text: Monthly debts
+                - generic: $775
+                - slider "Monthly debts $775": "775"
+            - generic:
+              - article:
+                - text: Can pass
+                - strong: $3,635
+              - article:
+                - text: Can live with
+                - strong: $2,361
+              - paragraph: $1,274 of breathing room
+        - text: "Mountain State Financial Group, LLC | Company NMLS #1314257"
+      - generic:
+        - generic:
+          - generic:
+            - generic: 02 Budget worksheet
+            - heading "A home should not erase your life." [level=2]
+            - paragraph: Put the mortgage inside the month before you put it inside an offer.
+          - generic "Monthly budget allocator":
+            - article:
+              - text: Housing
+              - strong: 32%
+              - slider: "32"
+            - article:
+              - text: Debt
+              - strong: 8%
+              - slider: "8"
+            - article:
+              - text: Food
+              - strong: 12%
+              - slider: "12"
+            - article:
+              - text: Childcare
+              - strong: 10%
+              - slider: "10"
+            - article:
+              - text: Savings
+              - strong: 10%
+              - slider: "10"
+            - article:
+              - text: Maintenance
+              - strong: 5%
+              - slider: "5"
+            - article:
+              - text: Life
+              - strong: 23%
+          - generic:
+            - strong: 23% room left.
+        - text: "Mountain State Financial Group, LLC | Company NMLS #1314257"
+      - generic:
+        - generic:
+          - generic:
+            - generic: 03 Loan Programs
+            - heading "Loan programs are paths. Not promises." [level=2]
+            - paragraph: The right option is the one that matches the buyer, property, cash, service history, and goals.
+          - generic "Loan program paths":
+            - button "Conventional Flexible Strong all-around path":
+              - generic: Conventional
+              - strong: Flexible
+              - generic: Strong all-around path
+            - button "FHA Accessible Often useful for credit or cash":
+              - generic: FHA
+              - strong: Accessible
+              - generic: Often useful for credit or cash
+            - button "VA Earned Veteran and service-member benefit":
+              - generic: VA
+              - strong: Earned
+              - generic: Veteran and service-member benefit
+            - button "USDA Place-based Eligible rural areas":
+              - generic: USDA
+              - strong: Place-based
+              - generic: Eligible rural areas
+            - button "DPA Local Assistance rules vary":
+              - generic: DPA
+              - strong: Local
+              - generic: Assistance rules vary
+          - complementary:
+            - generic: Conventional
+            - paragraph: Often a flexible starting point when credit, income, property type, and down payment line up cleanly.
+          - paragraph: Program details must be verified on the delivery date. This slide teaches comparison, not eligibility.
+        - text: "Mountain State Financial Group, LLC | Company NMLS #1314257"
+      - generic:
+        - generic:
+          - generic:
+            - generic: 03 Loan Programs
+            - heading "Your cash can come from more than one place." [level=2]
+          - generic "Down payment source map":
+            - button "01 Savings Money you control":
+              - text: "01"
+              - strong: Savings
+              - generic: Money you control
+            - button "02 Gift funds Documented help":
+              - text: "02"
+              - strong: Gift funds
+              - generic: Documented help
+            - button "03 Seller credits Offset closing costs":
+              - text: "03"
+              - strong: Seller credits
+              - generic: Offset closing costs
+            - button "04 Assistance Program specific":
+              - text: "04"
+              - strong: Assistance
+              - generic: Program specific
+          - complementary:
+            - strong: Savings
+            - paragraph: Savings is the cleanest source because the buyer already controls it. The next question is whether using it protects enough emergency cash.
+          - paragraph: Gift, seller-credit, and assistance examples need documentation and program review before use.
+        - text: "Mountain State Financial Group, LLC | Company NMLS #1314257"
+      - generic:
+        - generic:
+          - generic:
+            - generic: 04 The Process
+            - heading "You are not supposed to know everyone's job." [level=2]
+            - paragraph: Homebuying feels easier when each role has a name and a purpose.
+          - generic "Homebuying team map":
+            - generic: Buyer
+            - button "Lender"
+            - button "Realtor"
+            - button "Seller"
+            - button "Underwriter"
+            - button "Title"
+            - button "Insurance"
+            - complementary:
+              - generic: Lender
+              - paragraph: Translates your income, credit, cash, and goals into loan options you can compare.
+        - text: "Mountain State Financial Group, LLC | Company NMLS #1314257"
+      - generic:
+        - generic:
+          - generic:
+            - generic: 04 The Process
+            - heading "Cash to close is calculated. Not guessed." [level=2]
+          - generic:
+            - heading "Closing cost worksheet" [level=3]
+            - generic:
+              - generic: Down payment
+              - strong: $26,250
+            - generic:
+              - generic: Closing costs
+              - strong: $9,800
+            - generic:
+              - generic: Prepaids and escrow
+              - strong: $5,400
+            - generic:
+              - generic: Credits
+              - strong: "-$2,000"
+            - generic:
+              - button "Seller credit"
+              - button "Assistance"
+              - button "Later close"
+          - generic:
+            - strong: $39,450
+          - paragraph: Hypothetical illustration for education only. Actual cash to close depends on final loan terms.
+        - text: "Mountain State Financial Group, LLC | Company NMLS #1314257"
+      - generic:
+        - generic:
+          - generic:
+            - generic: 05 Mistakes to Avoid
+            - heading "The lowest rate is not always the cheapest loan." [level=2]
+          - generic:
+            - article:
+              - text: Loan A
+              - strong: 6.50%
+              - paragraph: $2,000 fees · lower cash
+            - article:
+              - text: Loan B
+              - strong: 6.25%
+              - paragraph: $8,000 fees · lower payment
+          - generic:
+            - generic "Comparison mode":
+              - button "Lowest cash"
+              - button "Lowest payment"
+              - button "Best over time"
+            - generic:
+              - text: Expected time in loan
+              - generic: 3 years
+              - slider "Expected time in loan 3 years": "3"
+            - paragraph: Loan A uses less cash to close.
+        - text: "Mountain State Financial Group, LLC | Company NMLS #1314257"
+      - generic:
+        - generic:
+          - generic:
+            - generic: 05 Mistakes to Avoid
+            - heading "A buydown needs a break-even point." [level=2]
+          - generic:
+            - generic:
+              - text: Upfront cost
+              - generic: $6,000
+              - slider "Upfront cost $6,000": "6000"
+            - generic:
+              - text: Monthly savings
+              - generic: $150
+              - slider "Monthly savings $150": "150"
+            - strong: "Break-even: 40 months"
+          - paragraph: If you leave before break-even, the lower rate may not help.
+        - text: "Mountain State Financial Group, LLC | Company NMLS #1314257"
+      - generic:
+        - generic:
+          - generic:
+            - generic: 05 Mistakes to Avoid
+            - heading "Most expensive mistakes start as small assumptions." [level=2]
+          - generic "Mistake checkpoints":
+            - button "01 Payment shock Online number was incomplete":
+              - generic: "01"
+              - strong: Payment shock
+              - generic: Online number was incomplete
+            - button "02 Cash surprise Closing costs were not mapped":
+              - generic: "02"
+              - strong: Cash surprise
+              - generic: Closing costs were not mapped
+            - button "03 Document delay The file was not ready":
+              - generic: "03"
+              - strong: Document delay
+              - generic: The file was not ready
+          - complementary:
+            - strong: Payment shock
+            - paragraph: Before shopping homes, build a full payment with principal, interest, taxes, insurance, and mortgage insurance when applicable.
+          - paragraph: Ask which assumption feels most likely to surprise them, then connect it back to the calculators already shown.
+        - text: "Mountain State Financial Group, LLC | Company NMLS #1314257"
+      - generic:
+        - generic:
+          - generic:
+            - generic: 06 Your Next Steps
+            - heading "You do not need to buy this week. You need to get clear this week." [level=2]
+          - generic:
+            - button "1 Gather numbers":
+              - generic: "1"
+              - text: Gather numbers
+            - button "2 Check credit":
+              - generic: "2"
+              - text: Check credit
+            - button "3 Set comfort payment":
+              - generic: "3"
+              - text: Set comfort payment
+            - button "4 Review cash":
+              - generic: "4"
+              - text: Review cash
+            - button "5 Check programs":
+              - generic: "5"
+              - text: Check programs
+            - button "6 Compare lenders":
+              - generic: "6"
+              - text: Compare lenders
+            - button "7 Ask questions":
+              - generic: "7"
+              - text: Ask questions
+          - paragraph: "First commitment: gather the numbers."
+        - text: "Mountain State Financial Group, LLC | Company NMLS #1314257"
+      - generic:
+        - generic:
+          - generic: Next step
+          - heading "Bring us your questions before you bring us your application." [level=2]
+          - paragraph: We will review your numbers, map your options, and help you understand the plan before you commit.
+          - generic:
+            - img "Mountain State Financial Group, LLC"
+            - generic: "Mountain State Financial Group, LLC · Company NMLS #1314257"
+        - generic:
+          - generic:
+            - img "Seth Angell"
+            - generic:
+              - strong: Seth Angell
+              - text: "Mortgage educator · NMLS # [add Seth NMLS]"
+          - img "Contact QR code"
+          - generic "Question prompts":
+            - button "Payment"
+            - button "Cash to close"
+            - button "Comfort range"
+          - paragraph: What number should we calculate together?
+      - img "Equal Housing Lender" [ref=e24]
+  - navigation "Presentation controls" [ref=e25]:
+    - button "Previous slide" [ref=e26] [cursor=pointer]: ‹
+    - generic [ref=e27]:
+      - generic [ref=e28]: "01"
+      - generic [ref=e29]: The Homebuyer's Playbook
+    - button "Next slide" [ref=e30] [cursor=pointer]: ›

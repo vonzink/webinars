@@ -1,0 +1,462 @@
+<!-- GoHighLevel Tracking Code > Footer / Body
+Paste this entire file into the page Footer or Body Tracking Code area.
+Do not put this script inside a div.
+-->
+<script>
+(function () {
+  function startMsfgHomebuyerDeck() {
+    const root = document.getElementById("msfg-homebuyer-webinar");
+    if (!root || root.dataset.msfgDeckLoaded === "true") return;
+    root.dataset.msfgDeckLoaded = "true";
+    document.documentElement.classList.add("msfg-webinar-root");
+    document.body.classList.add("msfg-webinar-body");
+    const getById = (id) => root.querySelector("#" + id);
+
+    const deck = getById("deck");
+    const deckFrame = getById("deckFrame");
+    const slides = Array.from(root.querySelectorAll(".slide"));
+    const prevButton = getById("prevSlide");
+    const nextButton = getById("nextSlide");
+    const slideIndex = getById("slideIndex");
+    const slideTitle = getById("slideTitle");
+    const progressBar = getById("progressBar");
+    
+    const money = new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+      maximumFractionDigits: 0
+    });
+    
+    const roleDescriptions = {
+      Lender: "Translates your income, credit, cash, and goals into loan options you can compare.",
+      Realtor: "Helps you find the home, shape the offer, and understand the market around the property.",
+      Seller: "Chooses which offer to accept and can sometimes help with credits or terms.",
+      Underwriter: "Verifies the file meets program rules before the loan can close.",
+      Title: "Confirms ownership, coordinates signing, and helps transfer the property cleanly.",
+      Insurance: "Protects the home and affects the monthly payment through escrow."
+    };
+    
+    const componentNotes = {
+      principal: "Principal is the borrowed money being paid back over time.",
+      interest: "Interest is the cost of borrowing the money, and it changes with rate and loan size.",
+      taxes: "Property taxes are usually collected monthly so the annual bill is ready when due.",
+      insurance: "Homeowners insurance protects the property and is commonly included in escrow.",
+      mi: "Mortgage insurance may apply with a smaller down payment; it protects the lender, not the buyer."
+    };
+    
+    const moodData = {
+      confident: ["92%", "Good. Tonight turns confidence into a cleaner plan."],
+      curious: ["70%", "Curiosity is the right posture. The map will make the pieces visible."],
+      unsure: ["46%", "Unsure is normal. Most buyers have never seen the whole process laid out."],
+      overwhelmed: ["24%", "That is exactly why we start with six plain-English topics instead of mortgage jargon."]
+    };
+    
+    const rateMythNotes = {
+      rate: "At first glance, the lower rate looks better. Later we will test whether it actually wins.",
+      fees: "Fees change the story. A lower rate with higher upfront cost may need time to catch up.",
+      time: "Time is the deciding variable. The better offer depends on how long the buyer keeps the loan."
+    };
+    
+    const programDetails = {
+      conventional: ["Conventional", "Often a flexible starting point when credit, income, property type, and down payment line up cleanly."],
+      fha: ["FHA", "Often useful when the buyer needs more flexibility around credit profile or available cash."],
+      va: ["VA", "A powerful earned benefit for eligible veterans, service members, and surviving spouses."],
+      usda: ["USDA", "A place-based option for eligible properties and eligible buyers in designated areas."],
+      assistance: ["Down Payment Assistance", "Local and state programs can help with upfront cash, but rules and availability change."]
+    };
+    
+    const downPathDetails = {
+      savings: ["Savings", "Savings is the cleanest source because the buyer already controls it. The next question is whether using it protects enough emergency cash."],
+      gift: ["Gift funds", "Gift funds can help when properly documented. The source, paper trail, and program rules matter."],
+      credit: ["Seller credits", "Seller credits usually help with closing costs instead of the down payment, which can preserve buyer cash."],
+      assistance: ["Assistance", "Assistance can be excellent when it fits, but repayment terms, income limits, and program windows must be reviewed."]
+    };
+    
+    const mistakeDetails = {
+      payment: ["Payment shock", "Before shopping homes, build a full payment with principal, interest, taxes, insurance, and mortgage insurance when applicable."],
+      cash: ["Cash surprise", "Before writing an offer, estimate down payment, closing costs, prepaids, escrow, credits, and reserves together."],
+      documents: ["Document delay", "Before deadlines get tight, collect income, asset, credit, identity, and explanation documents in one clean file."]
+    };
+    
+    const paymentScenarios = {
+      base: { price: 525000, down: 5, rate: 6.5 },
+      "lower-price": { price: 475000, down: 5, rate: 6.5 },
+      "higher-down": { price: 525000, down: 10, rate: 6.5 },
+      "rate-up": { price: 525000, down: 5, rate: 7.25 },
+      "remove-mi": { price: 525000, down: 20, rate: 6.5 }
+    };
+    
+    const questionPrompts = {
+      payment: "Let's calculate the payment before the home search gets emotional.",
+      cash: "Let's turn cash to close into a visible savings target.",
+      comfort: "Let's find the number that protects your actual month."
+    };
+    
+    let currentSlide = 0;
+    let aprMode = "cash";
+    let cashToggles = {
+      credit: false,
+      assistance: false,
+      "later-close": false
+    };
+    
+    function setDeckScale() {
+      const scale = Math.min(window.innerWidth / 1600, window.innerHeight / 900);
+      deckFrame.style.setProperty("--deck-scale", String(scale));
+      deck.style.setProperty("--deck-scale", String(scale));
+    }
+    
+    function showSlide(index) {
+      currentSlide = Math.max(0, Math.min(index, slides.length - 1));
+      slides.forEach((slide, slideNumber) => {
+        slide.classList.toggle("active", slideNumber === currentSlide);
+        if (slideNumber === currentSlide && slide.dataset.spaceReveal) {
+          slide.classList.remove("roadmap-revealed");
+        }
+      });
+      slideIndex.textContent = String(currentSlide + 1).padStart(2, "0");
+      slideTitle.textContent = slides[currentSlide].dataset.title || "Slide";
+      progressBar.style.width = `${((currentSlide + 1) / slides.length) * 100}%`;
+    }
+    
+    function revealCurrentSlide() {
+      const activeSlide = slides[currentSlide];
+      if (!activeSlide.dataset.spaceReveal || activeSlide.classList.contains("roadmap-revealed")) {
+        return false;
+      }
+      activeSlide.classList.add("roadmap-revealed");
+      return true;
+    }
+    
+    function value(id) {
+      return Number(getById(id).value);
+    }
+    
+    function write(id, content) {
+      const element = getById(id);
+      if (element) element.textContent = content;
+    }
+    
+    function setRange(id, nextValue) {
+      const input = getById(id);
+      if (input) input.value = String(nextValue);
+    }
+    
+    function setActive(button, selector) {
+      root.querySelectorAll(selector).forEach((item) => item.classList.remove("active"));
+      button.classList.add("active");
+    }
+    
+    function monthlyPayment(principal, annualRate, months = 360) {
+      const rate = annualRate / 100 / 12;
+      const factor = Math.pow(1 + rate, months);
+      return principal * rate * factor / (factor - 1);
+    }
+    
+    function updateRentVsBuy() {
+      const rent = value("rentInput");
+      const price = value("rentPriceInput");
+      const years = value("yearsHomeInput");
+      const loan = price * 0.95;
+      const buyPayment = monthlyPayment(loan, 6.5) + price * 0.009 / 12 + loan * 0.0048 / 12;
+      const upfront = price * 0.05 + 9000;
+      const annualOwnershipOffset = price * 0.025 - Math.max(0, buyPayment - rent) * 12;
+      const breakEvenYears = Math.min(10, Math.max(1, Math.ceil(upfront / Math.max(annualOwnershipOffset, 3000))));
+      const progress = Math.min(100, Math.max(12, years / breakEvenYears * 100));
+    
+      write("rentOut", money.format(rent));
+      write("rentPriceOut", money.format(price));
+      write("yearsHomeOut", `${years} ${years === 1 ? "year" : "years"}`);
+      write("rentDecisionOut", years >= breakEvenYears ? "Buying has enough runway to compare seriously." : "Renting may preserve flexibility at this timeline.");
+      getById("rentBreakEvenBar").style.background = `linear-gradient(90deg, var(--signal) 0 ${progress}%, rgba(255,255,255,.28) ${progress}%)`;
+    }
+    
+    function updatePayment() {
+      const price = value("priceInput");
+      const down = value("downInput");
+      const rate = value("rateInput");
+      const loan = price * (1 - down / 100);
+      const pi = monthlyPayment(loan, rate);
+      const escrow = price * 0.009 / 12;
+      const mi = down < 20 ? loan * 0.0048 / 12 : 0;
+      const payment = pi + escrow + mi;
+    
+      write("priceOut", money.format(price));
+      write("downOut", `${down}%`);
+      write("rateOut", `${rate.toFixed(3)}%`);
+      write("paymentHero", money.format(payment));
+      write("piOut", money.format(pi));
+      write("escrowOut", money.format(escrow));
+      write("miOut", money.format(mi));
+    }
+    
+    function updateComfortZone() {
+      const percent = value("comfortPercentInput");
+      const zoneHeight = 82 + (percent - 40) * 3.1;
+      write("comfortPercentOut", `${percent}%`);
+      getById("comfortZone").style.height = `${zoneHeight}px`;
+    }
+    
+    function updateAffordability() {
+      const income = value("incomeInput");
+      const debt = value("debtInput");
+      const pass = income * 0.45 - debt;
+      const comfort = income * 0.32 - debt;
+      const gap = Math.max(0, pass - comfort);
+      const gapPercent = Math.min(100, Math.max(12, gap / Math.max(pass, 1) * 100));
+    
+      write("incomeOut", money.format(income));
+      write("debtOut", money.format(debt));
+      write("passOut", money.format(pass));
+      write("comfortOut", money.format(comfort));
+      write("gapOut", `${money.format(gap)} of breathing room`);
+      getById("gapBar").style.width = `${gapPercent}%`;
+    }
+    
+    function updateBudget() {
+      const ids = ["Housing", "Debt", "Food", "Childcare", "Savings", "Maintenance"];
+      const total = ids.reduce((sum, name) => sum + value(`budget${name}`), 0);
+      const life = 100 - total;
+      ids.forEach((name) => write(`budget${name}Out`, `${value(`budget${name}`)}%`));
+      write("budgetLifeOut", `${life}%`);
+    
+      const roomMeterBar = getById("roomMeterBar");
+      if (life >= 0) {
+        write("roomMeterOut", `${life}% room left.`);
+        roomMeterBar.style.background = `linear-gradient(90deg, var(--signal) 0 ${life}%, var(--line) ${life}%)`;
+      } else {
+        write("roomMeterOut", `${Math.abs(life)}% over the month.`);
+        roomMeterBar.style.background = "linear-gradient(90deg, #b64a40 0 100%, var(--line) 100%)";
+      }
+    }
+    
+    function updateApr() {
+      const years = value("holdInput");
+      const loanBExtraFee = 6000;
+      const monthlySavings = 72;
+      const paybackYears = loanBExtraFee / monthlySavings / 12;
+      let bWins = false;
+      let message = "Loan A uses less cash to close.";
+    
+      if (aprMode === "payment") {
+        bWins = true;
+        message = "Loan B lowers the monthly payment, but asks for more upfront cash.";
+      }
+      if (aprMode === "time") {
+        bWins = years >= Math.ceil(paybackYears);
+        message = bWins ? "Loan B wins after the lower payment catches up." : "Loan A wins before the extra fee pays back.";
+      }
+    
+      write("holdOut", `${years} ${years === 1 ? "year" : "years"}`);
+      write("winnerOut", message);
+      getById("loanA").classList.toggle("winner", !bWins);
+      getById("loanB").classList.toggle("winner", bWins);
+    }
+    
+    function updateBuydown() {
+      const cost = value("buydownCost");
+      const savings = value("buydownSavings");
+      const months = Math.ceil(cost / savings);
+      const marker = Math.min(94, Math.max(6, months / 84 * 100));
+    
+      write("buydownCostOut", money.format(cost));
+      write("buydownSavingsOut", money.format(savings));
+      write("breakEvenOut", `Break-even: ${months} months`);
+      getById("breakEvenMarker").style.left = `${marker}%`;
+    }
+    
+    function updateCashToClose() {
+      const down = 26250;
+      const costs = 9800;
+      const prepaids = cashToggles["later-close"] ? 4400 : 5400;
+      const credits = 2000 + (cashToggles.credit ? 4000 : 0) + (cashToggles.assistance ? 6000 : 0);
+      const total = down + costs + prepaids - credits;
+      const max = 30000;
+    
+      write("cashDownOut", money.format(down));
+      write("cashCostsOut", money.format(costs));
+      write("cashPrepaidsOut", money.format(prepaids));
+      write("cashCreditsOut", `-${money.format(credits)}`);
+      write("cashTotalOut", money.format(total));
+    
+      getById("cashDownBar").style.height = `${Math.max(18, down / max * 100)}%`;
+      getById("cashCostsBar").style.height = `${Math.max(18, costs / max * 100)}%`;
+      getById("cashPrepaidsBar").style.height = `${Math.max(18, prepaids / max * 100)}%`;
+      getById("cashCreditsBar").style.height = `${Math.max(18, credits / max * 100)}%`;
+    }
+    
+    function updateAll() {
+      updateRentVsBuy();
+      updatePayment();
+      updateComfortZone();
+      updateAffordability();
+      updateBudget();
+      updateApr();
+      updateBuydown();
+      updateCashToClose();
+    }
+    
+    prevButton.addEventListener("click", () => showSlide(currentSlide - 1));
+    nextButton.addEventListener("click", () => showSlide(currentSlide + 1));
+    
+    root.querySelectorAll("[data-mood]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const [width, text] = moodData[button.dataset.mood];
+        setActive(button, "[data-mood]");
+        getById("moodBar").style.width = width;
+        write("moodReadout", text);
+      });
+    });
+    
+    root.querySelectorAll("[data-role]").forEach((button) => {
+      button.addEventListener("click", () => {
+        setActive(button, "[data-role]");
+        write("roleName", button.dataset.role);
+        write("roleText", roleDescriptions[button.dataset.role]);
+      });
+    });
+    
+    root.querySelectorAll("[data-decision]").forEach((button) => {
+      button.addEventListener("click", () => {
+        setActive(button, "[data-decision]");
+        write("decisionFocus", button.dataset.focus);
+      });
+    });
+    
+    root.querySelectorAll("[data-component]").forEach((button) => {
+      button.addEventListener("click", () => {
+        setActive(button, "[data-component]");
+        write("componentNote", componentNotes[button.dataset.component]);
+      });
+    });
+    
+    root.querySelectorAll("[data-payment-scenario]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const scenario = paymentScenarios[button.dataset.paymentScenario];
+        setActive(button, "[data-payment-scenario]");
+        setRange("priceInput", scenario.price);
+        setRange("downInput", scenario.down);
+        setRange("rateInput", scenario.rate);
+        updatePayment();
+      });
+    });
+    
+    root.querySelectorAll("[data-myth-guess]").forEach((button) => {
+      button.addEventListener("click", () => {
+        setActive(button, "[data-myth-guess]");
+        button.closest(".myth-slide").classList.add("revealed");
+        const note = button.closest(".myth-slide").querySelector(".dark-note");
+        note.textContent = "The right path depends on buyer, property, program, timing, and verified eligibility.";
+      });
+    });
+    
+    root.querySelectorAll("[data-rate-myth]").forEach((button) => {
+      button.addEventListener("click", () => {
+        setActive(button, "[data-rate-myth]");
+        write("rateMythOut", rateMythNotes[button.dataset.rateMyth]);
+      });
+    });
+    
+    root.querySelectorAll("[data-program-path]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const [name, text] = programDetails[button.dataset.programPath];
+        setActive(button, "[data-program-path]");
+        write("programName", name);
+        write("programText", text);
+      });
+    });
+    
+    root.querySelectorAll("[data-down-path]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const [name, text] = downPathDetails[button.dataset.downPath];
+        setActive(button, "[data-down-path]");
+        write("downPathName", name);
+        write("downPathText", text);
+      });
+    });
+    
+    root.querySelectorAll("[data-cash-toggle]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const key = button.dataset.cashToggle;
+        cashToggles[key] = !cashToggles[key];
+        button.classList.toggle("active", cashToggles[key]);
+        updateCashToClose();
+      });
+    });
+    
+    root.querySelectorAll("[data-apr-mode]").forEach((button) => {
+      button.addEventListener("click", () => {
+        aprMode = button.dataset.aprMode;
+        setActive(button, "[data-apr-mode]");
+        updateApr();
+      });
+    });
+    
+    root.querySelectorAll("[data-action-step]").forEach((button) => {
+      button.addEventListener("click", () => {
+        setActive(button, "[data-action-step]");
+        write("commitmentOut", `First commitment: ${button.dataset.actionStep.toLowerCase()}.`);
+      });
+    });
+    
+    root.querySelectorAll("[data-mistake]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const [name, text] = mistakeDetails[button.dataset.mistake];
+        setActive(button, "[data-mistake]");
+        write("mistakeName", name);
+        write("mistakeText", text);
+      });
+    });
+    
+    root.querySelectorAll("[data-question]").forEach((button) => {
+      button.addEventListener("click", () => {
+        setActive(button, "[data-question]");
+        write("questionPrompt", questionPrompts[button.dataset.question]);
+      });
+    });
+    
+    window.addEventListener("keydown", (event) => {
+      const isControl = ["INPUT", "BUTTON"].includes(document.activeElement.tagName);
+      if (event.key === " " && !isControl) {
+        event.preventDefault();
+        if (!revealCurrentSlide()) {
+          showSlide(currentSlide + 1);
+        }
+      }
+      if ((event.key === "ArrowRight" || event.key === "PageDown") && !isControl) {
+        event.preventDefault();
+        showSlide(currentSlide + 1);
+      }
+      if ((event.key === "ArrowLeft" || event.key === "PageUp") && !isControl) {
+        event.preventDefault();
+        showSlide(currentSlide - 1);
+      }
+      if (event.key === "Home") {
+        event.preventDefault();
+        showSlide(0);
+      }
+      if (event.key === "End") {
+        event.preventDefault();
+        showSlide(slides.length - 1);
+      }
+    });
+    
+    root.querySelectorAll("input[type='range']").forEach((input) => {
+      input.addEventListener("input", updateAll);
+    });
+    
+    window.addEventListener("resize", setDeckScale);
+    
+    setDeckScale();
+    showSlide(0);
+    updateAll();
+    
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", startMsfgHomebuyerDeck);
+  } else {
+    startMsfgHomebuyerDeck();
+  }
+})();
+</script>
