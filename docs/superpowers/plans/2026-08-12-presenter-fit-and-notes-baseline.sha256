@@ -1,5 +1,5 @@
 364a0ac38884a5b86710c93340ea637e741e8d6d3d53eb94c19eec7aa1476342  first-time-homebuyer/deck/index.html
-f1068673acedeba19f3f8f1c7bebc4caf0858e86669ceac845e98da4f99356df  first-time-homebuyer/deck/presenter.html
+1b0fc6dcac3d457a30c01b57694872aa9d33233c9edc7856f5ce1af80fcfdc5e  first-time-homebuyer/deck/presenter.html
 5393005156a5ffe1b2143943402c5f6ed216b7518be8024633e53a1ea4d09856  first-time-homebuyer/deck/assets/brand/logo-horizontal-knockout.svg
 4caa51dfb7949f87105953ebf64de8537fe6d9cf2d8cf44429f4c71e340ede52  first-time-homebuyer/deck/assets/brand/EQUAL HOUSING LENDER.png
 6f553c027897abdb17c9180cddc514e4b4b8de8558cc3bbfa256636eb667f359  first-time-homebuyer/deck/assets/presenter/slide-02/fha-buyers.png
@@ -16,7 +16,7 @@ f4daf2e2469e563296444fe374f72573e636bae34d392ee48dfaae555ef4255d  first-time-hom
 0a2296b2380564f84b2f7fdbf722550f7a03a0739a04d2878723dd9eddd9e8ab  first-time-homebuyer/deck/content/slides.js
 ecb3871668addda146aa4078c66b1c2d6f78b02639936efa683bedf602e104f2  first-time-homebuyer/deck/content/presenter-media.js
 eb9d764e086d2cdd4d788f0c1c57b9c83d00011b219079d5ee3fd677ff423be3  first-time-homebuyer/deck/css/base.css
-283a14d24c7e162e97bd2317ab5b09c89c163ed990a73bc8f5ddbe009d8da22b  first-time-homebuyer/deck/css/components.css
+01eac8fb0e019f12f5861fdc7cd6a7da32e271bb9a871da7b0f33f854e4878fb  first-time-homebuyer/deck/css/components.css
 b28c9b2736d63948dcc6c9630b591f2fa1083d600ea874f04dce5e402d85a2fa  first-time-homebuyer/deck/css/calculator.css
 e0f0f74691e6136b82a2d092100d75463998c5a79a966f9975b5b68988190a43  first-time-homebuyer/deck/js/deck.js
 db9bcd846c118fe538fe69304e39f28f99c67b2aa2eaac922bc9d9af4a125e9f  first-time-homebuyer/deck/js/modal.js
@@ -26,4 +26,5 @@ db9bcd846c118fe538fe69304e39f28f99c67b2aa2eaac922bc9d9af4a125e9f  first-time-hom
 1f7c2e816cd6b62047c48ab1ba2e469d4f34ed278f7ddf4890eda61ee14c5ce6  first-time-homebuyer/deck/tests/calculator-contract.test.mjs
 3293646de2aa7b64b08ea3d7dfc54e46620c7e576b469c9122994ca72c9bc7b7  first-time-homebuyer/deck/tests/calculator-math.test.mjs
 ec8df30a079e1531a707ce1ba8e0b8f830efc3a853a0f5f932b95e8f1819c3ea  first-time-homebuyer/deck/tests/content-emphasis.test.mjs
-a7f747ba5f9c7e1c6b06fffd0518d78df2333d6964bc85182a8824e5ba0c8faf  first-time-homebuyer/deck/tests/presenter-media-registry.test.mjs
+a16959dd02e0599bed96618235724e910dae510dd964212750bfc06853c36492  first-time-homebuyer/deck/tests/presenter-media-registry.test.mjs
+b0977213ff1d30b246d0a445fc6d2c5ef0b6f37b38bd8e07a83d7a3aea526661  first-time-homebuyer/deck/tests/media-modal-layout.test.mjs

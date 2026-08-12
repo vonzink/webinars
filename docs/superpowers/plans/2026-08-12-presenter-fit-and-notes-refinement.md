@@ -12,11 +12,11 @@
 
 - Implement `docs/superpowers/specs/2026-08-12-presenter-fit-and-notes-refinement-design.md` using `superpowers:subagent-driven-development`: one fresh implementer and one independent reviewer per task, then one whole-branch review.
 - Treat `/Users/zacharyzink/MSFG/Webinars` as read-only after baseline capture. Never stash, reset, switch, format, stage, or commit its unrelated dirty files.
-- Work only in `/Users/zacharyzink/.worktrees/webinars-presenter-fit-notes` on `feature/presenter-fit-notes`, created from `2911f15` using `superpowers:using-git-worktrees`.
+- Work only in `/Users/zacharyzink/.worktrees/webinars-presenter-fit-notes` on `feature/presenter-fit-notes`, created from the commit that contains the user-approved revision of this plan and its design specification, using `superpowers:using-git-worktrees`.
 - Stop on any mismatch against `docs/superpowers/plans/2026-08-12-presenter-fit-and-notes-baseline.sha256`; do not silently copy newer files.
 - Preserve slide content, graph bytes, calculator formulas/defaults/values, presenter identities, annotation/clocks/navigation/fullscreen behavior, channel messages, and `msfg-notes:${slideId}` with `Array<string>` values.
 - Use a `16px` viewport margin, initial scale capped at `1`, and nominal manual minimum `0.35`; full visibility wins on smaller viewports.
-- Graph intrinsic size is decoded image size. Educational popouts use `1200px` or `1500px` comparison width with measured height. Calculator uses `560px` width with measured current height.
+- Graph intrinsic size is decoded image size. Educational popouts shrink-wrap their measured document bounds with maximum-width caps of `960px` standard and `1200px` comparison; the caps never reserve empty width. Calculator uses `560px` width with measured current height.
 - Scale the whole content canvas inside an unscaled fitted shell. Keep close/resize controls as shell siblings at their screen-pixel target size. No graph header, internal overlay scrollbar, mobile calculator sheet, third-party package, icon library, remote asset, backend, note sharing/export, or PowerPoint note integration.
 - Calculator/pencil/trash icons have at least `32px × 32px` targets; graph close/resize controls have at least `36px × 36px` targets and explicit accessible names.
 - Do not rebuild PowerPoint or deploy. Stop after a verified local preview.
@@ -62,7 +62,7 @@ Run all Task 1 steps in the same `zsh` process so the scoped variables and array
 - Do not modify: `/Users/zacharyzink/MSFG/Webinars/**`.
 
 **Interfaces:**
-- Consumes: commit `2911f15` and the hash-pinned current runtime.
+- Consumes: the commit containing the approved plan/specification and the hash-pinned current runtime.
 - Produces: clean isolated branch whose first commit is byte-identical to that runtime.
 
 - [ ] **Step 1: Verify source state and all pinned hashes**
@@ -71,22 +71,28 @@ Run all Task 1 steps in the same `zsh` process so the scoped variables and array
 source_root='/Users/zacharyzink/MSFG/Webinars'
 feature_root='/Users/zacharyzink/.worktrees/webinars-presenter-fit-notes'
 manifest="$source_root/docs/superpowers/plans/2026-08-12-presenter-fit-and-notes-baseline.sha256"
-git -C "$source_root" merge-base --is-ancestor 2911f159d7ad017653696f6403031374bfa7165f HEAD
+plan_path='docs/superpowers/plans/2026-08-12-presenter-fit-and-notes-refinement.md'
+spec_path='docs/superpowers/specs/2026-08-12-presenter-fit-and-notes-refinement-design.md'
+plan_base="$(git -C "$source_root" log -1 --format=%H -- "$plan_path" "$spec_path")"
+test -n "$plan_base"
+git -C "$source_root" cat-file -e "$plan_base:$plan_path"
+git -C "$source_root" cat-file -e "$plan_base:$spec_path"
+git -C "$source_root" show "$plan_base:$spec_path" | grep -q '^Status: Approved for implementation$'
 source_status_hash="$(git -C "$source_root" status --porcelain=v1 -z | shasum -a 256 | awk '{print $1}')"
 (cd "$source_root" && shasum -a 256 -c "$manifest")
 ```
 
-Expected: all `29` paths report `OK` and the approved design commit is in current history. Any mismatch is a stop condition requiring user re-baselining.
+Expected: all `30` paths report `OK`, and `plan_base` contains the approved revised design and implementation plan. Any mismatch is a stop condition requiring user re-baselining.
 
 - [ ] **Step 2: Create the isolated worktree**
 
 Use `superpowers:using-git-worktrees`, then:
 
 ```bash
-git -C "$source_root" worktree add "$feature_root" -b feature/presenter-fit-notes 2911f15
+git -C "$source_root" worktree add "$feature_root" -b feature/presenter-fit-notes "$plan_base"
 ```
 
-Expected: a clean feature worktree based on the approved design commit.
+Expected: a clean feature worktree based on the approved plan/specification commit.
 
 - [ ] **Step 3: Copy only the pinned allowlist and prove byte identity**
 
@@ -99,7 +105,7 @@ done
 git -C "$feature_root" status --short
 ```
 
-Expected: only the `29` named files appear; no `.DS_Store`, Playwright artifact, output screenshot, unrelated portrait, documentation change, or PowerPoint is copied.
+Expected: only the `30` named files appear; no `.DS_Store`, Playwright artifact, output screenshot, unrelated portrait, unapproved documentation change, or PowerPoint is copied.
 
 - [ ] **Step 4: Verify and commit the isolated baseline**
 
@@ -114,7 +120,7 @@ git -C "$feature_root" commit -m 'chore: capture approved presenter baseline'
 test "$(git -C "$source_root" status --porcelain=v1 -z | shasum -a 256 | awk '{print $1}')" = "$source_status_hash"
 ```
 
-Expected: `18` tests pass, baseline JavaScript parses, the worktree is clean, and the source status hash is unchanged.
+Expected: `20` tests pass, baseline JavaScript parses, the worktree is clean, and the source status hash is unchanged.
 
 ---
 
@@ -161,6 +167,11 @@ test('invalid intrinsic size uses explicit fallback', () => {
   assert.ok(Object.values(g).every(Number.isFinite));
 });
 
+test('invalid intrinsic size without an authored fallback is rejected', () => {
+  assert.throws(() => fitOverlay({ intrinsicWidth: NaN, intrinsicHeight: 0,
+    viewportWidth: 1920, viewportHeight: 1080 }), RangeError);
+});
+
 test('tiny viewport overrides nominal minimum for full visibility', () => {
   const g = fitOverlay({ intrinsicWidth: 560, intrinsicHeight: 700, viewportWidth: 200, viewportHeight: 160 });
   near(g.scale, 128 / 700); assert.ok(g.scale < 0.35); near(g.top, 16);
@@ -198,11 +209,16 @@ export const OVERLAY_MARGIN = 16;
 export const OVERLAY_MIN_SCALE = 0.35;
 
 const positive = (value, fallback) => Number.isFinite(value) && value > 0 ? value : fallback;
+const requiredDimension = (value, fallback, name) => {
+  const resolved = positive(value, fallback);
+  if (!Number.isFinite(resolved) || resolved <= 0) throw new RangeError(`Invalid ${name}`);
+  return resolved;
+};
 const between = (value, low, high) => Math.min(Math.max(value, low), high);
 const size = o => {
   const margin = Math.max(0, Number.isFinite(o.margin) ? o.margin : OVERLAY_MARGIN);
-  const intrinsicWidth = positive(o.intrinsicWidth, positive(o.fallbackWidth, 560));
-  const intrinsicHeight = positive(o.intrinsicHeight, positive(o.fallbackHeight, 700));
+  const intrinsicWidth = requiredDimension(o.intrinsicWidth, o.fallbackWidth, 'intrinsic width');
+  const intrinsicHeight = requiredDimension(o.intrinsicHeight, o.fallbackHeight, 'intrinsic height');
   return {
     intrinsicWidth, intrinsicHeight, margin,
     viewportWidth: positive(o.viewportWidth, intrinsicWidth + 2 * margin),
@@ -255,7 +271,7 @@ git add -- first-time-homebuyer/deck/js/overlay-geometry.js first-time-homebuyer
 git commit -m 'feat: add proportional overlay geometry'
 ```
 
-Expected: `8` geometry tests and the full suite pass; only two new files are committed.
+Expected: `9` geometry tests and the full suite pass; only two new files are committed.
 
 ---
 
@@ -269,7 +285,7 @@ Expected: `8` geometry tests and the full suite pass; only two new files are com
 **Interfaces:**
 - Consumes: all three functions from `./overlay-geometry.js`.
 - Preserves: `initModal`, `openModal`, `openMedia`, `closeModal`, and `isModalOpen`.
-- Uses intrinsic width `1200` or `1500` for comparison tables; graph size is decoded `naturalWidth × naturalHeight`.
+- Standard educational documents shrink-wrap up to `960px`; comparison documents shrink-wrap up to `1200px`. Graph size is decoded `naturalWidth × naturalHeight`.
 
 - [ ] **Step 1: Write the failing modal-fit contract**
 
@@ -282,12 +298,17 @@ import { readFile } from 'node:fs/promises';
 const root = new URL('../', import.meta.url);
 const read = path => readFile(new URL(path, root), 'utf8');
 
-test('modal uses shared proportional geometry and authored widths', async () => {
+test('modal uses shared proportional geometry and shrink-wrap caps', async () => {
   const source = await read('js/modal.js');
   assert.match(source, /from '\.\/overlay-geometry\.js'/);
   for (const name of ['fitOverlay', 'resizeOverlay', 'clampOverlay']) assert.match(source, new RegExp(`${name}\\(`));
-  assert.match(source, /STANDARD_INTRINSIC_WIDTH\s*=\s*1200/);
-  assert.match(source, /WIDE_INTRINSIC_WIDTH\s*=\s*1500/);
+  assert.match(source, /STANDARD_MAX_WIDTH\s*=\s*960/);
+  assert.match(source, /WIDE_MAX_WIDTH\s*=\s*1200/);
+  assert.match(source, /canvas\.scrollWidth/);
+  assert.match(source, /canvas\.scrollHeight/);
+  assert.match(source, /canvas\.getBoundingClientRect\(\)/);
+  assert.match(source, /document\.fonts\.ready/);
+  assert.match(source, /ResizeObserver/);
 });
 
 test('graph has no visible title header and retains an accessible name', async () => {
@@ -301,7 +322,18 @@ test('graph has no visible title header and retains an accessible name', async (
 
 test('CSS exposes one complete non-scrolling canvas inside an unscaled shell', async () => {
   const css = await read('css/components.css');
+  const shell = css.match(/\.modal\s*\{([^}]*)\}/s)?.[1] || '';
+  assert.match(shell, /width:\s*auto/);
+  assert.match(shell, /height:\s*auto/);
+  assert.match(shell, /min-width:\s*0/);
+  assert.match(shell, /min-height:\s*0/);
+  assert.match(shell, /transform:\s*none/);
+  assert.doesNotMatch(shell, /(?:min-|max-)?(?:width|height):\s*(?:\d+px|\d+vh)/);
   assert.match(css, /\.modal-canvas\s*\{[^}]*transform-origin:\s*top left/s);
+  assert.match(css, /\.modal-canvas\s*\{[^}]*width:\s*fit-content/s);
+  assert.match(css, /\.modal-canvas\s*\{[^}]*max-width:\s*960px/s);
+  assert.match(css, /\.modal--wide\s+\.modal-canvas\s*\{[^}]*max-width:\s*1200px/s);
+  assert.doesNotMatch(css, /\.modal-canvas\s*\{[^}]*width:\s*(1200|1500)px/s);
   assert.match(css, /\.modal--media\s+\.modal-head\s*\{[^}]*display:\s*none/s);
   assert.match(css, /\.modal--media\s+\.modal-body\s*\{[^}]*padding:\s*0/s);
   assert.match(css, /\.modal-body\s*\{[^}]*overflow:\s*visible/s);
@@ -318,12 +350,12 @@ Expected: FAIL because the modal has independent dimensions and visible graph he
 
 - [ ] **Step 3: Add measured geometry state to `modal.js`**
 
-Wrap the header, body, and footer in `<div class="modal-canvas">`; keep close and resize as direct children of the dialog shell. Store `canvas = root.querySelector('.modal-canvas')`. Add the import, constants, and helpers:
+Wrap the header, body, and footer in `<div class="modal-canvas">`; keep close and resize as direct children of the dialog shell. Store `canvas = root.querySelector('.modal-canvas')`. Add the import, maximum-width caps, and helpers:
 
 ```js
 import { fitOverlay, resizeOverlay, clampOverlay } from './overlay-geometry.js';
-const STANDARD_INTRINSIC_WIDTH = 1200;
-const WIDE_INTRINSIC_WIDTH = 1500;
+const STANDARD_MAX_WIDTH = 960;
+const WIDE_MAX_WIDTH = 1200;
 let overlayGeometry = null;
 
 function applyGeometry(next) {
@@ -333,18 +365,39 @@ function applyGeometry(next) {
   panel.style.left = `${next.left}px`;
   panel.style.top = `${next.top}px`;
   canvas.style.width = `${next.intrinsicWidth}px`;
+  canvas.style.maxWidth = 'none';
   canvas.style.height = `${next.intrinsicHeight}px`;
   canvas.style.transform = `scale(${next.scale})`;
+  canvas.dataset.intrinsicWidth = `${next.intrinsicWidth}`;
+  canvas.dataset.intrinsicHeight = `${next.intrinsicHeight}`;
 }
 
-function fitIntrinsic(intrinsicWidth, intrinsicHeight) {
+function fitIntrinsic(intrinsicWidth, intrinsicHeight, fallback) {
   applyGeometry(fitOverlay({ intrinsicWidth, intrinsicHeight,
+    fallbackWidth: fallback.width, fallbackHeight: fallback.height,
     viewportWidth: innerWidth, viewportHeight: innerHeight }));
 }
 
-function measureContentHeight(intrinsicWidth) {
-  Object.assign(canvas.style, { width: `${intrinsicWidth}px`, height: 'auto', transform: 'none' });
-  return Math.ceil(canvas.scrollHeight);
+function measureDocument(maxWidth) {
+  Object.assign(canvas.style, {
+    width: 'fit-content', maxWidth: `${maxWidth}px`,
+    height: 'auto', transform: 'none',
+  });
+  const rect = canvas.getBoundingClientRect();
+  const tolerance = 1 / (devicePixelRatio || 1);
+  if (canvas.scrollWidth - canvas.clientWidth > tolerance ||
+      canvas.scrollHeight - canvas.clientHeight > tolerance) {
+    throw new RangeError('Educational popout overflowed its measured document');
+  }
+  const measured = {
+    width: Math.min(maxWidth, Math.ceil(rect.width)),
+    height: Math.ceil(rect.height),
+  };
+  if (!Number.isFinite(measured.width) || measured.width <= 0 ||
+      !Number.isFinite(measured.height) || measured.height <= 0) {
+    throw new RangeError('Educational popout has invalid document bounds');
+  }
+  return measured;
 }
 ```
 
@@ -352,16 +405,31 @@ Change `.modal-resize` from an aria-hidden `div` to `<button type="button" class
 
 - [ ] **Step 4: Measure and fit educational content**
 
-After content is rendered and `is-open` is applied:
+After content is rendered, add `is-open is-measuring` so the document participates in layout without flashing an unfitted panel. Increment an open token so stale asynchronous work cannot reopen a closed or replaced modal. Wait for fonts plus two layout frames, shrink-wrap the complete document, and reveal it only after fitting:
 
 ```js
-panel.setAttribute('aria-labelledby', 'modal-title');
-panel.removeAttribute('aria-label');
-const intrinsicWidth = d.table ? WIDE_INTRINSIC_WIDTH : STANDARD_INTRINSIC_WIDTH;
-fitIntrinsic(intrinsicWidth, measureContentHeight(intrinsicWidth));
+async function fitEducational(d, token) {
+  if (document.fonts?.ready) await document.fonts.ready;
+  await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+  if (!isOpen || activeKind !== 'content' || token !== activeOpenToken) return;
+  try {
+    const maximumWidth = d.table ? WIDE_MAX_WIDTH : STANDARD_MAX_WIDTH;
+    const measured = measureDocument(maximumWidth);
+    fitIntrinsic(measured.width, measured.height, measured);
+    root.classList.remove('is-measuring');
+    root.classList.add('is-visible');
+    closeBtn.focus();
+  } catch (error) {
+    console.error('[deck] unable to measure educational popout', error);
+    root.classList.remove('is-open', 'is-measuring', 'is-visible');
+    isOpen = false;
+    activeKind = null;
+    if (lastFocused && document.contains(lastFocused)) lastFocused.focus();
+  }
+}
 ```
 
-Keep the content header as its drag surface. Remove `bodyEl.scrollTop` and every internal scrolling fallback.
+Set `aria-labelledby`, remove `aria-label`, then call `fitEducational(d, ++activeOpenToken)`. Keep the content header as its drag surface. Remove `bodyEl.scrollTop` and every internal scrolling fallback. Add a guarded `ResizeObserver` for the educational document; if its content box changes after the initial fit, debounce through two animation frames, return it to measurement mode, and run the same measure/refit path. Disconnect or ignore the observer for graph mode and after close, and suppress callbacks caused solely by applying the already-measured geometry.
 
 - [ ] **Step 5: Render and fit only the decoded graph**
 
@@ -377,13 +445,14 @@ bodyEl.innerHTML = `<div class="modal-media-frame">
 </div>`;
 const image = bodyEl.querySelector('img');
 image.draggable = false;
-const showGraph = () => fitIntrinsic(image.naturalWidth, image.naturalHeight);
+const showGraph = () => fitIntrinsic(image.naturalWidth, image.naturalHeight,
+  { width: 960, height: 540 });
 if (image.complete && image.naturalWidth) showGraph();
 else image.addEventListener('load', showGraph, { once: true });
 image.addEventListener('error', () => {
   image.hidden = true;
   bodyEl.querySelector('.modal-media-error').hidden = false;
-  fitIntrinsic(960, 540);
+  fitIntrinsic(960, 540, { width: 960, height: 540 });
 }, { once: true });
 ```
 
@@ -391,15 +460,24 @@ Allow media dragging from `bodyEl`, excluding close/resize origins. Advancing sl
 
 - [ ] **Step 6: Apply complete-canvas CSS**
 
-Make `.modal` the fixed-positioned rendered shell and `.modal-canvas` the intrinsic transformed child. Close/resize remain unscaled shell controls. Remove fixed `vh` heights and body scrolling. Add:
+Make `.modal` the fixed-positioned rendered shell and `.modal-canvas` a shrink-wrapped intrinsic transformed child. Close/resize remain unscaled shell controls. Remove fixed/minimum modal dimensions, fixed `vh` heights, and body scrolling. Add:
 
 ```css
-.modal { position: fixed; overflow: visible; background: transparent; }
-.modal-canvas {
-  width: 1200px; height: auto; transform-origin: top left;
-  display: flex; flex-direction: column; overflow: hidden; background: var(--white);
+.modal {
+  position: fixed; width: auto; height: auto; min-width: 0; min-height: 0;
+  padding: 0; overflow: visible; background: transparent; transform: none;
 }
+.modal-canvas {
+  width: fit-content; max-width: 960px; height: auto; transform-origin: top left;
+  display: inline-flex; flex-direction: column; overflow: hidden; background: var(--white);
+}
+.modal--wide .modal-canvas { max-width: 1200px; }
+.modal-head, .modal-body, .modal-foot { width: auto; min-width: 0; }
 .modal-body { flex: 1 1 auto; min-height: 0; overflow: visible; }
+.modal-head, .modal-body, .modal-foot,
+.modal-table th, .modal-table td { overflow-wrap: anywhere; }
+.modal-table-wrap { max-width: 100%; overflow: visible; }
+.modal-table { max-width: 100%; }
 .modal--media { background: var(--white); }
 .modal--media .modal-head, .modal--media .modal-foot { display: none; }
 .modal--media .modal-body { padding: 0; overflow: hidden; }
@@ -423,7 +501,7 @@ window.addEventListener('resize', () => {
 });
 ```
 
-After close animation, clear `overlayGeometry`, shell width/height/left/top, and canvas width/height/transform. Do not clear content before focus is returned.
+After close animation, invalidate the open token, clear `overlayGeometry`, disconnect/ignore the educational observer, and clear shell width/height/left/top and canvas width/max-width/height/transform. Do not clear content before focus is returned.
 
 - [ ] **Step 8: Verify GREEN and commit**
 
@@ -506,9 +584,11 @@ function measureHeight() {
 function fitCalculator({ preservePosition = false } = {}) {
   const intrinsicHeight = measureHeight();
   const fitted = fitOverlay({ intrinsicWidth: INTRINSIC_WIDTH, intrinsicHeight,
+    fallbackWidth: INTRINSIC_WIDTH, fallbackHeight: intrinsicHeight,
     viewportWidth: innerWidth, viewportHeight: innerHeight });
   if (!preservePosition || !overlayGeometry) return applyGeometry(fitted);
   applyGeometry(clampOverlay({ intrinsicWidth: INTRINSIC_WIDTH, intrinsicHeight,
+    fallbackWidth: INTRINSIC_WIDTH, fallbackHeight: intrinsicHeight,
     scale: Math.min(overlayGeometry.scale, fitted.scale),
     left: overlayGeometry.left, top: overlayGeometry.top,
     viewportWidth: innerWidth, viewportHeight: innerHeight }));
@@ -781,20 +861,54 @@ PWCLI='/Users/zacharyzink/.codex/skills/playwright/scripts/playwright_cli.sh'
 
 For every `PRESENTER_MEDIA` ID, call `openMedia()`, wait for `img.decode()`, and assert: no visible header; dialog `aria-label`; decoded graph; `16px` bounds; image/panel ratio difference at most `0.001`; no cropping. Use Playwright mouse commands on the FHA graph resize handle and graph surface; assert size/position changes while ratio and bounds remain valid.
 
-For every `MODALS` ID at `1920×1080`, `1280×720`, and `1024×768`, call `openModal()`, wait two animation frames, and assert:
+For every `MODALS` ID at `1920×1080`, `1280×720`, and `1024×768`, call `openModal()`, await `document.fonts.ready`, wait two animation frames, and assert the shell hugs an independently remeasured document:
 
 ```js
 () => {
-  const panel = document.querySelector('.modal'), body = document.querySelector('.modal-body');
-  const r = panel.getBoundingClientRect();
+  const panel = document.querySelector('.modal'), canvas = document.querySelector('.modal-canvas');
+  const body = canvas.querySelector('.modal-body');
+  const r = panel.getBoundingClientRect(), c = canvas.getBoundingClientRect();
+  const tolerance = 1 / (devicePixelRatio || 1) + 0.01;
   if (r.left < 15.5 || r.top < 15.5 || r.right > innerWidth - 15.5 || r.bottom > innerHeight - 15.5) throw new Error('modal escaped viewport');
-  if (body.scrollHeight > body.clientHeight + 1) throw new Error('modal body scrolls');
+  if (getComputedStyle(panel).transform !== 'none') throw new Error('shell is transformed');
+  if (Math.abs(r.width - c.width) > tolerance || Math.abs(r.height - c.height) > tolerance) throw new Error('shell does not match document');
+  if (canvas.scrollWidth - canvas.clientWidth > tolerance || canvas.scrollHeight - canvas.clientHeight > tolerance) throw new Error('document overflows canvas');
   if (!body.firstElementChild || !body.lastElementChild) throw new Error('modal content missing');
-  return { width: r.width, height: r.height };
+
+  for (const el of [canvas.querySelector('.modal-head'), body.lastElementChild,
+    canvas.querySelector('.modal-foot:not([hidden])')].filter(Boolean)) {
+    const e = el.getBoundingClientRect();
+    if (e.left < c.left - tolerance || e.top < c.top - tolerance ||
+        e.right > c.right + tolerance || e.bottom > c.bottom + tolerance) {
+      throw new Error('document child escaped canvas');
+    }
+  }
+
+  const probePanel = panel.cloneNode(true);
+  Object.assign(probePanel.style, {
+    position: 'fixed', left: '-10000px', top: '0', width: 'auto', height: 'auto',
+    visibility: 'hidden', opacity: '0', transform: 'none',
+  });
+  const probe = probePanel.querySelector('.modal-canvas');
+  Object.assign(probe.style, {
+    width: 'fit-content', maxWidth: panel.classList.contains('modal--wide') ? '1200px' : '960px',
+    height: 'auto', transform: 'none',
+  });
+  document.body.append(probePanel);
+  const natural = probe.getBoundingClientRect();
+  const intrinsicWidth = Number(canvas.dataset.intrinsicWidth);
+  const intrinsicHeight = Number(canvas.dataset.intrinsicHeight);
+  probePanel.remove();
+  if (Math.abs(intrinsicWidth - Math.ceil(natural.width)) > tolerance ||
+      Math.abs(intrinsicHeight - Math.ceil(natural.height)) > tolerance) {
+    throw new Error('stored geometry does not match shrink-wrap measurement');
+  }
+  return { shell: { width: r.width, height: r.height },
+    intrinsic: { width: intrinsicWidth, height: intrinsicHeight } };
 }
 ```
 
-Resize one short and one comparison popout; ratio difference before/after must be at most `0.001`.
+For every standard document, assert the stored intrinsic width is no greater than `960`; for every comparison document, no greater than `1200`. For the short `prog-fha` document, also assert its independently remeasured intrinsic width is below `960`; it must not inherit the standard cap as empty width. If any current modal model contains a table, validate the same independent measurement under the comparison cap; otherwise record that comparison-table coverage is not applicable to this baseline. Resize one short and one long popout; ratio difference before/after must be at most `0.001`.
 
 - [ ] **Step 4: Verify complete calculator fit and interaction**
 
@@ -855,7 +969,7 @@ Expected: only validation and spec status are committed; screenshots remain untr
 - [x] Dirty baseline is hash-pinned and copied without modifying the source checkout.
 - [x] Geometry tests cover fit, non-upscaling, invalid input, tiny viewports, ratio-locked resizing, minimum scale, and clamping.
 - [x] Graphs remove the visible header but preserve accessible naming, close/resize, drag, and failure behavior.
-- [x] Educational popouts and calculator scale complete measured canvases inside fitted shells without internal scrolling or shrinking shell controls.
+- [x] Educational popouts shrink-wrap actual document bounds, and both popouts and calculator scale complete measured canvases inside fitted shells without internal scrolling or shrinking shell controls.
 - [x] Calculator math, state, focus, and synchronization remain protected.
 - [x] Popouts are left, graphs right, and responsive stacking keeps that order.
 - [x] Calculator and note actions become compact accessible icons.

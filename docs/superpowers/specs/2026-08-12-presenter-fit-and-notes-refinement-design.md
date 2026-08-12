@@ -1,7 +1,7 @@
 # Presenter Overlay Fit and Notes Refinement
 
 Date: 2026-08-12
-Status: Approved for implementation planning
+Status: Revised to content-hugging popouts, pending written-specification approval
 
 ## Objective
 
@@ -61,6 +61,8 @@ renderedHeight  = intrinsicHeight × fitScale
 
 Opening an overlay chooses the largest scale at or below `1` that keeps the complete overlay inside the viewport. No overlay opens larger than its authored size merely because the viewport is large.
 
+The overlay shell must hug the measured document. Its rendered width and height equal the rendered document bounds; there is no reserved modal canvas, minimum panel size, fixed presentation frame, or empty white region outside the document. The positioned shell has no transform of its own. Close and resize controls overlay the shell without increasing those bounds.
+
 ### Manual resizing
 
 - Resizing from the bottom-right handle changes a single scale value, not width and height independently.
@@ -95,12 +97,14 @@ Opening an overlay chooses the largest scale at or below `1` that keeps the comp
 ## Educational Popouts
 
 - Preserve their approved content, Ridgeline header, close control, comparison tables, section hierarchy, and modal behavior.
-- Use the existing authored width as the intrinsic width: `1200px` for a standard popout and `1500px` for a wide comparison popout.
-- Measure the complete rendered popout at that authored width, including header, body, notes, tables, and footer, before calculating its intrinsic height.
+- Do not assign every popout a fixed intrinsic width.
+- Let the rendered document shrink-wrap its content with `width: fit-content`. Use `960px` only as the maximum readable width for a standard popout and `1200px` only as the maximum for a comparison table; these are strict caps, not reserved widths. Prose and table cells wrap within the selected cap, and the fitted presentation has no horizontal overflow.
+- Wait for document fonts and two animation frames, then measure the complete untransformed document's bounding rectangle after its header, body, notes, tables, and footer are present. Confirm `scrollWidth <= clientWidth` and `scrollHeight <= clientHeight` within one device pixel. Those stable measured bounds become the intrinsic width and height.
+- The surrounding shell must match those measured bounds exactly before viewport scaling. A short popout is therefore physically smaller than a long or tabular popout.
 - Fit and scale the entire popout as one canvas so the header and last line of content are simultaneously visible.
 - Remove internal vertical scrolling from the fitted presentation state.
 - Preserve the authored content aspect ratio during manual resizing.
-- If content changes before a popout opens, measure the current rendered content rather than relying on a hard-coded height.
+- If content changes before a popout opens, measure the current rendered content rather than relying on a hard-coded height. Remeasure and refit when font readiness or observed content-size changes alter those bounds.
 
 ## Mortgage Calculator
 
@@ -136,7 +140,7 @@ Opening an overlay chooses the largest scale at or below `1` that keeps the comp
 ## Architecture and File Boundaries
 
 - Add a small shared geometry module under `first-time-homebuyer/deck/js/` for pure fit, resize, and clamp calculations.
-- Each audience overlay uses an unscaled positioned shell whose width and height equal the fitted rendered rectangle. An intrinsic-size child canvas is transformed from its top-left origin; close and resize controls are shell siblings rather than canvas children.
+- Each audience overlay uses an unscaled positioned shell whose width and height equal the fitted rendered document rectangle. A shrink-wrapped intrinsic-size child canvas is transformed from its top-left origin; close and resize controls are shell siblings rather than canvas children.
 - `modal.js` consumes the geometry module for graph and educational-popout fitting but continues to own modal content, focus management, opening, and closing.
 - `calculator.js` consumes the same geometry module while retaining independent visibility, values, calculations, focus trap, and channel synchronization.
 - `components.css` owns the educational and graph visual canvases and their scaled-shell treatments.
@@ -147,7 +151,7 @@ Opening an overlay chooses the largest scale at or below `1` that keeps the comp
 
 ## Error and Recovery Behavior
 
-- Invalid or non-finite geometry input falls back to a centered fit using the overlay's known authored dimensions; it must not produce `NaN`, negative sizes, or an unreachable panel.
+- Invalid or non-finite geometry input falls back to a centered fit only when that overlay has known authored dimensions, such as a graph or calculator; it must not produce `NaN`, negative sizes, or an unreachable panel. An educational document with no valid measured bounds stays closed and reports the measurement failure rather than opening a generic fixed-size window.
 - A viewport too small for the nominal minimum scale uses the largest scale that fits the safety margins. Full visibility takes priority over the nominal minimum.
 - A failed graph retains its accessible error state and close control.
 - An expanded calculator always refits; it never pushes the footer or close control off screen.
@@ -163,13 +167,14 @@ Use test-first implementation plus real two-window browser checks.
 3. Add presenter contract tests for the left popout/right graph wrapper, responsive stacking rule, unified notes region, and icon-only edit/delete actions.
 4. Add modal contracts that graph popouts omit the large visible header and expose an accessible dialog name.
 5. Verify every registered graph decodes, opens at its natural aspect ratio, remains fully visible, resizes proportionally, drags within bounds, and closes correctly.
-6. Verify representative short, long, and comparison educational popouts show their first and last content simultaneously with no internal scrollbar at `1920×1080`, `1280×720`, and `1024×768`.
-7. Verify the calculator is fully visible in collapsed and expanded states, remains interactive when scaled, preserves values, and resizes proportionally at the same viewports plus a `390×844` narrow viewport.
-8. Resize the audience browser while each overlay is open and assert its full bounding rectangle remains inside the safety margins.
-9. Verify Tab order, focus trap, Escape, backdrop close, focus restoration, pointer input, and visible focus at scaled sizes.
-10. Verify the presenter shows educational popouts on the left and graphs on the right at desktop width, then stacks them in that order at narrow width.
-11. Verify authored and personal notes read as one reference area while add, pencil, and trash controls remain accessible and per-slide persistence is unchanged.
-12. Run the complete deck test suite, JavaScript syntax checks, `git diff --check`, and console-error review.
+6. Verify every educational popout shows its first and last content simultaneously with no internal scrollbar at `1920×1080`, `1280×720`, and `1024×768`.
+7. Independently remeasure every unscaled document in shrink-wrap mode and verify its stored intrinsic geometry matches; its shell and rendered document have equal bounding dimensions within `1 / devicePixelRatio` CSS pixels; its header, last body child, and visible footer are inside the canvas; and neither axis overflows. Verify standard and comparison widths stay within their strict caps, with short popouts measuring below the cap when their content does not require it.
+8. Verify the calculator is fully visible in collapsed and expanded states, remains interactive when scaled, preserves values, and resizes proportionally at the same viewports plus a `390×844` narrow viewport.
+9. Resize the audience browser while each overlay is open and assert its full bounding rectangle remains inside the safety margins.
+10. Verify Tab order, focus trap, Escape, backdrop close, focus restoration, pointer input, and visible focus at scaled sizes.
+11. Verify the presenter shows educational popouts on the left and graphs on the right at desktop width, then stacks them in that order at narrow width.
+12. Verify authored and personal notes read as one reference area while add, pencil, and trash controls remain accessible and per-slide persistence is unchanged.
+13. Run the complete deck test suite, JavaScript syntax checks, `git diff --check`, and console-error review.
 
 ## Delivery Boundary
 
