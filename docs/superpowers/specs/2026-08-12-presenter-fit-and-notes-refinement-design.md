@@ -1,7 +1,7 @@
 # Presenter Overlay Fit and Notes Refinement
 
 Date: 2026-08-12
-Status: Approved design, pending written-specification review
+Status: Approved for implementation planning
 
 ## Objective
 
@@ -73,7 +73,8 @@ Opening an overlay chooses the largest scale at or below `1` that keeps the comp
 
 ### Content interaction while scaled
 
-- Scale the complete visual canvas, including typography, form controls, buttons, disclosures, and graphics.
+- Scale the complete content canvas, including typography, form fields, in-content buttons, disclosures, and graphics.
+- Keep overlay chrome outside that canvas: close and resize controls stay anchored to the fitted shell at their specified screen-pixel hit-target size instead of shrinking with the content.
 - Preserve pointer, keyboard, focus, and form-input behavior at every supported scale.
 - Focus outlines and close/resize controls must remain visible.
 - Do not use browser zoom or change the audience slide's own scale.
@@ -85,7 +86,7 @@ Opening an overlay chooses the largest scale at or below `1` that keeps the comp
 - Do not show the current `Presenter graph` eyebrow, large title, accent bar, footer, or padded white content card.
 - The decoded graph fills the intrinsic canvas with `object-fit: contain`; the graph is never cropped or distorted.
 - Give the dialog an accessible name from the graph registry without relying on a visible heading.
-- Place a small high-contrast close icon over the top-right corner and the existing green proportional resize affordance over the bottom-right corner; each control keeps at least a `36px × 36px` hit target.
+- Place a small high-contrast close icon over the top-right corner and the existing green proportional resize affordance over the bottom-right corner; each unscaled shell control keeps at least a `36px × 36px` hit target.
 - Allow dragging from the graph surface except when the pointer originates on the close or resize control. Disable native image dragging.
 - Keep a quiet background only where the graph's aspect ratio leaves unavoidable space.
 - If image decoding fails, replace the canvas content with the existing accessible `Graph unavailable` state using the same fitted geometry.
@@ -135,6 +136,7 @@ Opening an overlay chooses the largest scale at or below `1` that keeps the comp
 ## Architecture and File Boundaries
 
 - Add a small shared geometry module under `first-time-homebuyer/deck/js/` for pure fit, resize, and clamp calculations.
+- Each audience overlay uses an unscaled positioned shell whose width and height equal the fitted rendered rectangle. An intrinsic-size child canvas is transformed from its top-left origin; close and resize controls are shell siblings rather than canvas children.
 - `modal.js` consumes the geometry module for graph and educational-popout fitting but continues to own modal content, focus management, opening, and closing.
 - `calculator.js` consumes the same geometry module while retaining independent visibility, values, calculations, focus trap, and channel synchronization.
 - `components.css` owns the educational and graph visual canvases and their scaled-shell treatments.
