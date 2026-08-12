@@ -1,7 +1,7 @@
 # Decoding Loan Estimates and Closing Disclosures Webinar
 
 Date: 2026-08-12
-Status: Approved design, pending written-specification review
+Status: Approved for implementation planning
 
 ## Objective
 
