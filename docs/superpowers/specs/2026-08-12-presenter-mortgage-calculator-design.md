@@ -1,7 +1,7 @@
 # Presenter-Controlled Mortgage Payment Calculator
 
 Date: 2026-08-12
-Status: Approved design, pending specification review
+Status: Approved for implementation and production deployment
 
 ## Objective
 
@@ -150,11 +150,22 @@ Use test-first implementation and real two-window browser verification:
 14. Run the full deck test suite, JavaScript syntax checks, `git diff --check`, and browser console review.
 15. Visually inspect the calculator at 1280-by-720 and 1920-by-1080 audience sizes.
 
+## Production Deployment
+
+- Deploy the verified calculator and all previously approved webinar changes to AWS Amplify app `d1u9vaaso8yrd4`, branch `main`, in `us-east-1`.
+- Because Amplify manual deployments replace the entire site, download the artifact from the latest successful production job and use it as the immutable base for the new bundle.
+- Preserve the current production root page, `/webinars/` page, and both downloadable PowerPoint files byte-for-byte.
+- Replace only `/webinars/homebuyers-webinar/` application files with the verified local deck allowlist: HTML entry points, CSS, JavaScript, content modules, referenced brand assets, referenced presenter portraits, and presenter graph assets. Reattach the unchanged production `downloads/` directory.
+- Exclude source-only files, tests, documentation, PowerPoint build scripts, `.DS_Store`, `__MACOSX`, unrelated portraits, and local browser artifacts.
+- Validate archive integrity and protected-file hashes before upload.
+- After Amplify reports `SUCCEED`, verify the custom-domain and Amplify-domain routes, calculator source hashes, presenter/audience workflow, and protected sibling files.
+- Retain the previous successful production artifact until verification passes. If production verification fails, upload that exact artifact as the rollback deployment.
+
 ## Non-goals
 
 - No CTA, lead form, rate quote, amortization schedule, affordability approval, or data submission.
 - No network requests or external font dependencies.
 - No persistence across a browser refresh or separate webinar session.
 - No PowerPoint version of the interactive calculator.
-- No deployment or replacement of production webinar assets.
+- No changes to production routes or assets outside `/webinars/homebuyers-webinar/`.
 - No redesign of existing slides, graphs, educational popouts, or presenter annotation tools.
