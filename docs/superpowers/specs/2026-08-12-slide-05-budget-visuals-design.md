@@ -1,7 +1,7 @@
 # Slide 5 Budget Visuals
 
 Date: 2026-08-12
-Status: Approved design, pending written-spec review
+Status: Approved for implementation
 
 ## Objective
 
@@ -27,6 +27,16 @@ Remove this audience bullet:
 Remove the matching builder-incentive explanation from this slide's speaker notes. Keep the remaining speaker-note explanation about qualification versus the buyer's actual comfort level.
 
 This change is scoped only to Slide 5. It does not remove the later `The builder's incentive is free money` card from the separate mistakes slide.
+
+## Myth Popout Copy Lock
+
+In the `myth-20-down` popout, keep the closing note exactly:
+
+`Mortgage insurance on a conventional loan is removable.`
+
+The phrase `it's a phase, not a sentence` must not appear in the HTML presenter content or the PowerPoint content mirror. The current working source and deployed presenter already contain the approved final sentence, so implementation adds regression coverage to prevent the removed phrase from returning; no redundant source edit is required unless verification finds a mismatch.
+
+Historical handoff notes, planning documents, scripts, and archived slide sources are records of earlier versions and remain out of scope.
 
 ## Optional Presenter Visuals
 
@@ -76,6 +86,7 @@ Use test-first implementation and verify:
 9. The presenter heading reads `Optional visuals` on every slide with registered media.
 10. Existing Slide 2 and Slide 3 presenter visuals remain unchanged.
 11. The full deck test suite, JavaScript syntax checks, `git diff --check`, and browser console review pass.
+12. The `You need 20% down` popout ends with the exact approved mortgage-insurance sentence in both content representations, with no occurrence of the removed phrase in runtime content.
 
 ## Deployment Boundary
 
