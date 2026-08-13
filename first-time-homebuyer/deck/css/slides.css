@@ -98,20 +98,3 @@
 .wrap-qr .photo img { object-fit: contain; padding: 24px; }
 .wrap-qr .photo .wash { display: none; }
 .wrap-qr .photo-placeholder { position: absolute; inset: 0; }
-
-/* ---------------------------------------------------------------------------
-   MOBILE
-   ------------------------------------------------------------------------ */
-@media (max-width: 900px) {
-  .two-col { grid-template-columns: 1fr; gap: 24px; }
-  .split[data-ratio="photo-right"] .split-copy { padding-right: 0; }
-  .split-photo { min-height: 240px; }
-  .qa { flex-direction: column; gap: 10px; }
-  .qa-num { width: 40px; height: 40px; font-size: 20px; }
-  .qa-q { font-size: 20px; }
-  .qa-a { font-size: 16px; }
-  .col-head { font-size: 18px; }
-  .mini-list > li { font-size: 16px; }
-  .wrap-qr .photo { width: 200px; height: 200px; margin: 0 auto; }
-  .headline[style] { font-size: 34px !important; }
-}

@@ -14,10 +14,11 @@ import { initCalculator, setCalculatorVisible, isCalculatorVisible } from './cal
 import { makeCard, makeCardGrid } from './card.js';
 import { FIGURES } from './figures.js';
 import * as annotate from './annotate.js';
+import { createSurfaceController } from './surface-fit.js';
 
 const P = activePresenter();
 const PREVIEW = new URLSearchParams(location.search).has('preview');
-let current = 0, scaler, stage, channel;
+let current = 0, scaler, stage, slideFit, channel;
 let presenterWindow = null, presenterClosedWatch = null, navHidden = false;
 
 /* ---- helpers -------------------------------------------------------------- */
@@ -276,9 +277,7 @@ const next = () => show(current + 1);
 const prev = () => show(current - 1);
 
 function fit() {
-  if (window.matchMedia('(max-width: 900px)').matches) { scaler.style.transform = ''; return; }
-  const s = Math.min(stage.clientWidth / 1920, stage.clientHeight / 1080);
-  scaler.style.transform = `translate(-50%, -50%) scale(${s})`;
+  slideFit.fit();
 }
 
 function broadcast() { if (channel) channel.postMessage({ type: 'slide', index: current }); }
@@ -359,6 +358,15 @@ function handleAnnotate(m) {
 export function initDeck() {
   stage = document.querySelector('.stage');
   scaler = document.querySelector('.slide-scaler');
+  const slideShell = document.querySelector('.slide-fit-shell');
+  slideFit = createSurfaceController({
+    viewport: stage,
+    shell: slideShell,
+    surface: scaler,
+    getDesignSize: () => ({ width: 1920, height: 1080 }),
+    margin: 0,
+  });
+  slideFit.setActive(true);
   if (PREVIEW) document.body.classList.add('is-preview');
   initModal();
   if (!PREVIEW) {
@@ -411,7 +419,6 @@ export function initDeck() {
     if (i >= 0 && i !== current) show(i);
   });
 
-  window.addEventListener('resize', fit);
   fit();
   initChannel();
 

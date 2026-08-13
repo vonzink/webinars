@@ -32,12 +32,13 @@ em, i { font-style: normal; font-weight: var(--fw-800); }
    "nothing below 21px" floor is a real guarantee.
    ------------------------------------------------------------------------ */
 .stage { position: fixed; inset: 0; background: #000; overflow: hidden; }
-
+.slide-fit-shell { position: absolute; overflow: visible; }
 .slide-scaler {
-  position: absolute; top: 50%; left: 50%;
-  width: var(--slide-w); height: var(--slide-h);
-  transform-origin: center center;
-  transform: translate(-50%, -50%);
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: var(--slide-w);
+  height: var(--slide-h);
+  transform-origin: top left;
 }
 
 .slide {
@@ -318,27 +319,4 @@ body.show-guides .slide::after {
   content: ""; position: absolute; top: 0; right: 0;
   width: 460px; height: 300px;
   outline: 2px dashed rgba(140,198,62,0.6); pointer-events: none; z-index: 2;
-}
-
-/* ---------------------------------------------------------------------------
-   RESPONSIVE — the fixed canvas scales; below 900px it flows vertically.
-   ------------------------------------------------------------------------ */
-@media (max-width: 900px) {
-  html, body { height: auto; background: var(--bg-light); }
-  .stage { position: static; overflow: visible; }
-  .slide-scaler { position: static; width: 100%; height: auto; transform: none !important; }
-  .slide { position: relative; display: none; inset: auto; min-height: 100vh;
-    padding: 40px 24px 120px; font-size: 17px; }
-  .slide.is-active { display: flex; }
-  .slide[data-bleed] { padding: 40px 24px 120px; }
-  .headline, .headline.is-long { font-size: 30px; }
-  .eyebrow { font-size: 14px; }
-  .subhead { font-size: 17px; }
-  .slide-footer { position: static; margin-top: 40px; flex-direction: column;
-    align-items: flex-start; gap: 14px; }
-  .footer-meta { flex-direction: column; align-items: flex-start; gap: 10px; }
-  .footer-lines { text-align: left; font-size: 13px; }
-  .equal-housing-logo { height: 58px; }
-  .disclaimer { position: static; margin-top: 20px; font-size: 13px; }
-  .slide[data-footer], .slide[data-footer][data-disclaimer] { padding-bottom: 120px; }
 }
