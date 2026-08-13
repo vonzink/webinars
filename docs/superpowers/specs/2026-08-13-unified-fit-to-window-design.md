@@ -1,6 +1,6 @@
 # Unified Fit-to-Window Rendering Design
 
-**Status:** Approved design, awaiting written-spec review
+**Status:** Approved for implementation planning
 
 **Date:** 2026-08-13
 
