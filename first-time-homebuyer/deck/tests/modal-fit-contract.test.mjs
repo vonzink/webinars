@@ -39,3 +39,35 @@ test('graphics remain operational on the shared controller before native image s
   assert.match(source, /LEGACY_MEDIA_SIZE\s*=\s*Object\.freeze\(\{\s*width:\s*1600,\s*height:\s*900\s*\}\)/);
   assert.match(source, /currentDesignSize\s*=\s*LEGACY_MEDIA_SIZE/);
 });
+
+test('modal reveal waits for visible chrome and traps focus entering from outside', async () => {
+  const source = await read('js/modal.js');
+  assert.match(source, /async function revealAndFocus\(kind, token\)/);
+
+  const reveal = source.match(/async function revealAndFocus\(kind, token\)\s*\{([\s\S]*?)\n\}/)?.[1] || '';
+  const removeMeasuring = reveal.indexOf("root.classList.remove('is-measuring')");
+  const waitForFrame = reveal.indexOf('await nextFrame()');
+  const staleGuard = reveal.indexOf("activeKind !== kind");
+  const visibilityProof = reveal.indexOf('getComputedStyle(shell).visibility');
+  const focusClose = reveal.indexOf('closeBtn.focus({ preventScroll: true })');
+  assert.ok(removeMeasuring >= 0 && removeMeasuring < waitForFrame);
+  assert.ok(waitForFrame < staleGuard && staleGuard < visibilityProof && visibilityProof < focusClose);
+  assert.match(reveal, /for \(let frame = 0; frame < 3; frame \+= 1\)/);
+  assert.match(reveal, /if \(document\.activeElement === closeBtn\) return true/);
+
+  const trap = source.match(/function trap\(e\)\s*\{([\s\S]*?)\n\}/)?.[1] || '';
+  assert.match(trap, /!surface\.contains\(document\.activeElement\)/);
+  assert.match(trap, /e\.preventDefault\(\);\s*first\.focus\(\);\s*return/);
+});
+
+test('one external opener is preserved for the complete modal session', async () => {
+  const source = await read('js/modal.js');
+  assert.match(source, /function rememberSessionOpener\(opener\)/);
+
+  const remember = source.match(/function rememberSessionOpener\(opener\)\s*\{([\s\S]*?)\n\}/)?.[1] || '';
+  assert.match(remember, /root\.classList\.contains\('is-open'\)/);
+  assert.match(remember, /surface\.contains\(candidate\)/);
+  assert.match(remember, /lastFocused\s*=\s*candidate/);
+  assert.doesNotMatch(source, /lastFocused\s*=\s*opener\s*\|\|\s*document\.activeElement/);
+  assert.equal(source.match(/rememberSessionOpener\(opener\);/g)?.length, 2);
+});

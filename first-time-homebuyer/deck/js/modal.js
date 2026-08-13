@@ -14,7 +14,8 @@ const FOCUSABLE = 'a[href],button:not([disabled]),input,select,textarea,[tabinde
 const CONTENT_WIDTH = 1200;
 const WIDE_CONTENT_WIDTH = 1500;
 const LEGACY_MEDIA_SIZE = Object.freeze({ width: 1600, height: 900 });
-const twoFrames = () => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+const nextFrame = () => new Promise(resolve => requestAnimationFrame(resolve));
+const twoFrames = async () => { await nextFrame(); await nextFrame(); };
 
 let root, shell, surface, closeBtn, headEl, bodyEl, footEl, lastFocused = null, isOpen = false;
 let activeKind = null;
@@ -102,6 +103,7 @@ function trap(e) {
   const nodes = [...surface.querySelectorAll(FOCUSABLE)].filter(n => n.offsetParent !== null);
   if (!nodes.length) return;
   const first = nodes[0], last = nodes[nodes.length - 1];
+  if (!surface.contains(document.activeElement)) { e.preventDefault(); first.focus(); return; }
   if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
   else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
 }
@@ -122,6 +124,25 @@ function section(s) {
   return `<div class="modal-section"${tone}>${head}${list}${note}</div>`;
 }
 
+function rememberSessionOpener(opener) {
+  if (root.classList.contains('is-open')) return;
+  const candidate = opener || document.activeElement;
+  lastFocused = candidate && !surface.contains(candidate) ? candidate : null;
+}
+
+async function revealAndFocus(kind, token) {
+  root.classList.remove('is-measuring');
+  root.classList.add('is-visible');
+  for (let frame = 0; frame < 3; frame += 1) {
+    await nextFrame();
+    if (!isOpen || token !== openToken || activeKind !== kind) return false;
+    if (getComputedStyle(shell).visibility !== 'visible') continue;
+    closeBtn.focus({ preventScroll: true });
+    if (document.activeElement === closeBtn) return true;
+  }
+  return false;
+}
+
 async function fitEducational(d, token) {
   const width = d.table ? WIDE_CONTENT_WIDTH : CONTENT_WIDTH;
   root.classList.add('is-measuring');
@@ -134,16 +155,13 @@ async function fitEducational(d, token) {
   fitController.reset();
   fitController.setActive(true);
   fitController.fit();
-  root.classList.remove('is-measuring');
-  root.classList.add('is-visible');
-  closeBtn.focus({ preventScroll: true });
-  return true;
+  return revealAndFocus('content', token);
 }
 
 export async function openModal(id, opener) {
   const d = MODALS[id];
   if (!d) { console.warn(`[deck] no popout "${id}"`); return false; }
-  lastFocused = opener || document.activeElement;
+  rememberSessionOpener(opener);
 
   headEl.innerHTML = `<h2 class="modal-title" id="modal-title">${d.title}</h2>`;
 
@@ -168,14 +186,14 @@ export async function openModal(id, opener) {
   return fitEducational(d, token);
 }
 
-export function openMedia(id, opener) {
+export async function openMedia(id, opener) {
   const item = mediaById(id);
   if (!item) {
     console.warn(`[deck] no presenter media "${id}"`);
     return false;
   }
 
-  lastFocused = opener || document.activeElement;
+  rememberSessionOpener(opener);
   headEl.innerHTML = `<h2 class="modal-title" id="modal-title">${item.title}</h2>`;
   bodyEl.innerHTML = `
     <div class="modal-media-frame">
@@ -196,17 +214,14 @@ export function openMedia(id, opener) {
   root.classList.add('is-open', 'is-measuring');
   isOpen = true;
   activeKind = 'media';
-  openToken += 1;
+  const token = ++openToken;
   document.body.classList.add('modal-open');
 
   currentDesignSize = LEGACY_MEDIA_SIZE;
   fitController.reset();
   fitController.setActive(true);
   fitController.fit();
-  root.classList.remove('is-measuring');
-  root.classList.add('is-visible');
-  closeBtn.focus({ preventScroll: true });
-  return true;
+  return revealAndFocus('media', token);
 }
 
 function clearFitGeometry() {
