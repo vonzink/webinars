@@ -1,7 +1,7 @@
 # Presenter Quick Controls
 
 Date: 2026-08-13
-Status: Approved design; awaiting written-specification review
+Status: Approved for implementation planning
 
 ## Objective
 
