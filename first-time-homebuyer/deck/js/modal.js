@@ -1,35 +1,53 @@
 /* ============================================================================
-   MODAL — the one popout. Deep Forest header band, green accent bar.
+   MODAL — educational popouts and presenter graphics.
    Closes on ✕ / Esc / backdrop. Focus trapped + returned.
-   The panel is DRAGGABLE (by its header) and RESIZABLE (corner handle).
+   The complete authored surface is DRAGGABLE and uniformly RESIZABLE.
    Supports bulleted sections and an optional comparison table.
    ========================================================================= */
 
 import { MODALS } from '../content/modals.js';
 import { COMPLIANCE } from '../content/presenters.js';
 import { mediaById } from '../content/presenter-media.js';
+import { createSurfaceController } from './surface-fit.js';
 
 const FOCUSABLE = 'a[href],button:not([disabled]),input,select,textarea,[tabindex]:not([tabindex="-1"])';
-let root, panel, closeBtn, headEl, bodyEl, footEl, lastFocused = null, isOpen = false;
+const CONTENT_WIDTH = 1200;
+const WIDE_CONTENT_WIDTH = 1500;
+const LEGACY_MEDIA_SIZE = Object.freeze({ width: 1600, height: 900 });
+const twoFrames = () => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+
+let root, shell, surface, closeBtn, headEl, bodyEl, footEl, lastFocused = null, isOpen = false;
 let activeKind = null;
-let pos = { x: 0, y: 0 };   // drag offset from centre
+let currentDesignSize = { width: CONTENT_WIDTH, height: 1 };
+let fitController;
+let openToken = 0;
 
 export function initModal() {
   root = document.getElementById('modal-root');
   root.innerHTML = `
     <div class="modal-backdrop" data-close></div>
-    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-      <button class="modal-close" data-close aria-label="Close">✕</button>
-      <div class="modal-head" data-drag></div>
-      <div class="modal-body"></div>
-      <div class="modal-foot" hidden></div>
-      <div class="modal-resize" aria-hidden="true"></div>
+    <div class="modal-shell" data-fit-shell>
+      <div class="modal" data-fit-surface role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        <button class="modal-close" data-close aria-label="Close">✕</button>
+        <div class="modal-head" data-drag></div>
+        <div class="modal-body"></div>
+        <div class="modal-foot" hidden></div>
+        <button type="button" class="modal-resize" aria-label="Resize popout"></button>
+      </div>
     </div>`;
-  panel = root.querySelector('.modal');
+  shell = root.querySelector('.modal-shell');
+  surface = root.querySelector('.modal');
   closeBtn = root.querySelector('.modal-close');
   headEl = root.querySelector('.modal-head');
   bodyEl = root.querySelector('.modal-body');
   footEl = root.querySelector('.modal-foot');
+
+  fitController = createSurfaceController({
+    viewport: root,
+    shell,
+    surface,
+    getDesignSize: () => currentDesignSize,
+  });
 
   root.addEventListener('click', e => { if (e.target.hasAttribute('data-close')) closeModal(); });
   document.addEventListener('keydown', e => {
@@ -44,44 +62,44 @@ export function initModal() {
 
 /* ---- drag by header ---- */
 function initDrag() {
-  let dragging = false, sx = 0, sy = 0, ox = 0, oy = 0;
+  let dragging = false, sx = 0, sy = 0, start = null;
   headEl.addEventListener('pointerdown', e => {
-    if (e.target.closest('.modal-close')) return;
-    dragging = true; sx = e.clientX; sy = e.clientY; ox = pos.x; oy = pos.y;
+    if (e.target.closest(FOCUSABLE)) return;
+    start = fitController.getGeometry();
+    if (!start) return;
+    dragging = true; sx = e.clientX; sy = e.clientY;
     headEl.setPointerCapture(e.pointerId); headEl.style.cursor = 'grabbing';
   });
   headEl.addEventListener('pointermove', e => {
     if (!dragging) return;
-    pos.x = ox + (e.clientX - sx); pos.y = oy + (e.clientY - sy);
-    applyPos();
+    fitController.moveFrom(start, e.clientX - sx, e.clientY - sy);
   });
-  const end = () => { dragging = false; headEl.style.cursor = ''; };
+  const end = () => { dragging = false; start = null; headEl.style.cursor = ''; };
   headEl.addEventListener('pointerup', end);
   headEl.addEventListener('pointercancel', end);
 }
-function applyPos() { panel.style.transform = `translate(${pos.x}px, ${pos.y}px)`; }
 
 /* ---- resize by corner handle ---- */
 function initResize() {
   const handle = root.querySelector('.modal-resize');
-  let resizing = false, sx = 0, sy = 0, sw = 0, sh = 0;
+  let resizing = false, sx = 0, sy = 0, start = null;
   handle.addEventListener('pointerdown', e => {
+    start = fitController.getGeometry();
+    if (!start) return;
     resizing = true; sx = e.clientX; sy = e.clientY;
-    const r = panel.getBoundingClientRect(); sw = r.width; sh = r.height;
     handle.setPointerCapture(e.pointerId); e.preventDefault();
   });
   handle.addEventListener('pointermove', e => {
     if (!resizing) return;
-    panel.style.width = Math.max(520, sw + (e.clientX - sx)) + 'px';
-    panel.style.height = Math.max(300, sh + (e.clientY - sy)) + 'px';
+    fitController.resizeFrom(start, e.clientX - sx, e.clientY - sy);
   });
-  const end = () => { resizing = false; };
+  const end = () => { resizing = false; start = null; };
   handle.addEventListener('pointerup', end);
   handle.addEventListener('pointercancel', end);
 }
 
 function trap(e) {
-  const nodes = [...panel.querySelectorAll(FOCUSABLE)].filter(n => n.offsetParent !== null);
+  const nodes = [...surface.querySelectorAll(FOCUSABLE)].filter(n => n.offsetParent !== null);
   if (!nodes.length) return;
   const first = nodes[0], last = nodes[nodes.length - 1];
   if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
@@ -104,38 +122,50 @@ function section(s) {
   return `<div class="modal-section"${tone}>${head}${list}${note}</div>`;
 }
 
-export function openModal(id, opener) {
+async function fitEducational(d, token) {
+  const width = d.table ? WIDE_CONTENT_WIDTH : CONTENT_WIDTH;
+  root.classList.add('is-measuring');
+  Object.assign(surface.style, { width: `${width}px`, height: 'auto', transform: 'none' });
+  await document.fonts.ready;
+  await twoFrames();
+  if (!isOpen || token !== openToken || activeKind !== 'content') return false;
+
+  currentDesignSize = { width, height: Math.ceil(surface.scrollHeight) };
+  fitController.reset();
+  fitController.setActive(true);
+  fitController.fit();
+  root.classList.remove('is-measuring');
+  root.classList.add('is-visible');
+  closeBtn.focus({ preventScroll: true });
+  return true;
+}
+
+export async function openModal(id, opener) {
   const d = MODALS[id];
-  if (!d) { console.warn(`[deck] no popout "${id}"`); return; }
+  if (!d) { console.warn(`[deck] no popout "${id}"`); return false; }
   lastFocused = opener || document.activeElement;
 
-  headEl.innerHTML = `
-    ${d.eyebrow ? `<div class="modal-eyebrow">${d.eyebrow}</div>` : ''}
-    <h2 class="modal-title" id="modal-title">${d.title}</h2>
-    <div class="modal-title-bar"></div>`;
+  headEl.innerHTML = `<h2 class="modal-title" id="modal-title">${d.title}</h2>`;
 
   let body = '';
   if (d.intro) body += `<p class="modal-intro">${d.intro}</p>`;
   if (d.table) body += renderTable(d.table);
   if (d.sections) body += d.sections.map(section).join('');
   bodyEl.innerHTML = body;
-  bodyEl.scrollTop = 0;
 
   const lines = (d.compliance || []).map(k => COMPLIANCE[k]).filter(Boolean);
   if (lines.length) { footEl.textContent = lines.join('  '); footEl.hidden = false; }
   else footEl.hidden = true;
 
-  /* reset size + position each open */
-  pos = { x: 0, y: 0 };
-  panel.style.width = ''; panel.style.height = '';
-  panel.classList.remove('modal--media');
-  panel.classList.toggle('modal--wide', !!d.table);
-
-  root.classList.add('is-open');
-  requestAnimationFrame(() => { root.classList.add('is-visible'); applyPos(); closeBtn.focus(); });
+  fitController.setActive(false);
+  surface.classList.remove('modal--media');
+  root.classList.remove('is-visible');
+  root.classList.add('is-open', 'is-measuring');
   isOpen = true;
   activeKind = 'content';
+  const token = ++openToken;
   document.body.classList.add('modal-open');
+  return fitEducational(d, token);
 }
 
 export function openMedia(id, opener) {
@@ -146,10 +176,7 @@ export function openMedia(id, opener) {
   }
 
   lastFocused = opener || document.activeElement;
-  headEl.innerHTML = `
-    <div class="modal-eyebrow">Presenter graph</div>
-    <h2 class="modal-title" id="modal-title">${item.title}</h2>
-    <div class="modal-title-bar"></div>`;
+  headEl.innerHTML = `<h2 class="modal-title" id="modal-title">${item.title}</h2>`;
   bodyEl.innerHTML = `
     <div class="modal-media-frame">
       <img src="${item.src}" alt="${item.alt}">
@@ -163,32 +190,42 @@ export function openMedia(id, opener) {
   }, { once: true });
   footEl.hidden = true;
 
-  pos = { x: 0, y: 0 };
-  panel.style.width = '';
-  panel.style.height = '';
-  panel.classList.remove('modal--wide');
-  panel.classList.add('modal--media');
-  root.classList.add('is-open');
-  requestAnimationFrame(() => {
-    root.classList.add('is-visible');
-    applyPos();
-    closeBtn.focus();
-  });
+  fitController.setActive(false);
+  surface.classList.add('modal--media');
+  root.classList.remove('is-visible');
+  root.classList.add('is-open', 'is-measuring');
   isOpen = true;
   activeKind = 'media';
+  openToken += 1;
   document.body.classList.add('modal-open');
+
+  currentDesignSize = LEGACY_MEDIA_SIZE;
+  fitController.reset();
+  fitController.setActive(true);
+  fitController.fit();
+  root.classList.remove('is-measuring');
+  root.classList.add('is-visible');
+  closeBtn.focus({ preventScroll: true });
   return true;
+}
+
+function clearFitGeometry() {
+  Object.assign(shell.style, { width: '', height: '', left: '', top: '' });
+  Object.assign(surface.style, { width: '', height: '', transform: '', transformOrigin: '' });
 }
 
 export function closeModal() {
   if (!isOpen) return;
   isOpen = false;
+  const token = ++openToken;
+  fitController.setActive(false);
   root.classList.remove('is-visible');
   document.body.classList.remove('modal-open');
   const done = () => {
-    root.classList.remove('is-open');
-    panel.style.transform = '';
+    if (isOpen || token !== openToken) return;
+    root.classList.remove('is-open', 'is-measuring');
     if (lastFocused && document.contains(lastFocused)) lastFocused.focus();
+    clearFitGeometry();
     lastFocused = null;
     activeKind = null;
   };
