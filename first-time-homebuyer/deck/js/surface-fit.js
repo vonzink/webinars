@@ -19,6 +19,8 @@ export function createSurfaceController({
   let preferredScale = 1;
   let userPositioned = false;
   let frame = 0;
+  let destroyed = false;
+  let generation = 0;
 
   const viewportSize = () => ({
     viewportWidth: finiteSize(viewport.clientWidth, document.documentElement.clientWidth),
@@ -48,13 +50,14 @@ export function createSurfaceController({
     Object.assign(surface.style, {
       width: `${next.intrinsicWidth}px`,
       height: `${next.intrinsicHeight}px`,
+      transformOrigin: 'top left',
       transform: `scale(${next.scale})`,
     });
     return next;
   };
 
   const fit = () => {
-    if (!active) return geometry;
+    if (destroyed || !active) return geometry;
     const options = dimensions();
     if (!geometry || !userPositioned) {
       return apply(fitOverlay({ ...options, maxScale: preferredScale }));
@@ -68,21 +71,26 @@ export function createSurfaceController({
   };
 
   const scheduleFit = () => {
+    if (destroyed || !active) return;
     cancelAnimationFrame(frame);
+    const token = ++generation;
     frame = requestAnimationFrame(() => {
       frame = 0;
-      if (active) fit();
+      if (!destroyed && active && token === generation) fit();
     });
   };
 
   const reset = () => {
+    generation += 1;
+    cancelAnimationFrame(frame);
+    frame = 0;
     preferredScale = 1;
     userPositioned = false;
     geometry = null;
   };
 
   const moveFrom = (start, deltaX, deltaY) => {
-    if (!active || !start) return geometry;
+    if (destroyed || !active || !start) return geometry;
     userPositioned = true;
     return apply(clampOverlay({
       ...dimensions(),
@@ -93,7 +101,7 @@ export function createSurfaceController({
   };
 
   const resizeFrom = (start, deltaX, deltaY) => {
-    if (!active || !start) return geometry;
+    if (destroyed || !active || !start) return geometry;
     const next = resizeOverlay({
       ...dimensions(),
       startScale: start.scale,
@@ -112,7 +120,14 @@ export function createSurfaceController({
   window.addEventListener('resize', scheduleFit);
 
   return {
-    setActive(next) { active = Boolean(next); if (active) scheduleFit(); },
+    setActive(next) {
+      if (destroyed) return;
+      active = Boolean(next);
+      generation += 1;
+      cancelAnimationFrame(frame);
+      frame = 0;
+      if (active) scheduleFit();
+    },
     fit,
     reset,
     moveFrom,
@@ -120,8 +135,11 @@ export function createSurfaceController({
     scheduleFit,
     getGeometry: () => geometry,
     destroy() {
+      destroyed = true;
       active = false;
+      generation += 1;
       cancelAnimationFrame(frame);
+      frame = 0;
       observer.disconnect();
       window.removeEventListener('resize', scheduleFit);
     },
