@@ -34,10 +34,32 @@ test('modal controls are part of the scaled design surface', async () => {
   assert.doesNotMatch(source, /Math\.max\(520|Math\.max\(300/);
 });
 
-test('graphics remain operational on the shared controller before native image sizing', async () => {
+test('graphics fit decoded native dimensions plus the compact toolbar', async () => {
   const source = await read('js/modal.js');
-  assert.match(source, /LEGACY_MEDIA_SIZE\s*=\s*Object\.freeze\(\{\s*width:\s*1600,\s*height:\s*900\s*\}\)/);
-  assert.match(source, /currentDesignSize\s*=\s*LEGACY_MEDIA_SIZE/);
+  assert.match(source, /MEDIA_TOOLBAR_HEIGHT\s*=\s*52/);
+  assert.match(source, /image\.naturalWidth/);
+  assert.match(source, /image\.naturalHeight\s*\+\s*MEDIA_TOOLBAR_HEIGHT/);
+  assert.match(source, /await image\.decode\(\)/);
+  assert.match(source, /width:\s*960,\s*height:\s*592/);
+});
+
+test('media decode completion is guarded in both success and failure paths', async () => {
+  const source = await read('js/modal.js');
+  const openMedia = source.match(/export async function openMedia\(id, opener\)\s*\{([\s\S]*?)\n\}\n\nfunction clearFitGeometry/)?.[1] || '';
+  const staleGuard = "if (!isOpen || token !== openToken || activeKind !== 'media') return false;";
+  assert.equal(openMedia.split(staleGuard).length - 1, 2,
+    'both resolved and rejected decodes must ignore stale media opens');
+
+  const decode = openMedia.indexOf('await image.decode()');
+  const successGuard = openMedia.indexOf(staleGuard, decode);
+  const nativeSize = openMedia.indexOf('image.naturalWidth', successGuard);
+  const catchBranch = openMedia.indexOf('catch', nativeSize);
+  const failureGuard = openMedia.indexOf(staleGuard, catchBranch);
+  const showError = openMedia.indexOf('error.hidden = false', failureGuard);
+  const fallback = openMedia.indexOf('currentDesignSize = MEDIA_FALLBACK', failureGuard);
+  assert.ok(decode >= 0 && decode < successGuard && successGuard < nativeSize);
+  assert.ok(catchBranch > nativeSize && catchBranch < failureGuard);
+  assert.ok(failureGuard < showError && failureGuard < fallback);
 });
 
 test('modal reveal waits for visible chrome and traps focus entering from outside', async () => {

@@ -13,7 +13,8 @@ import { createSurfaceController } from './surface-fit.js';
 const FOCUSABLE = 'a[href],button:not([disabled]),input,select,textarea,[tabindex]:not([tabindex="-1"])';
 const CONTENT_WIDTH = 1200;
 const WIDE_CONTENT_WIDTH = 1500;
-const LEGACY_MEDIA_SIZE = Object.freeze({ width: 1600, height: 900 });
+const MEDIA_TOOLBAR_HEIGHT = 52;
+const MEDIA_FALLBACK = Object.freeze({ width: 960, height: 592 });
 const nextFrame = () => new Promise(resolve => requestAnimationFrame(resolve));
 const twoFrames = async () => { await nextFrame(); await nextFrame(); };
 
@@ -202,10 +203,6 @@ export async function openMedia(id, opener) {
     </div>`;
   const image = bodyEl.querySelector('img');
   const error = bodyEl.querySelector('.modal-media-error');
-  image.addEventListener('error', () => {
-    image.hidden = true;
-    error.hidden = false;
-  }, { once: true });
   footEl.hidden = true;
 
   fitController.setActive(false);
@@ -217,7 +214,20 @@ export async function openMedia(id, opener) {
   const token = ++openToken;
   document.body.classList.add('modal-open');
 
-  currentDesignSize = LEGACY_MEDIA_SIZE;
+  try {
+    await image.decode();
+    if (!isOpen || token !== openToken || activeKind !== 'media') return false;
+    currentDesignSize = {
+      width: image.naturalWidth,
+      height: image.naturalHeight + MEDIA_TOOLBAR_HEIGHT,
+    };
+  } catch {
+    if (!isOpen || token !== openToken || activeKind !== 'media') return false;
+    image.hidden = true;
+    error.hidden = false;
+    currentDesignSize = MEDIA_FALLBACK;
+  }
+
   fitController.reset();
   fitController.setActive(true);
   fitController.fit();
