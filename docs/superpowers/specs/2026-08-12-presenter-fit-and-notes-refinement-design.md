@@ -1,7 +1,7 @@
 # Presenter Overlay Fit and Notes Refinement
 
 Date: 2026-08-12
-Status: Revised to content-hugging popouts, pending written-specification approval
+Status: Approved for implementation
 
 ## Objective
 
