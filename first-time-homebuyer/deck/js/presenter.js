@@ -6,11 +6,13 @@
 
 import { SLIDES, TARGET_RUNTIME_SECONDS } from '../content/slides.js';
 import { MODALS } from '../content/modals.js';
+import { mediaForSlide } from '../content/presenter-media.js';
 import { activePresenter, COMPANY } from '../content/presenters.js';
 
 const channel = new BroadcastChannel('msfg-deck');
 const P = activePresenter();
-let index = 0, startedAt = null, slideAt = null, tick = null, annOn = false, barOn = false;
+let index = 0, startedAt = null, slideAt = null, tick = null;
+let annOn = false, barOn = false, navHidden = false, calculatorVisible = false;
 const $ = s => document.querySelector(s);
 const fmt = sec => { const s = Math.max(0, Math.round(sec));
   return `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`; };
@@ -42,6 +44,24 @@ function render() {
     li.appendChild(b); list.appendChild(li);
   });
   $('#p-popout-count').textContent = ids.length;
+
+  const media = mediaForSlide(cur.id);
+  const library = $('#p-library-grid');
+  const section = $('#p-media-section');
+  const mediaList = $('#p-media-list');
+  section.hidden = media.length === 0;
+  library.classList.toggle('is-single', media.length === 0);
+  mediaList.innerHTML = '';
+  media.forEach(item => {
+    const li = document.createElement('li');
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = item.title;
+    button.addEventListener('click', () => channel.postMessage({ type: 'open-media', id: item.id }));
+    li.appendChild(button);
+    mediaList.appendChild(li);
+  });
+  $('#p-media-count').textContent = String(media.length);
 
   renderNotes();
 }
@@ -93,11 +113,66 @@ function addNote() {
 
 /* ---- annotation controls (drive the shared slide) ---- */
 function ann(msg) { channel.postMessage({ type: 'annotate', ...msg }); }
+function renderAnnState(on) {
+  annOn = Boolean(on);
+  const button = $('#p-annon');
+  $('#p-ann-state').textContent = annOn ? 'On' : 'Off';
+  button.classList.toggle('on', annOn);
+  button.setAttribute('aria-pressed', String(annOn));
+}
+
 function setAnnOn(on) {
-  annOn = on; $('#p-annon').textContent = `Draw: ${on ? 'On' : 'Off'}`;
-  $('#p-annon').classList.toggle('on', on); ann({ on });
-  if (!on) { barOn = false; const t = $('#p-anntoolbar');
-    if (t) { t.textContent = 'On-slide tools: Off'; t.classList.remove('on'); } }
+  renderAnnState(on);
+  ann({ on: annOn });
+  if (!annOn) {
+    barOn = false;
+    const toolbar = $('#p-anntoolbar');
+    if (toolbar) {
+      toolbar.textContent = 'On-slide tools: Off';
+      toolbar.classList.remove('on');
+    }
+  }
+}
+
+function renderNavState(hidden) {
+  navHidden = Boolean(hidden);
+  const button = $('#p-nav-visibility');
+  button.textContent = `Slide navigation: ${navHidden ? 'Hidden' : 'Shown'}`;
+  button.classList.toggle('on', navHidden);
+}
+
+function renderCalculatorState(nextVisible) {
+  calculatorVisible = Boolean(nextVisible);
+  const button = $('#p-calculator');
+  const label = calculatorVisible ? 'Hide calculator' : 'Show calculator';
+  button.classList.toggle('on', calculatorVisible);
+  button.setAttribute('aria-label', label);
+  button.setAttribute('title', label);
+  button.setAttribute('aria-pressed', String(calculatorVisible));
+}
+
+function restoreNavigation() {
+  channel.postMessage({ type: 'presenter-exit' });
+  if (window.opener && !window.opener.closed && window.opener.__deckSetNavigationHidden) {
+    window.opener.__deckSetNavigationHidden(false);
+  }
+}
+
+function isTextEntryTarget(target) {
+  return target instanceof Element && (
+    target.matches('input, textarea, select') ||
+    target.isContentEditable ||
+    Boolean(target.closest('[contenteditable="true"]'))
+  );
+}
+
+function isDrawShortcut(event) {
+  return event.key.toLowerCase() === 'd' &&
+    !event.repeat &&
+    !event.ctrlKey &&
+    !event.altKey &&
+    !event.metaKey &&
+    !isTextEntryTarget(event.target);
 }
 
 export function initPresenter() {
@@ -108,16 +183,14 @@ export function initPresenter() {
   let fsOn = false;
   channel.onmessage = e => {
     if (e.data.type === 'slide') setIndex(e.data.index);
-    if (e.data.type === 'annstate') {   // auto-off flipped drawing off on the shared slide
-      annOn = e.data.on;
-      $('#p-annon').textContent = `Draw: ${annOn ? 'On' : 'Off'}`;
-      $('#p-annon').classList.toggle('on', annOn);
-    }
+    if (e.data.type === 'annstate') renderAnnState(e.data.on);
     if (e.data.type === 'fsstate') {    // slide window entered/left fullscreen
       fsOn = e.data.on;
       $('#p-fs').textContent = `⛶ Fullscreen slide: ${fsOn ? 'On' : 'Off'}`;
       $('#p-fs').classList.toggle('on', fsOn);
     }
+    if (e.data.type === 'navstate') renderNavState(e.data.hidden);
+    if (e.data.type === 'calculator-state') renderCalculatorState(e.data.visible);
   };
   channel.postMessage({ type: 'hello' });
 
@@ -130,6 +203,12 @@ export function initPresenter() {
     } else {
       channel.postMessage({ type: 'fullscreen', on: target });
     }
+  });
+  $('#p-nav-visibility').addEventListener('click', () => {
+    channel.postMessage({ type: 'nav-visibility', hidden: !navHidden });
+  });
+  $('#p-calculator').addEventListener('click', () => {
+    channel.postMessage({ type: 'calculator-visibility', visible: !calculatorVisible });
   });
 
   $('#p-prev').addEventListener('click', () => channel.postMessage({ type: 'prev' }));
@@ -163,10 +242,25 @@ export function initPresenter() {
   });
 
   document.addEventListener('keydown', e => {
-    if (e.target instanceof Element && e.target.matches('button, textarea, input')) return;
-    if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); channel.postMessage({ type: 'next' }); }
-    if (e.key === 'ArrowLeft') { e.preventDefault(); channel.postMessage({ type: 'prev' }); }
+    if (isDrawShortcut(e)) {
+      e.preventDefault();
+      setAnnOn(!annOn);
+      return;
+    }
+    if (e.target instanceof Element &&
+        (e.target.matches('button, textarea, input, select') || e.target.isContentEditable)) return;
+    if (e.key === 'ArrowRight' || e.key === ' ') {
+      e.preventDefault();
+      channel.postMessage({ type: 'next' });
+    }
+    if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      channel.postMessage({ type: 'prev' });
+    }
   });
+
+  window.addEventListener('pagehide', restoreNavigation);
+  window.addEventListener('beforeunload', restoreNavigation);
 
   render();
 }

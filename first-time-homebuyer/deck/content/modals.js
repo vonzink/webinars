@@ -14,7 +14,7 @@ export const MODALS = {
     eyebrow: 'The myth', title: 'You need 20% down',
     sections: [
       { head: 'The reality', items: [
-        'Conventional goes as low as <strong>3%</strong>, FHA <strong>3.5%</strong>, VA and USDA <strong>0%</strong>',
+        'Conventional goes as low as 3%, FHA 3.5%, VA and USDA 0%',
         'The median first-time buyer puts down far less than 20%',
       ]},
       { head: 'Pros of 20% down', tone: 'pros', items: [
@@ -25,14 +25,14 @@ export const MODALS = {
         'Years of saving while rent builds no equity',
         'Drains the cash reserve you want after closing',
       ]},
-      { head: '', items: [], note: 'Mortgage insurance on a conventional loan is <strong>removable</strong> — it\'s a phase, not a sentence.' },
+      { head: '', items: [], note: 'Mortgage insurance on a conventional loan is removable.' },
     ],
   },
   'myth-fha-first': {
     eyebrow: 'The myth', title: 'FHA is only for first-time buyers',
     sections: [
       { head: 'The reality', items: [
-        '<strong>FHA has no first-time buyer requirement</strong> — anyone eligible can use it',
+        'FHA has no first-time buyer requirement — anyone eligible can use it',
         'It\'s a primary-residence program, not a first-timer program',
       ]},
       { head: 'Pros', tone: 'pros', items: [
@@ -49,7 +49,7 @@ export const MODALS = {
     eyebrow: 'The myth', title: 'You need perfect credit',
     sections: [
       { head: 'The reality', items: [
-        'Pricing moves in <strong>tiers</strong> — near an edge matters, mid-tier often doesn\'t',
+        'Pricing moves in tiers — near an edge matters, mid-tier often doesn\'t',
         'FHA and VA reach meaningfully lower than conventional',
       ]},
       { head: 'Pros of a higher score', tone: 'pros', items: [
@@ -62,7 +62,7 @@ export const MODALS = {
     ],
   },
   'myth-renting': {
-    eyebrow: 'The myth', title: 'Renting is always cheaper',
+    eyebrow: 'The myth', title: 'Renting is cheaper',
     sections: [
       { head: 'The reality', items: [
         'Rent generally rises; a fixed principal & interest payment doesn\'t',
@@ -81,40 +81,18 @@ export const MODALS = {
     eyebrow: 'The myth', title: 'The lowest rate is the best deal',
     sections: [
       { head: 'The reality', items: [
-        'A lower rate is often <strong>bought</strong> with points paid at closing',
-        'The lowest rate and the lowest cost are frequently not the same loan',
+        'A lower rate is often bought with points paid at closing',
+        'The lowest rate and the lowest cost are never the same loan',
       ]},
       { head: 'Pros of a lower rate', tone: 'pros', items: [
         'Lower payment and less interest over a long hold',
+        'The benefit of a lower Rate is lower payment.',
       ]},
       { head: 'Cons', tone: 'cons', items: [
         'Points are cash today — gone if you sell or refinance early',
         'Chasing rate can hide high lender fees',
       ]},
       { head: '', items: [], note: 'Ask for <strong>rate AND total cost</strong>, and compare Loan Estimates from the same day.' },
-    ],
-  },
-
-  'compare-loans': {
-    eyebrow: 'Compare', title: 'Conventional vs FHA vs VA',
-    intro: 'Same borrower, same price — the rate is only part of the story. APR folds in mortgage insurance and fees, so the lowest rate isn\'t always the lowest APR.',
-    table: {
-      columns: ['Conventional', 'FHA', 'VA'],
-      rows: [
-        { label: 'Minimum down',       cells: ['3%', '3.5%', '0%'] },
-        { label: 'Mortgage insurance', cells: ['Removable', 'Often life of loan', 'None'] },
-        { label: 'Illustrative rate',  cells: ['6.75%', '6.50%', '6.25%'] },
-        { label: 'Illustrative APR',   cells: ['<strong>6.90%</strong>', '<strong>7.40%</strong>', '<strong>6.45%</strong>'] },
-        { label: 'Best for',           cells: ['Strong credit', 'Credit flexibility', 'Eligible veterans'] },
-      ],
-    },
-    compliance: ['hypothetical'],
-    sections: [
-      { head: 'The takeaway', items: [
-        'FHA\'s lower rate can carry a <strong>higher APR</strong> — upfront and monthly MI',
-        'VA often wins on APR — no monthly MI',
-        'Ask for <strong>rate AND APR</strong> on every quote',
-      ]},
     ],
   },
 
@@ -165,24 +143,24 @@ export const MODALS = {
   'src-savings': {
     eyebrow: 'Where it comes from', title: 'Savings',
     sections: [{ head: 'The rules', items: [
-      'Must be <strong>seasoned</strong> — sitting in your account, documented',
-      '<strong>No undocumented cash.</strong> Cash deposits without a trail can\'t be used',
+      'Must be seasoned — sitting in your account, documented',
+      'No undocumented cash. Cash deposits without a trail can\'t be used',
       'Large non-payroll deposits must be sourced and explained',
     ], note: 'Move money <strong>before</strong> you apply, not during.' }],
   },
   'src-gift': {
     eyebrow: 'Where it comes from', title: 'Gift Funds',
     sections: [{ head: 'The rules', items: [
-      '<strong>Gift letter required</strong> — stating it is not a loan',
-      'Generally must come from <strong>family</strong>',
-      'The donor\'s funds must be <strong>sourced</strong>, and the transfer documented',
+      'Gift letter required — stating it is not a loan',
+      'Generally must come from family',
+      'The donor\'s funds must be sourced, and the transfer documented',
     ], note: 'Tell your lender <strong>before</strong> the money moves.' }],
   },
   'src-seller': {
     eyebrow: 'Where it comes from', title: 'Seller Credits',
     sections: [{ head: 'The rules', items: [
       'The seller contributes toward your closing costs',
-      '<strong>Concession caps apply</strong> by program and down payment',
+      'Concession caps apply by program and down payment',
       'Cannot pay your down payment or exceed your actual costs',
     ], note: 'You have to <strong>negotiate</strong> for it — ask your agent to ask.' }],
   },
@@ -190,11 +168,11 @@ export const MODALS = {
     eyebrow: 'Where it comes from', title: '2-1 Buydowns', compliance: ['hypothetical'],
     sections: [
       { head: 'How it works', items: [
-        'A <strong>temporary</strong> payment reduction for the first two years',
-        'Usually paid by the <strong>seller or builder</strong>, not you',
+        'A temporary payment reduction for the first two years',
+        'Usually paid by the seller or builder, not you',
       ]},
       { head: 'The catch', tone: 'cons', items: [
-        'You qualify at the <strong>real rate</strong> — full payment in year three',
+        'You qualify at the real rate — full payment in year three',
         'A plan to refinance first depends on rates nobody controls',
       ]},
     ],
@@ -203,7 +181,7 @@ export const MODALS = {
     eyebrow: 'Where it comes from', title: 'Agent Credits',
     sections: [{ head: 'The rules', items: [
       'An agent may contribute part of their commission',
-      'Must be <strong>disclosed</strong> and appear on closing documents',
+      'Must be disclosed and appear on closing documents',
       'Counts toward overall contribution limits',
     ], note: 'Ask early — it can\'t be added at the closing table.' }],
   },
@@ -212,9 +190,9 @@ export const MODALS = {
     sections: [
       { head: 'What it is', items: ['Grants or second mortgages that reduce cash to close'] },
       { head: 'The trade-offs', tone: 'cons', items: [
-        '<strong>Complicates the process</strong> — extra underwriting and timelines',
-        'Often makes your offer <strong>less attractive</strong> to sellers',
-        'Usually comes with a <strong>higher rate</strong>, caps, and fine print',
+        'Complicates the process — extra underwriting and timelines',
+        'Often makes your offer less attractive to sellers',
+        'Usually comes with a higher rate, caps, and fine print',
       ]},
       { head: '', items: [], note: 'Sometimes it clearly wins. Run it against the higher rate before deciding.' },
     ],
@@ -245,7 +223,7 @@ export const MODALS = {
     eyebrow: 'Your team', title: 'Underwriter',
     sections: [{ head: 'What they do', items: [
       'Makes the actual decision against program guidelines',
-      'You\'ll <strong>never deal with them directly</strong>',
+      'You\'ll never deal with them directly',
     ], note: 'They\'re not looking for a reason to say no — they\'re documenting a reason to say yes.' }],
   },
   'role-title': {
@@ -279,27 +257,27 @@ export const MODALS = {
     eyebrow: 'Small assumption', title: '"I\'ll get pre-approved once I find a house"',
     sections: [
       { head: 'What actually happens', items: ['The house goes under contract while you\'re getting a letter'] },
-      { head: 'Do instead', tone: 'pros', items: ['Pre-approval <strong>first</strong> — it\'s free and nothing is committed'] },
+      { head: 'Do instead', tone: 'pros', items: ['Pre-approval first — it\'s free and nothing is committed'] },
     ],
   },
   'assume-one-lender': {
     eyebrow: 'Small assumption', title: '"They\'re all about the same, I\'ll use one lender"',
     sections: [
       { head: 'What actually happens', items: ['Lender fees vary by thousands at the identical rate'] },
-      { head: 'Do instead', tone: 'pros', items: ['Get more than one Loan Estimate the <strong>same day</strong> and compare fees', 'Shopping inside the window counts as one credit pull'] },
+      { head: 'Do instead', tone: 'pros', items: ['Get more than one Loan Estimate the same day and compare fees', 'Shopping inside the window counts as one credit pull'] },
     ],
   },
   'assume-closing-costs': {
     eyebrow: 'Small assumption', title: '"Closing costs are what I need at closing"',
     sections: [
       { head: 'What actually happens', items: ['You arrive short — cash to close also has the down payment, prepaids, escrows, reserves'] },
-      { head: 'Do instead', tone: 'pros', items: ['Plan around <strong>Cash to Close</strong> on page one, not closing costs'] },
+      { head: 'Do instead', tone: 'pros', items: ['Plan around Cash to Close on page one, not closing costs'] },
     ],
   },
   'assume-approved': {
     eyebrow: 'Small assumption', title: '"I\'m approved, so I\'m done"',
     sections: [
-      { head: 'What actually happens', items: ['Lenders <strong>re-pull credit before closing</strong> — new debt can break the file'] },
+      { head: 'What actually happens', items: ['Lenders re-pull credit before closing — new debt can break the file'] },
       { head: 'Do instead', tone: 'pros', items: ['Change nothing until you have keys. If something must change, call first'] },
     ],
   },
@@ -307,7 +285,7 @@ export const MODALS = {
     eyebrow: 'Small assumption', title: '"I\'ll wait until I have twenty percent"',
     sections: [
       { head: 'What actually happens', items: ['The target rises while you save — and you pay rent the whole time'] },
-      { head: 'Do instead', tone: 'pros', items: ['Run the comparison. Waiting should be a <strong>decision</strong>, not a default'] },
+      { head: 'Do instead', tone: 'pros', items: ['Run the comparison. Waiting should be a decision, not a default'] },
     ],
   },
   'assume-builder': {

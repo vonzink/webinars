@@ -3,7 +3,7 @@
 Built to **`SLIDE_DESIGN_SPEC.md`** (the "Ridgeline" visual system) with content
 realigned to the client's actual presentation.
 
-**17 main slides · 30 popouts · ~40 min + Q&A · 1920×1080.**
+**16 main slides · 30 popouts · ~40 min + Q&A · 1920×1080.**
 
 ## Run it
 
@@ -63,7 +63,7 @@ Encoded in `css/tokens.css` — the source of truth:
 Guardrails wired into code, not discipline:
 - No green-text token exists (the accent can't become body text).
 - The footer + any disclaimer inject from slide data — can't be forgotten.
-- Console logs `17 slides · 30 popouts` and flags any unreachable/missing popout.
+- Console logs `16 slides · 30 popouts` and flags any unreachable/missing popout.
 
 ## Architecture (unchanged engine)
 
@@ -89,5 +89,5 @@ opening and any hero. Confirm the process step names match the MSFG website.
 
 ## Not built yet
 
-- **PowerPoint** (~47 slides — 17 main + 30 popout slides with "← Back").
+- **PowerPoint** (~46 slides — 16 main + 30 popout slides with "← Back").
 - **Real photography** — placeholders are wired; drop images into `assets/`.

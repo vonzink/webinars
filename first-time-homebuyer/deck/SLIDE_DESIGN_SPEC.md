@@ -89,7 +89,7 @@ Every title slide, section-closing slide, and the CTA slide carries a footer row
 - Left: MSFG horizontal logo, 62–68px tall. On dark backgrounds it sits on a white plate with 18–20px padding — **never place the logo directly on Deep Forest**.
 - Right, right-aligned, 21–24px:
   `Mountain State Financial Group, LLC · NMLS# 1314257 · msfg.us`
-  `Licensed in CO, ND, SD, MN, MI, IL, TX · Equal Housing Lender`
+  `Licensed in CO, IN, MI, MN, ND, SD, TX · Equal Housing Lender`
 - Separated from content by a `2–3px` rule with 30–34px padding above.
 - Any slide showing client results carries an italic disclaimer at 21px: "Anonymized client file. Individual results vary."
 

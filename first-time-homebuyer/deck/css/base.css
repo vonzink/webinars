@@ -166,6 +166,18 @@ em, i { font-style: normal; font-weight: var(--fw-800); }
 .footer-logo { flex: none; display: flex; align-items: center; }
 .footer-logo img { height: 68px; width: auto; }
 
+/* Slide 1's knockout logo keeps a stable safe area on every screen size. */
+#slide-opening .footer-logo { width: 300px; max-width: 100%; }
+#slide-opening .footer-logo img {
+  width: 100%; height: auto; max-height: 68px;
+  object-fit: contain; object-position: left center;
+}
+
+.footer-meta {
+  min-width: 0;
+  display: flex; align-items: center; justify-content: flex-end; gap: 18px;
+}
+
 .footer-lines {
   text-align: right;
   font-family: var(--font-body);
@@ -175,6 +187,12 @@ em, i { font-style: normal; font-weight: var(--fw-800); }
 }
 .slide[data-bg="white"] .footer-lines,
 .slide[data-bg="mist"] .footer-lines { color: var(--text-meta-light); }
+
+.equal-housing-logo {
+  flex: none;
+  width: auto; height: 64px;
+  background: var(--white);
+}
 
 /* Hypothetical / results disclaimer — italic, 21px */
 .disclaimer {
@@ -230,6 +248,7 @@ em, i { font-style: normal; font-weight: var(--fw-800); }
   z-index: 40; opacity: 0;
   transition: opacity var(--dur-base) var(--ease-out);
 }
+.deck-nav-hidden .deck-nav { display: none; }
 .deck-nav:hover, .deck-nav:focus-within, body.nav-visible .deck-nav { opacity: 1; }
 .deck-nav button {
   width: 34px; height: 34px; display: grid; place-items: center;
@@ -317,7 +336,9 @@ body.show-guides .slide::after {
   .subhead { font-size: 17px; }
   .slide-footer { position: static; margin-top: 40px; flex-direction: column;
     align-items: flex-start; gap: 14px; }
+  .footer-meta { flex-direction: column; align-items: flex-start; gap: 10px; }
   .footer-lines { text-align: left; font-size: 13px; }
+  .equal-housing-logo { height: 58px; }
   .disclaimer { position: static; margin-top: 20px; font-size: 13px; }
   .slide[data-footer], .slide[data-footer][data-disclaimer] { padding-bottom: 120px; }
 }

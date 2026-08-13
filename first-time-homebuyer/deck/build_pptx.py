@@ -2,7 +2,7 @@
 """
 Generate The Homebuyer's Playbook as a PowerPoint (.pptx).
 
-Ridgeline design system, 16:9. 17 main slides + 30 popout slides.
+Ridgeline design system, 16:9. 16 main slides + 30 popout slides.
 Cards on main slides jump to their popout; each popout has a "< Back" that
 returns to its parent slide. Content mirrors deck/content/*.js.
 
@@ -34,7 +34,7 @@ PADX=IN(96); PADY=IN(90); CW=Inches(13.333); CH=Inches(7.5)
 
 # ---- compliance / presenter ----
 COMPANY_L1="Mountain State Financial Group, LLC · NMLS# 1314257 · msfg.us"
-COMPANY_L2="Licensed in CO, ND, SD, MN, MI, IL, TX · Equal Housing Lender"
+COMPANY_L2="Licensed in CO, IN, MI, MN, ND, SD, TX · Equal Housing Lender"
 SETH=dict(name="Seth Angell",title="Executive VP · NMLS# 912881",
           phone="303-883-8519",email="Seth.angell@msfg.us")
 APPLY_URL="https://www.blink.mortgage/app/signup/p/mountainstatefinancialgroupllc/sethangell"
@@ -132,39 +132,28 @@ def std_header(slide,d,dark):
 def S(head,items,tone=None,note=None): return dict(head=head,items=items,tone=tone,note=note)
 
 MODALS={
- 'compare-loans':dict(eyebrow='Compare',title='Conventional vs FHA vs VA',
-   intro='Same borrower, same price — the rate is only part of the story. APR folds in mortgage insurance and fees, so the lowest rate isn\'t always the lowest APR.',
-   table=dict(columns=['Conventional','FHA','VA'],rows=[
-     ('Minimum down',['3%','3.5%','0%']),
-     ('Mortgage insurance',['Removable','Often life of loan','None']),
-     ('Illustrative rate',['6.75%','6.50%','6.25%']),
-     ('Illustrative APR',['6.90%','7.40%','6.45%']),
-     ('Best for',['Strong credit','Credit flexibility','Eligible veterans']),
-   ]),
-   compliance='hypothetical',
-   sections=[S('The takeaway',['FHA\'s lower rate can carry a <strong>higher APR</strong> — upfront and monthly MI','VA often wins on APR — no monthly MI','Ask for <strong>rate AND APR</strong> on every quote'])]),
  'myth-20-down':dict(eyebrow='The myth',title='You need 20% down',sections=[
-   S('The reality',['Conventional goes as low as <strong>3%</strong>, FHA <strong>3.5%</strong>, VA and USDA <strong>0%</strong>','The median first-time buyer puts down far less than 20%']),
+   S('The reality',['Conventional goes as low as 3%, FHA 3.5%, VA and USDA 0%','The median first-time buyer puts down far less than 20%']),
    S('Pros of 20% down',['No monthly mortgage insurance','Lower payment and more instant equity'],'pros'),
    S('Cons',['Years of saving while rent builds no equity','Drains the cash reserve you want after closing'],'cons'),
-   S(None,None,note='Mortgage insurance on a conventional loan is <strong>removable</strong> — a phase, not a sentence.')]),
+   S(None,None,note='Mortgage insurance on a conventional loan is removable.')]),
  'myth-fha-first':dict(eyebrow='The myth',title='FHA is only for first-time buyers',sections=[
-   S('The reality',['<strong>FHA has no first-time buyer requirement</strong> — anyone eligible can use it','It’s a primary-residence program, not a first-timer program']),
+   S('The reality',['FHA has no first-time buyer requirement — anyone eligible can use it','It’s a primary-residence program, not a first-timer program']),
    S('Pros',['More forgiving on credit and past events','Higher DTI tolerance · assumable'],'pros'),
    S('Cons',['MI often lasts the life of the loan under 10% down','Upfront premium added to the balance'],'cons')]),
  'myth-perfect-credit':dict(eyebrow='The myth',title='You need perfect credit',sections=[
-   S('The reality',['Pricing moves in <strong>tiers</strong> — near an edge matters, mid-tier often doesn’t','FHA and VA reach meaningfully lower than conventional']),
+   S('The reality',['Pricing moves in tiers — near an edge matters, mid-tier often doesn’t','FHA and VA reach meaningfully lower than conventional']),
    S('Pros of a higher score',['Better pricing, lower MI, more program options'],'pros'),
    S('Cons of waiting for "perfect"',['Prices and rents keep moving while you chase a number'],'cons'),
    S(None,None,note='<strong>Utilization</strong> is ~30% of the score and can move in one cycle. Don’t close old cards.')]),
- 'myth-renting':dict(eyebrow='The myth',title='Renting is always cheaper',sections=[
+ 'myth-renting':dict(eyebrow='The myth',title='Renting is cheaper',sections=[
    S('The reality',['Rent generally rises; a fixed principal & interest payment doesn’t','Ownership builds equity — rent doesn’t']),
    S('Pros of renting',['Flexibility, no maintenance, no transaction costs'],'pros'),
    S('Cons of renting',['No equity, no fixed housing cost, no control over increases'],'cons'),
    S(None,None,note='Short horizon, renting can win; long horizon, ownership usually does.')]),
  'myth-lowest-rate':dict(eyebrow='The myth',title='The lowest rate is the best deal',sections=[
-   S('The reality',['A lower rate is often <strong>bought</strong> with points paid at closing','The lowest rate and the lowest cost are frequently not the same loan']),
-   S('Pros of a lower rate',['Lower payment and less interest over a long hold'],'pros'),
+   S('The reality',['A lower rate is often bought with points paid at closing','The lowest rate and the lowest cost are never the same loan']),
+   S('Pros of a lower rate',['Lower payment and less interest over a long hold','The benefit of a lower Rate is lower payment.'],'pros'),
    S('Cons',['Points are cash today — gone if you sell or refinance early','Chasing rate can hide high lender fees'],'cons'),
    S(None,None,note='Ask for <strong>rate AND total cost</strong>, and compare Loan Estimates from the same day.')]),
  'prog-conventional':dict(eyebrow='Loan program',title='Conventional',compliance=True,sections=[
@@ -189,19 +178,19 @@ MODALS={
    S('Pros',['Finances higher-priced homes','Flexible structures available'],'pros'),
    S('Cons',['Strongest credit and reserves expected','Rules vary a lot by investor — shop it'],'cons')]),
  'src-savings':dict(eyebrow='Where it comes from',title='Savings',sections=[
-   S('The rules',['Must be <strong>seasoned</strong> — sitting in your account, documented','<strong>No undocumented cash.</strong> Cash deposits without a trail can’t be used','Large non-payroll deposits must be sourced and explained'],note='Move money <strong>before</strong> you apply, not during.')]),
+   S('The rules',['Must be seasoned — sitting in your account, documented','No undocumented cash. Cash deposits without a trail can’t be used','Large non-payroll deposits must be sourced and explained'],note='Move money <strong>before</strong> you apply, not during.')]),
  'src-gift':dict(eyebrow='Where it comes from',title='Gift Funds',sections=[
-   S('The rules',['<strong>Gift letter required</strong> — stating it is not a loan','Generally must come from <strong>family</strong>','The donor’s funds must be sourced, and the transfer documented'],note='Tell your lender <strong>before</strong> the money moves.')]),
+   S('The rules',['Gift letter required — stating it is not a loan','Generally must come from family','The donor’s funds must be sourced, and the transfer documented'],note='Tell your lender <strong>before</strong> the money moves.')]),
  'src-seller':dict(eyebrow='Where it comes from',title='Seller Credits',sections=[
-   S('The rules',['The seller contributes toward your closing costs','<strong>Concession caps apply</strong> by program and down payment','Cannot pay your down payment or exceed your actual costs'],note='You have to <strong>negotiate</strong> for it — ask your agent to ask.')]),
+   S('The rules',['The seller contributes toward your closing costs','Concession caps apply by program and down payment','Cannot pay your down payment or exceed your actual costs'],note='You have to <strong>negotiate</strong> for it — ask your agent to ask.')]),
  'src-buydown':dict(eyebrow='Where it comes from',title='2-1 Buydowns',compliance=True,sections=[
-   S('How it works',['A <strong>temporary</strong> payment reduction for the first two years','Usually paid by the <strong>seller or builder</strong>, not you']),
-   S('The catch',['You qualify at the <strong>real rate</strong> — full payment in year three','A plan to refinance first depends on rates nobody controls'],'cons')]),
+   S('How it works',['A temporary payment reduction for the first two years','Usually paid by the seller or builder, not you']),
+   S('The catch',['You qualify at the real rate — full payment in year three','A plan to refinance first depends on rates nobody controls'],'cons')]),
  'src-agent':dict(eyebrow='Where it comes from',title='Agent Credits',sections=[
-   S('The rules',['An agent may contribute part of their commission','Must be <strong>disclosed</strong> and appear on closing documents','Counts toward overall contribution limits'],note='Ask early — it can’t be added at the closing table.')]),
+   S('The rules',['An agent may contribute part of their commission','Must be disclosed and appear on closing documents','Counts toward overall contribution limits'],note='Ask early — it can’t be added at the closing table.')]),
  'src-assistance':dict(eyebrow='Where it comes from',title='Down Payment Assistance',sections=[
    S('What it is',['Grants or second mortgages that reduce cash to close']),
-   S('The trade-offs',['<strong>Complicates the process</strong> — extra underwriting and timelines','Often makes your offer <strong>less attractive</strong> to sellers','Usually a <strong>higher rate</strong>, caps, and fine print'],'cons'),
+   S('The trade-offs',['Complicates the process — extra underwriting and timelines','Often makes your offer less attractive to sellers','Usually a higher rate, caps, and fine print'],'cons'),
    S(None,None,note='Sometimes it clearly wins. Run it against the higher rate before deciding.')]),
  'role-lender':dict(eyebrow='Your team',title='Lender / Loan Officer',sections=[
    S('What they do',['Structures your financing and guides you from pre-approval to closing','Packages the file and advocates for it'],note='We don’t approve the loan — <strong>the underwriter does.</strong>')]),
@@ -210,7 +199,7 @@ MODALS={
  'role-seller':dict(eyebrow='Your team',title='Seller',sections=[
    S('What they do',['Owns the home; their motivation shapes what’s negotiable','You almost never deal with them directly — it runs through agents'],note='Sometimes <strong>timing or certainty</strong> matters to them more than top price.')]),
  'role-underwriter':dict(eyebrow='Your team',title='Underwriter',sections=[
-   S('What they do',['Makes the actual decision against program guidelines','You’ll <strong>never deal with them directly</strong>'],note='Not looking for a reason to say no — documenting a reason to say yes.')]),
+   S('What they do',['Makes the actual decision against program guidelines','You’ll never deal with them directly'],note='Not looking for a reason to say no — documenting a reason to say yes.')]),
  'role-title':dict(eyebrow='Your team',title='Title Company',sections=[
    S('What they do',['Researches ownership, clears liens, issues title insurance, holds funds','Neutral to both sides'],note='You can often <strong>shop</strong> for them — most people never do.')]),
  'role-closer':dict(eyebrow='Your team',title='Closer',sections=[
@@ -221,19 +210,19 @@ MODALS={
    S('What they do',['Collects your documents, orders appraisal and title, preps the file'],note='Being asked twice isn’t a lost document — <strong>send it again same-day.</strong>')]),
  'assume-preapproval':dict(eyebrow='Small assumption',title='"I’ll get pre-approved once I find a house"',sections=[
    S('What actually happens',['The house goes under contract while you’re getting a letter']),
-   S('Do instead',['Pre-approval <strong>first</strong> — it’s free and nothing is committed'],'pros')]),
+   S('Do instead',['Pre-approval first — it’s free and nothing is committed'],'pros')]),
  'assume-one-lender':dict(eyebrow='Small assumption',title='"They’re all the same, I’ll use one lender"',sections=[
    S('What actually happens',['Lender fees vary by thousands at the identical rate']),
-   S('Do instead',['Get more than one Loan Estimate the <strong>same day</strong> and compare fees','Shopping inside the window counts as one credit pull'],'pros')]),
+   S('Do instead',['Get more than one Loan Estimate the same day and compare fees','Shopping inside the window counts as one credit pull'],'pros')]),
  'assume-closing-costs':dict(eyebrow='Small assumption',title='"Closing costs are what I need at closing"',sections=[
    S('What actually happens',['You arrive short — cash to close also has down payment, prepaids, escrows, reserves']),
-   S('Do instead',['Plan around <strong>Cash to Close</strong> on page one, not closing costs'],'pros')]),
+   S('Do instead',['Plan around Cash to Close on page one, not closing costs'],'pros')]),
  'assume-approved':dict(eyebrow='Small assumption',title='"I’m approved, so I’m done"',sections=[
-   S('What actually happens',['Lenders <strong>re-pull credit before closing</strong> — new debt can break the file']),
+   S('What actually happens',['Lenders re-pull credit before closing — new debt can break the file']),
    S('Do instead',['Change nothing until you have keys. If something must change, call first'],'pros')]),
  'assume-wait-20':dict(eyebrow='Small assumption',title='"I’ll wait until I have twenty percent"',sections=[
    S('What actually happens',['The target rises while you save — and you pay rent the whole time']),
-   S('Do instead',['Run the comparison. Waiting should be a <strong>decision</strong>, not a default'],'pros')]),
+   S('Do instead',['Run the comparison. Waiting should be a decision, not a default'],'pros')]),
  'assume-builder':dict(eyebrow='Small assumption',title='"The builder’s incentive is free money"',sections=[
    S('What actually happens',['It may be funded by a higher rate, higher fees, or a price set to pay for it']),
    S('Do instead',['Take the builder’s Loan Estimate, get one from outside, and compare fees'],'pros')]),
@@ -247,31 +236,23 @@ SLIDES=[
  dict(id='opening',layout='opening',bg='dark',footer=True,eyebrow="The Homebuyer's Playbook",headline='Buying your first home, explained.'),
  dict(id='myths',layout='grid',bg='white',footer=True,cols=3,headline='Myths',subhead='The stories that keep good buyers renting. Tap any one.',cards=[
    C('myth-20-down','You need 20% down'),C('myth-fha-first','FHA is only for first-time buyers'),C('myth-perfect-credit','You need perfect credit'),
-   C('myth-renting','Renting is always cheaper'),C('myth-lowest-rate','The lowest rate is the best deal')]),
- dict(id='myth-closing-apr',layout='points',bg='dark',footer=True,numbers=True,eyebrow='The myth',headline='The lowest rate is the best deal',
-   subhead='The rate is one number. Closing costs quietly move the one that actually compares loans — the APR.',points=[
-   'A lower rate is often <strong>bought</strong> with points and fees paid at closing',
-   '<strong>APR folds those costs back in</strong> — the rate plus certain lender charges over the life of the loan',
-   'Two loans at the same rate can have very different closing costs, and very different APRs',
-   'Where lenders really differ is <strong>origination and fees</strong> — not the headline rate'],
-   callout='Ask for rate AND total cost. Compare Loan Estimates from the same day.',compare='compare-loans'),
+   C('myth-renting','Renting is cheaper'),C('myth-lowest-rate','The lowest rate is the best deal')]),
  dict(id='budget-rent-buy',layout='compare',bg='dark',eyebrow='Budget',
-   left=dict(label='Renting',items=['Rent in Denver has trended <strong>up</strong>, year after year','Flexible — but every payment builds someone else’s equity','The longer you wait, the <strong>further ahead prices get</strong>']),
-   right=dict(label='Buying',items=['A fixed payment while <strong>home values generally appreciate</strong>','Equity compounds; you’re paying yourself','Most people <strong>step up</strong> — the first home isn’t the last']),
+   left=dict(label='Renting',items=['Rent in Denver has trended up, year after year','Flexible — but every payment builds someone else’s equity','The longer you wait, the more expensive buying becomes.']),
+   right=dict(label='Buying',items=['A fixed payment while home values generally appreciate','Equity compounds; you’re paying yourself','Most people step up — the first home isn’t the last','You can personalize the home to fit your style and needs.']),
    callout='Waiting isn’t neutral. It usually costs something.'),
  dict(id='budget-payment',layout='payment',bg='white',footer=True,eyebrow='Budget',headline="What's actually in the payment",
    subhead='On a fixed-rate loan — what’s locked, and what can still move.',
    fixed=['Your interest rate','Your principal & interest','Your loan term'],
    moves=['Property taxes','Insurance premiums','Mortgage insurance (it can come off)','HOA dues','A special assessment'],
-   points=['<strong>Escrow</strong> collects taxes and insurance monthly and pays them for you — not a fee, your money held early',
-     '<strong>Amortization:</strong> early payments are mostly interest; it shifts to principal over years',
-     '<strong>Refinancing resets the clock</strong> — a new 30-year loan starts over at the interest-heavy beginning']),
+   points=['Escrow collects taxes and insurance monthly and pays them for you — not a fee, your money held early',
+     'Amortization: early payments are mostly interest; it shifts to principal over years',
+     'Refinancing resets the clock — a new 30-year loan starts over at the interest-heavy beginning']),
  dict(id='budget-comfort',layout='points',bg='dark',eyebrow='Budget',headline='Keep the payment in your comfort zone',
    subhead='The number you can qualify for and the number you can live with are rarely the same.',points=[
-   "Don’t become <strong>house poor</strong> — the guidelines ask if you’ll repay, not if you’ll be okay",
-   'Protect <strong>quality of life</strong> — leave room for disposable income and emergencies',
-   'The <strong>payment can change</strong> after you close',
-   'Builder <strong>incentives can create negative equity</strong> — dangerous for a first-time buyer who moves sooner than expected']),
+   "Don’t become house poor — the guidelines ask if you’ll repay, not if you’ll be okay",
+   'Protect quality of life — leave room for disposable income and emergencies',
+   'The payment can change after you close']),
  dict(id='programs',layout='grid',bg='white',footer=True,cols=3,headline='Most Common Loan Programs',subhead='Five doors, different people. Tap any program for pros and cons.',cards=[
    C('prog-conventional','Conventional','The default for most buyers','3% down'),C('prog-fha','FHA','Built for credit flexibility','3.5% down'),
    C('prog-va','VA','If you served, check this first','0% down'),C('prog-usda','USDA','Eligible areas, income limits','0% down'),
@@ -282,9 +263,9 @@ SLIDES=[
    subhead='Closing costs get the loan. Cash to close is everything you bring — and it’s bigger.',
    canpay=['Allowable closing costs','Prepaid items','Escrow deposits','Points to lower the rate'],
    cannotpay=['Your down payment','More than your actual costs','Cash back to you'],
-   points=['You can use <strong>points</strong> to buy down the rate — or credits to cover closing costs',
-     '<strong>Prepaids</strong> (first insurance, some taxes) are your own money paid early, not a fee',
-     '<strong>Reserves</strong> are funds you keep after closing — some programs require them']),
+   points=['You can use points to buy down the rate — or credits to cover closing costs',
+     'Prepaids (first insurance, some taxes) are your own money paid early, not a fee',
+     'Reserves are funds you keep after closing — some programs require them']),
  dict(id='process-players',layout='grid',bg='white',footer=True,cols=4,dense=True,headline='Meet the players',subhead='Eight people — and they don’t all work for you. Tap anyone.',cards=[
    C('role-lender','Lender'),C('role-realtor','Realtor'),C('role-seller','Seller'),C('role-processor','Processor'),
    C('role-underwriter','Underwriter'),C('role-title','Title'),C('role-closer','Closer'),C('role-insurance','Insurance')]),
@@ -302,10 +283,10 @@ SLIDES=[
    'Tell your lender if anything about your job is changing','Keep homeowners insurance at or under the Loan Estimate amount',
    'Return everything your lender asks for quickly']),
  dict(id='mistakes-rate',layout='points',bg='dark',eyebrow='Mistakes to avoid',headline='Don’t assume the lowest rate wins',points=[
-   '<strong>Breakeven:</strong> a rate bought with points only pays off if you keep the loan long enough',
-   'Points are a bet on <strong>how long you keep this exact loan</strong> — not this house',
-   '<strong>Refinancing ends the loan</strong> early and restarts amortization',
-   'Real wealth comes from <strong>building equity</strong> — payments and time'],
+   'Breakeven: a rate bought with points only pays off if you keep the loan long enough',
+   'Points are a bet on how long you keep this exact loan — not this house',
+   'Refinancing ends the loan early and restarts amortization',
+   'Real wealth comes from building equity — payments and time'],
    callout='Equity is built by payments and time — not the third decimal of your rate.'),
  dict(id='mistakes-assumptions',layout='grid',bg='white',footer=True,cols=3,quote=True,eyebrow='Mistakes to avoid',headline='The most expensive mistakes start as small assumptions',subhead='Tap any one for what actually happens.',cards=[
    C('assume-preapproval','“I’ll get pre-approved once I find a house.”'),C('assume-one-lender','“They’re all the same — I’ll use one lender.”'),

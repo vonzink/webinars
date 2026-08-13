@@ -7,9 +7,11 @@
 
 import { MODALS } from '../content/modals.js';
 import { COMPLIANCE } from '../content/presenters.js';
+import { mediaById } from '../content/presenter-media.js';
 
 const FOCUSABLE = 'a[href],button:not([disabled]),input,select,textarea,[tabindex]:not([tabindex="-1"])';
 let root, panel, closeBtn, headEl, bodyEl, footEl, lastFocused = null, isOpen = false;
+let activeKind = null;
 let pos = { x: 0, y: 0 };   // drag offset from centre
 
 export function initModal() {
@@ -126,12 +128,56 @@ export function openModal(id, opener) {
   /* reset size + position each open */
   pos = { x: 0, y: 0 };
   panel.style.width = ''; panel.style.height = '';
+  panel.classList.remove('modal--media');
   panel.classList.toggle('modal--wide', !!d.table);
 
   root.classList.add('is-open');
   requestAnimationFrame(() => { root.classList.add('is-visible'); applyPos(); closeBtn.focus(); });
   isOpen = true;
+  activeKind = 'content';
   document.body.classList.add('modal-open');
+}
+
+export function openMedia(id, opener) {
+  const item = mediaById(id);
+  if (!item) {
+    console.warn(`[deck] no presenter media "${id}"`);
+    return false;
+  }
+
+  lastFocused = opener || document.activeElement;
+  headEl.innerHTML = `
+    <div class="modal-eyebrow">Presenter graph</div>
+    <h2 class="modal-title" id="modal-title">${item.title}</h2>
+    <div class="modal-title-bar"></div>`;
+  bodyEl.innerHTML = `
+    <div class="modal-media-frame">
+      <img src="${item.src}" alt="${item.alt}">
+      <p class="modal-media-error" hidden>Graph unavailable</p>
+    </div>`;
+  const image = bodyEl.querySelector('img');
+  const error = bodyEl.querySelector('.modal-media-error');
+  image.addEventListener('error', () => {
+    image.hidden = true;
+    error.hidden = false;
+  }, { once: true });
+  footEl.hidden = true;
+
+  pos = { x: 0, y: 0 };
+  panel.style.width = '';
+  panel.style.height = '';
+  panel.classList.remove('modal--wide');
+  panel.classList.add('modal--media');
+  root.classList.add('is-open');
+  requestAnimationFrame(() => {
+    root.classList.add('is-visible');
+    applyPos();
+    closeBtn.focus();
+  });
+  isOpen = true;
+  activeKind = 'media';
+  document.body.classList.add('modal-open');
+  return true;
 }
 
 export function closeModal() {
@@ -144,6 +190,7 @@ export function closeModal() {
     panel.style.transform = '';
     if (lastFocused && document.contains(lastFocused)) lastFocused.focus();
     lastFocused = null;
+    activeKind = null;
   };
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) done();
   else setTimeout(done, 200);

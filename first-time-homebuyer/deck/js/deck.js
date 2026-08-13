@@ -9,7 +9,8 @@ import { MODALS, MODAL_COUNT } from '../content/modals.js';
 import {
   activePresenter, COMPANY, COMPLIANCE, LINKS, LOGO,
 } from '../content/presenters.js';
-import { initModal, openModal, closeModal, isModalOpen } from './modal.js';
+import { initModal, openModal, openMedia, closeModal, isModalOpen } from './modal.js';
+import { initCalculator, setCalculatorVisible, isCalculatorVisible } from './calculator.js';
 import { makeCard, makeCardGrid } from './card.js';
 import { FIGURES } from './figures.js';
 import * as annotate from './annotate.js';
@@ -17,6 +18,7 @@ import * as annotate from './annotate.js';
 const P = activePresenter();
 const PREVIEW = new URLSearchParams(location.search).has('preview');
 let current = 0, scaler, stage, channel;
+let presenterWindow = null, presenterClosedWatch = null, navHidden = false;
 
 /* ---- helpers -------------------------------------------------------------- */
 const ph = (val, label) => val ? esc(val) : `<span class="ph">${label}</span>`;
@@ -47,7 +49,10 @@ function furniture(el, d) {
     f.className = 'slide-footer';
     f.innerHTML = `
       <div class="footer-logo"><img src="${dark ? LOGO.onDark : LOGO.onLight}" alt="Mountain State Financial Group"></div>
-      <div class="footer-lines"><div>${l1}</div><div>${l2}</div></div>`;
+      <div class="footer-meta">
+        <div class="footer-lines"><div>${l1}</div><div>${l2}</div></div>
+        <img class="equal-housing-logo" src="${LOGO.equalHousing}" alt="Equal Housing Lender">
+      </div>`;
     el.appendChild(f);
     el.dataset.footer = 'true';
   }
@@ -277,6 +282,9 @@ function fit() {
 }
 
 function broadcast() { if (channel) channel.postMessage({ type: 'slide', index: current }); }
+function broadcastCalculatorState() {
+  if (channel) channel.postMessage({ type: 'calculator-state', visible: isCalculatorVisible() });
+}
 function initChannel() {
   if (!('BroadcastChannel' in window) || PREVIEW) return;   // preview instance stays silent
   channel = new BroadcastChannel('msfg-deck');
@@ -286,11 +294,35 @@ function initChannel() {
     if (m.type === 'next') next();
     if (m.type === 'prev') prev();
     if (m.type === 'open') openModal(m.id);
-    if (m.type === 'hello') broadcast();
+    if (m.type === 'open-media') openMedia(m.id);
+    if (m.type === 'calculator-visibility' && typeof m.visible === 'boolean') {
+      setCalculatorVisible(m.visible);
+    }
+    if (m.type === 'hello') {
+      broadcast();
+      channel.postMessage({ type: 'navstate', hidden: navHidden });
+      broadcastCalculatorState();
+    }
     if (m.type === 'annotate') handleAnnotate(m);
     if (m.type === 'fullscreen') setFullscreen(m.on);
+    if (m.type === 'nav-visibility') setNavigationHidden(m.hidden);
+    if (m.type === 'presenter-exit') setNavigationHidden(false);
   };
 }
+
+function setNavigationHidden(hidden) {
+  navHidden = Boolean(hidden);
+  document.body.classList.toggle('deck-nav-hidden', navHidden);
+  if (channel) channel.postMessage({ type: 'navstate', hidden: navHidden });
+  clearInterval(presenterClosedWatch);
+  presenterClosedWatch = null;
+  if (navHidden && presenterWindow) {
+    presenterClosedWatch = setInterval(() => {
+      if (presenterWindow.closed) setNavigationHidden(false);
+    }, 500);
+  }
+}
+window.__deckSetNavigationHidden = setNavigationHidden;
 
 /* Fullscreen the shared slide window. Entering needs a user gesture in THIS
    window, so a remote (presenter) request can be blocked — we surface a hint if
@@ -330,6 +362,7 @@ export function initDeck() {
   if (PREVIEW) document.body.classList.add('is-preview');
   initModal();
   if (!PREVIEW) {
+    initCalculator({ onVisibilityChange: broadcastCalculatorState });
     annotate.initAnnotate();
     /* When auto-off flips drawing off after a stroke, tell the presenter view. */
     annotate.onStateChange(on => { if (channel) channel.postMessage({ type: 'annstate', on }); });
@@ -385,7 +418,7 @@ export function initDeck() {
   const fromHash = SLIDES.findIndex(s => s.id === location.hash.slice(1));
   show(fromHash >= 0 ? fromHash : 0);
 
-  const ok = SLIDES.length === 17 && MODAL_COUNT === 30;
+  const ok = SLIDES.length === 16 && MODAL_COUNT === 30;
   console.log(
     `%c Homebuyer's Playbook · Ridgeline %c ${SLIDES.length} slides · ${MODAL_COUNT} popouts · ` +
     `${Math.round(TARGET_RUNTIME_SECONDS / 60)} min ${ok ? '✓' : '✗ count check'}`,
@@ -399,6 +432,8 @@ export function initDeck() {
   if (orphans.length) console.warn('[deck] unreachable popouts:', orphans);
 }
 
-function openPresenter() { window.open('./presenter.html', 'msfg-presenter', 'width=1280,height=800'); }
+function openPresenter() {
+  presenterWindow = window.open('./presenter.html', 'msfg-presenter', 'width=1280,height=800');
+}
 
 export { show, next, prev, SLIDES };

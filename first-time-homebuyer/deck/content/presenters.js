@@ -6,7 +6,7 @@ export const COMPANY = {
   name: 'Mountain State Financial Group, LLC',
   nmls: 'NMLS# 1314257',
   site: 'msfg.us',
-  licenses: 'Licensed in CO, ND, SD, MN, MI, IL, TX · Equal Housing Lender',
+  licenses: 'Licensed in CO, IN, MI, MN, ND, SD, TX',
 };
 
 export const PRESENTERS = {
@@ -59,4 +59,5 @@ export const COMPLIANCE = {
 export const LOGO = {
   onDark:  './assets/brand/logo-horizontal-knockout.svg',
   onLight: './assets/brand/logo-horizontal.svg',
+  equalHousing: './assets/brand/EQUAL%20HOUSING%20LENDER.png',
 };
