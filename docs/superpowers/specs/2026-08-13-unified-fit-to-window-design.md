@@ -151,14 +151,26 @@ composition and scale together.
 - Content remains draggable and resizable through uniform scaling.
 - Escape, backdrop close, focus trap, and focus return remain unchanged.
 
-The title treatment may stay visually compact, but its size is part of the
-authored surface rather than a responsive exception.
+Every presenter-opened educational popout and graphic uses the same compact
+authored title strip. The strip is 52px high at design size, uses a 20px title,
+and contains the close control. It replaces the existing eyebrow, 52px display
+title, decorative accent bar, and deep heading block. The strip may read as a
+slightly thicker top border, but it must not materially reduce the space
+available to the content. Its size is part of the authored surface and scales
+with the complete composition rather than changing at responsive breakpoints.
+
+This compact-overlay rule does not remove or reduce the primary titles authored
+inside the base slides or inside a source PNG. Those belong to the presentation
+content itself, not the duplicate presenter overlay chrome.
 
 ## Graphic Behavior
 
 Each graphic uses its decoded native dimensions as the intrinsic surface. The
 image and its complete pixels are rendered as one object with contain behavior.
 No header or body region is allowed to consume enough space to crop the image.
+The only added chrome is the same compact 52px title strip used by educational
+popouts; the image begins immediately below it with no inset mat or extra title
+block.
 
 The close and resize controls remain available and are included in the composed
 surface contract. The graphic never gains an internal scrollbar. Failure to
