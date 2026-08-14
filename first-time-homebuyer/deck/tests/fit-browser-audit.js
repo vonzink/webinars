@@ -21,28 +21,41 @@ const hiddenFromAudit = element => {
 function requiredVisualRects(element) {
   if (hiddenFromAudit(element) || element.getClientRects().length === 0) return [];
   const rects = [];
-  if (element.matches(REQUIRED_ELEMENT)) rects.push(element.getBoundingClientRect());
+  if (element.matches(REQUIRED_ELEMENT)) {
+    rects.push({
+      rect: element.getBoundingClientRect(),
+      firstClippingAncestor: element.parentElement,
+      directText: false,
+    });
+  }
 
   if (typeof document !== 'undefined' && document.createRange) {
     for (const node of element.childNodes) {
       if (node.nodeType !== 3 || !node.textContent.trim()) continue;
       const range = document.createRange();
       range.selectNodeContents(node);
-      rects.push(...range.getClientRects());
+      rects.push(...[...range.getClientRects()].map(rect => ({
+        rect,
+        firstClippingAncestor: element,
+        directText: true,
+      })));
       range.detach?.();
     }
   }
-  return rects.filter(rect => rect.width > 0 && rect.height > 0);
+  return rects.filter(({ rect }) => rect.width > 0 && rect.height > 0);
 }
 
-const clippedAxes = (contentRect, ancestor, tolerance) => {
+const clippedAxes = (contentRect, ancestor, tolerance, requireLayoutOverflow = false) => {
   const style = getComputedStyle(ancestor);
   const ancestorRect = ancestor.getBoundingClientRect();
+  const layoutTolerance = requireLayoutOverflow ? Math.max(tolerance, 2) : tolerance;
   const axes = [];
   if (CLIPPING.test(style.overflowX)
+      && (!requireLayoutOverflow || ancestor.scrollWidth > ancestor.clientWidth + layoutTolerance)
       && (contentRect.left < ancestorRect.left - tolerance
         || contentRect.right > ancestorRect.right + tolerance)) axes.push('x');
   if (CLIPPING.test(style.overflowY)
+      && (!requireLayoutOverflow || ancestor.scrollHeight > ancestor.clientHeight + layoutTolerance)
       && (contentRect.top < ancestorRect.top - tolerance
         || contentRect.bottom > ancestorRect.bottom + tolerance)) axes.push('y');
   return axes;
@@ -65,11 +78,16 @@ export function inspectComposedSurface({ shell, surface, tolerance = 1 }) {
   const clippedContent = [];
   for (const element of descendants) {
     const visualRects = requiredVisualRects(element);
-    for (const contentRect of visualRects) {
-      // A node's own line box can exceed its border box by fractional glyph ink.
-      // This audit targets required descendants hidden by a composing ancestor.
-      for (let ancestor = element.parentElement; ancestor && coveredSet.has(ancestor); ancestor = ancestor.parentElement) {
-        const axes = clippedAxes(contentRect, ancestor, tolerance);
+    for (const { rect: contentRect, firstClippingAncestor, directText } of visualRects) {
+      // Element border boxes begin at their parent. Direct text ranges begin at
+      // their owner because that element can clip its own text content.
+      for (let ancestor = firstClippingAncestor; ancestor && coveredSet.has(ancestor); ancestor = ancestor.parentElement) {
+        const axes = clippedAxes(
+          contentRect,
+          ancestor,
+          tolerance,
+          directText && ancestor === element,
+        );
         if (axes.length) {
           clippedContent.push(`${nameOf(element)} clipped by ${nameOf(ancestor)} (${axes.join('+')})`);
           break;

@@ -27,8 +27,12 @@ function element({
   overflowY = 'visible',
   ariaHidden = false,
   allowClip = false,
+  directTextRect = null,
   children = [],
 }) {
+  const textNode = directTextRect
+    ? { nodeType: 3, textContent: 'Required direct text', _rect: directTextRect }
+    : null;
   const node = {
     tagName,
     className,
@@ -36,7 +40,7 @@ function element({
     clientHeight,
     scrollWidth,
     scrollHeight,
-    childNodes: [],
+    childNodes: textNode ? [textNode] : [],
     children,
     parentElement: null,
     _rect: rect,
@@ -97,20 +101,61 @@ function fixture({ childRect, ariaHidden = false, allowClip = false }) {
 }
 
 const original = {
+  document: globalThis.document,
   innerWidth: globalThis.innerWidth,
   innerHeight: globalThis.innerHeight,
   getComputedStyle: globalThis.getComputedStyle,
 };
 
+globalThis.document = {
+  createRange() {
+    return {
+      node: null,
+      selectNodeContents(node) { this.node = node; },
+      getClientRects() { return this.node?._rect ? [this.node._rect] : []; },
+      detach() {},
+    };
+  },
+};
 globalThis.innerWidth = 200;
 globalThis.innerHeight = 200;
 globalThis.getComputedStyle = node => node._style;
 
 test.after(() => {
+  globalThis.document = original.document;
   globalThis.innerWidth = original.innerWidth;
   globalThis.innerHeight = original.innerHeight;
   globalThis.getComputedStyle = original.getComputedStyle;
 });
+
+function directTextFixture({
+  ariaHidden = false,
+  allowClip = false,
+  directTextRect = box(10, 10, 270, 20),
+  scrollWidth = 280,
+  scrollHeight = 20,
+} = {}) {
+  const label = element({
+    className: 'required-label',
+    rect: box(10, 10, 50, 20),
+    clientWidth: 50,
+    clientHeight: 20,
+    scrollWidth,
+    scrollHeight,
+    overflowX: 'hidden',
+    overflowY: 'hidden',
+    ariaHidden,
+    allowClip,
+    directTextRect,
+  });
+  const surface = element({
+    className: 'fixture-surface',
+    rect: box(0, 0, 200, 100),
+    children: [label],
+  });
+  const shell = element({ className: 'fixture-shell', rect: box(0, 0, 200, 100) });
+  return { shell, surface };
+}
 
 test('nested required content clipped by overflow hidden fails the composed-surface audit', () => {
   const result = inspectComposedSurface(fixture({ childRect: box(10, 10, 100, 100) }));
@@ -142,4 +187,30 @@ test('aria-hidden and explicitly allowlisted decoration is excluded from require
 
   assert.deepEqual(hidden.clippedContent ?? [], []);
   assert.deepEqual(allowlisted.clippedContent ?? [], []);
+});
+
+test('direct text clipped by its own overflow-hidden element fails unless explicitly excluded', () => {
+  const clipped = inspectComposedSurface(directTextFixture());
+  const hidden = inspectComposedSurface(directTextFixture({ ariaHidden: true }));
+  const allowlisted = inspectComposedSurface(directTextFixture({ allowClip: true }));
+
+  assert.equal(clipped.clippedContent?.length, 1);
+  assert.match(clipped.clippedContent[0], /required-label.*required-label/);
+  assert.throws(
+    () => assertComposedSurface(clipped, 'self-clipped text fixture'),
+    /clipped required content/,
+  );
+  assert.deepEqual(hidden.clippedContent ?? [], []);
+  assert.deepEqual(allowlisted.clippedContent ?? [], []);
+});
+
+test('fractional text ink outside its own box is accepted when layout content does not overflow', () => {
+  const result = inspectComposedSurface(directTextFixture({
+    directTextRect: box(10, 8, 50, 24),
+    scrollWidth: 50,
+    scrollHeight: 22,
+  }));
+
+  assert.deepEqual(result.clippedContent ?? [], []);
+  assert.doesNotThrow(() => assertComposedSurface(result, 'fractional text ink'));
 });

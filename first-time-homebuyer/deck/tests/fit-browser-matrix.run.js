@@ -27,9 +27,13 @@ async (page) => {
     const clipped = inspect('#clipped-case');
     const transformed = inspect('#transformed-case');
     const decorative = inspect('#decorative-case');
+    const selfClippedText = inspect('#self-clipped-text-case');
     let clippedRejected = false;
+    let selfClippedTextRejected = false;
     try { assertComposedSurface(clipped, 'clipped fixture'); }
     catch (error) { clippedRejected = /clipped required content/.test(error.message); }
+    try { assertComposedSurface(selfClippedText, 'self-clipped text fixture'); }
+    catch (error) { selfClippedTextRejected = /clipped required content/.test(error.message); }
     assertComposedSurface(transformed, 'transformed fixture');
     assertComposedSurface(decorative, 'decorative fixture');
     return {
@@ -37,6 +41,8 @@ async (page) => {
       clippedRejected,
       transformedAccepted: transformed.clippedContent.length === 0,
       decorativeAccepted: decorative.clippedContent.length === 0,
+      selfClippedTextDetected: selfClippedText.clippedContent.length === 1,
+      selfClippedTextRejected,
     };
   });
   if (!Object.values(auditToolFixtures).every(Boolean)) {
@@ -246,7 +252,7 @@ async (page) => {
   const result = {
     status: errors.length ? 'fail' : 'pass',
     errors,
-    auditToolTests: 3,
+    auditToolTests: 4,
     auditToolFixtures,
     matrix,
     totals: {
