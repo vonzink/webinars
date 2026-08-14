@@ -4,7 +4,7 @@
 
 - Branch: `codex/unified-fit-to-window`
 - Runtime commit tested: `9fafd7c8331fff7c641a89a12b63e995ca76a87a` (`feat: fit complete presenter graphics`)
-- Task 6 adds only the reusable browser-audit module and this report. No runtime source was changed during validation.
+- Task 6 adds only browser-audit test tooling and this report. No runtime source was changed during validation or review remediation.
 - Protected content hashes:
 
 ```text
@@ -23,7 +23,8 @@ Pre-browser commands:
 
 ```bash
 git diff --check
-for file in first-time-homebuyer/deck/content/*.js first-time-homebuyer/deck/js/*.js first-time-homebuyer/deck/tests/fit-browser-audit.js; do node --check "$file"; done
+for file in first-time-homebuyer/deck/content/*.js first-time-homebuyer/deck/js/*.js first-time-homebuyer/deck/tests/fit-browser-*.js; do node --check "$file"; done
+bash -n first-time-homebuyer/deck/tests/run-fit-browser-audit.sh
 node --no-warnings --test first-time-homebuyer/deck/tests/*.test.mjs
 shasum -a 256 \
   first-time-homebuyer/deck/js/calculator-math.js \
@@ -33,22 +34,37 @@ shasum -a 256 \
   first-time-homebuyer/deck/js/presenter.js
 ```
 
-Result: `git diff --check` passed, all JavaScript syntax checks passed, and the Node suite passed 50 of 50 tests with 0 failures, 0 skipped, and 0 cancelled.
+Result: `git diff --check` passed, Bash and all JavaScript syntax checks passed, and the Node suite passed 53 of 53 tests with 0 failures, 0 skipped, and 0 cancelled.
 
-The reusable real-browser assertions live in `first-time-homebuyer/deck/tests/fit-browser-audit.js`. One-off Playwright orchestration stayed in `/tmp` and was not committed:
+The reusable real-browser assertions and regression fixtures live under `first-time-homebuyer/deck/tests/`. The committed runner accepts an already-running deck base URL, or owns and cleans up a local Python server when no URL is given:
 
 ```bash
 PWCLI=/Users/zacharyzink/.codex/skills/playwright/scripts/playwright_cli.sh
-"$PWCLI" --session fit-final run-code --filename=/tmp/msfg-fit-full-audit.js
-"$PWCLI" --session fit-final run-code --filename=/tmp/msfg-fit-interactions.js
-"$PWCLI" --session fit-final run-code --filename=/tmp/msfg-fit-screenshots.js
+PWCLI="$PWCLI" first-time-homebuyer/deck/tests/run-fit-browser-audit.sh
+
+# Or target an already-running server whose document root is the deck directory:
+PWCLI="$PWCLI" first-time-homebuyer/deck/tests/run-fit-browser-audit.sh http://127.0.0.1:4196/
 ```
 
-The final matrix run returned `errors: []`. It made 215 independent composed-surface audit invocations: 5 base-slide, 5 collapsed-calculator, 5 expanded-calculator, 5 expanded-calculator with nonzero HOA, 150 educational-popout, and 45 graphic audits.
+The command prints one machine-readable JSON object and exits nonzero on a fixture, matrix, interaction, visual, console, network, server, or session failure. It requires Playwright CLI at `playwright-cli`, `$PWCLI`, or the documented Codex skill path; it does not read `/tmp` or `.playwright-cli` files. Screenshots are regenerated under ignored `first-time-homebuyer/deck/output/playwright/`.
+
+The final committed-runner result was `status: pass`, with matrix and interaction `errors: []`. The browser regression fixture passed 3/3 cases, and the matrix made 215 independent composed-surface audit invocations: 5 base-slide, 5 collapsed-calculator, 5 expanded-calculator, 5 expanded-calculator with nonzero HOA, 150 educational-popout, and 45 graphic audits.
+
+Runner source hashes for the tested revision:
+
+```text
+0df63ae3cda2b0850a7aee16b076dc2090ab96d8db1ec972359c026dc41ac044  first-time-homebuyer/deck/tests/fit-browser-audit.js
+12a2682c37ebad3d95f9f201bc893b601d672f37abed60aac398018195085353  first-time-homebuyer/deck/tests/fit-browser-audit.test.mjs
+a02e8b6c95e564b67c0ee8f1de759a099e4e7bc92fdab1b2f68189c0a9ab2e96  first-time-homebuyer/deck/tests/fit-browser-audit-fixture.html
+6684cbb30031700238a9c25e1b6ad2dd239a2b1ad3c7a9903aa41ba539036ffc  first-time-homebuyer/deck/tests/fit-browser-matrix.run.js
+27f4f05e34007bca19f15d1d4d51d2b7eb4b79402fe60febda27358a5fa58546  first-time-homebuyer/deck/tests/fit-browser-interactions.run.js
+053dd846a06fe2472c83b04076e1263da3c9edc04c784f62bcd466be2868506f  first-time-homebuyer/deck/tests/fit-browser-visuals.run.js
+fd4b4d37f439766addb392ac510b03c601c2c248aad90fc9cd2d2d9716030f16  first-time-homebuyer/deck/tests/run-fit-browser-audit.sh
+```
 
 ## Browser matrix
 
-Every cell below passed containment, uniform-scale, no-upscale, authored-ratio, shell/surface overflow, descendant scroll-container, and no-reflow checks with a one-pixel containment/overflow tolerance and `0.001` ratio tolerance.
+Every cell below passed containment, uniform-scale, no-upscale, authored-ratio, shell/surface overflow, descendant scroll-container, descendant required-content clipping, and no-reflow checks with a one-pixel containment/overflow tolerance and `0.001` ratio tolerance.
 
 | Viewport | Base slide | Calculator collapsed | Calculator expanded | Nonzero HOA | 30 popouts | 9 graphics |
 |---|---:|---:|---:|---:|---:|---:|
@@ -82,11 +98,14 @@ Additional measured invariants:
 - Failed `insideViewport` checks: 0.
 - Failed `surfaceFitsLayout` checks: 0.
 - Covered internal `overflow: auto`/`scroll` containers with actual overflow: 0.
+- Required DOM content visually exceeding an `overflow: hidden`/`clip` composing ancestor: 0.
 - Shell or design-surface `scrollWidth/clientWidth` or `scrollHeight/clientHeight` violations beyond one pixel: 0.
 - Ratio deviations beyond `0.001`: 0.
 - Viewport-dependent authored-dimension changes: 0 across 30 popouts and 9 graphics.
 
 The presenter dashboard's normal application-page scrolling is intentionally outside the composed-surface prohibition and remained operational.
+
+The nested-clipping rule is intentionally based on rendered client rectangles, not raw pre-transform layout dimensions: a uniformly transformed descendant that visually fits is accepted. Replaced/interactive elements and direct text nodes are required content. `aria-hidden="true"`, the explicit `data-audit-allow-clip` marker, pseudo-elements, and CSS background decoration are excluded; a node's own line box is also excluded because fractional glyph ink can extend beyond its border box. A required descendant that visually leaves any hidden/clip ancestor still fails. Node tests and the browser fixture prove the clipped failure, transformed acceptance, and decorative exclusions.
 
 ## Visual evidence
 
@@ -95,7 +114,7 @@ The four approval images were captured only after geometry, staged slide builds,
 | Screenshot | SHA-256 | Visual inspection |
 |---|---|---|
 | `first-time-homebuyer/deck/output/playwright/fit-slide-480x800.png` | `e7c8aa398898b937fc78b6d39a04a15cc69abd67b1601db0d1057af8bcfa11b9` | Complete centered 16:9 slide; all five cards, footer, and branding visible; no crop or reflow. |
-| `first-time-homebuyer/deck/output/playwright/fit-calculator-expanded-800x480.png` | `aff6cc061baed2a31140bac65102d412154e6c02c03bd6b3f37c0ce1e89976e9` | Full drag bar, fields, five payment rows, footer, close, and resize control visible as one uniformly scaled composition. |
+| `first-time-homebuyer/deck/output/playwright/fit-calculator-expanded-800x480.png` | `258ead73786f3f4cbb1d46e4a3f089a6eb61df1e7aec22234c895d1e1567c902` | Full drag bar, fields, five payment rows, footer, close, and resize control visible as one uniformly scaled composition. |
 | `first-time-homebuyer/deck/output/playwright/fit-popout-480x800.png` | `0d6310ac6a033100bc09525f1cf0bf42d74f765c6adaef24e459d49296d529f5` | Entire educational body and controls visible; compact strip present; no oversized duplicate heading, underline, crop, or scrollbar. |
 | `first-time-homebuyer/deck/output/playwright/fit-graphic-800x480.png` | `4d535beb267eeac1f7b72735ac1d55d23b8857979eb1a480f5e80f9a4bff2c44` | Entire Budget Smart PNG and compact strip visible; no cropped pixels, inset mat, duplicate title block, or scrollbar. |
 
@@ -105,25 +124,22 @@ These are pre-existing review minors from Tasks 3 and 5. The plan did not requir
 
 1. **Calculator resize-handle focus outline remains clipped.** At 800×480 the focused handle was flush with the canvas's right and bottom edges. Its 3px focus outline projected 3px beyond both edges while `.calculator-canvas` computed to `overflow: hidden`; the projected right edge was `555.97` versus canvas `552.97`, and projected bottom was `467` versus canvas `464`. Keyboard focus and focus trapping still passed, but the outer part of the visual outline is clipped.
 2. **The controls-inside-canvas contract regex depends on a production comment.** `calculator-contract.test.mjs` uses a non-greedy match ending at `</div>\s*</section>`. The `<!-- /calculator-breakdown -->` comment after the inner breakdown div prevents that regex from stopping at the result section before the close/resize controls. Removing the comment can produce a false test failure even when DOM nesting is unchanged. This is test brittleness, not a browser behavior failure.
-3. **`openMedia` still resolves one paint frame before screenshot-stable pixels.** The immediate diagnostic reported `opened: true`, decoded 1536×1024 pixels, and a visible root in `12.7ms`, but its screenshot hash was `741dfe3254eb6efd22a27c04b8f514bb261a40b0dc0fde57f9da0123e1ebd048`. After one `requestAnimationFrame`, the hash was `4d535beb267eeac1f7b72735ac1d55d23b8857979eb1a480f5e80f9a4bff2c44`, exactly matching the later paint-ready approval image. All visual inspection used the paint-ready image, not the immediate diagnostic.
+3. **`openMedia` still resolves one paint frame before screenshot-stable pixels.** The fresh committed-runner diagnostic reported `opened: true`, decoded 1536×1024 pixels, and a visible root in `29.5ms`, but its immediate screenshot hash was `741dfe3254eb6efd22a27c04b8f514bb261a40b0dc0fde57f9da0123e1ebd048`. After one `requestAnimationFrame`, the hash was `4d535beb267eeac1f7b72735ac1d55d23b8857979eb1a480f5e80f9a4bff2c44`, exactly matching the later paint-ready approval image. All visual inspection used the paint-ready image, not the immediate diagnostic.
 
 ## Console, network, and cleanup
 
-Browser evidence commands:
+The committed runner performs the console, network, browser-session, and owned-server lifecycle checks in one command:
 
 ```bash
 PWCLI=/Users/zacharyzink/.codex/skills/playwright/scripts/playwright_cli.sh
-"$PWCLI" --session fit-final console warning
-"$PWCLI" --session fit-final requests --static
-"$PWCLI" --session fit-final close
-kill "$(cat /tmp/msfg-fit-http.pid)"
+PWCLI="$PWCLI" first-time-homebuyer/deck/tests/run-fit-browser-audit.sh
 lsof -nP -iTCP:4196 -sTCP:LISTEN
 ```
 
-- Console: 1 informational deck message, 0 errors, 0 warnings, and 0 unhandled promise rejections.
-- Network: all 86 recorded static requests returned HTTP 200, including every local JavaScript, CSS, brand asset, portrait, and all nine presenter PNGs.
-- Session: `fit-final` closed successfully.
-- Server: owned PID terminated with exit 143 after `SIGTERM`; final listener check found no process on `127.0.0.1:4196`.
+- Console warning filter: 0 returned messages, 0 errors, and 0 warnings.
+- Network: all 82 recorded requests in the final run succeeded with HTTP 2xx or a valid HTTP 304 cache response; failed responses: 0. This included every local JavaScript, CSS, brand asset, portrait, both audit fixture resources, and all nine presenter PNGs. The exact request total can vary with browser cache reuse; the committed result records it directly.
+- Session: the unique `fit-browser-audit-<pid>` browser session closed successfully through the exit trap.
+- Server: the owned Python server PID was terminated and reaped through the same exit trap; final listener check found no process on `127.0.0.1:4196`.
 
 ## Final controller gate
 
@@ -131,12 +147,13 @@ Commands:
 
 ```bash
 git diff --check
-for file in first-time-homebuyer/deck/content/*.js first-time-homebuyer/deck/js/*.js first-time-homebuyer/deck/tests/fit-browser-audit.js; do node --check "$file"; done
+for file in first-time-homebuyer/deck/content/*.js first-time-homebuyer/deck/js/*.js first-time-homebuyer/deck/tests/fit-browser-*.js; do node --check "$file"; done
+bash -n first-time-homebuyer/deck/tests/run-fit-browser-audit.sh
 node --no-warnings --test first-time-homebuyer/deck/tests/*.test.mjs
 git status --short
 ```
 
-Result: `git diff --check` and every syntax check passed; the fresh Node run passed 50 of 50 tests with 0 failures, 0 skipped, and 0 cancelled. `git status --short` showed only the intended audit/report plus the pre-existing `.playwright-cli/` and uncommitted screenshot evidence under `first-time-homebuyer/deck/output/`; neither artifact directory is a commit candidate.
+Result: `git diff --check` and every syntax check passed; the fresh Node run passed 53 of 53 tests with 0 failures, 0 skipped, and 0 cancelled. `git status --short` showed only the intended Task 6 test/report files plus the pre-existing `.playwright-cli/` and uncommitted screenshot evidence under `first-time-homebuyer/deck/output/`; neither artifact directory is a commit candidate.
 
 ## Deployment status
 
