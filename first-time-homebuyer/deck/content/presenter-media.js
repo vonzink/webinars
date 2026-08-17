@@ -35,6 +35,11 @@ const items = [
     alt: 'Colorado ten-year comparison of cumulative rent payments, homeowner cash paid, and homeowner equity.',
   },
   {
+    id: 'denver-loan-mix', slideId: 'programs', title: 'What Denver Metro Buyers Use',
+    src: './assets/presenter/slide-06/denver-loan-mix.svg',
+    alt: '2024 HMDA purchase-loan shares for the Denver metro area: Conventional 71.6%, FHA 18.6%, VA 8.9%, USDA 0.9%.',
+  },
+  {
     id: 'budget-smart', slideId: 'budget-comfort', title: 'Budget Smart',
     src: './assets/presenter/slide-05/budget-smart.png',
     alt: 'Budget comparison between a comfortable housing payment and maximum mortgage qualification.',

@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1520 1000" font-family="'Helvetica Neue', Arial, sans-serif">
+  <rect width="1520" height="1000" fill="#FFFFFF"/>
+
+  <!-- Title -->
+  <text x="760" y="70" text-anchor="middle" font-size="52" font-weight="800" fill="#123C4E">What Denver Metro Buyers Actually Use</text>
+  <text x="760" y="118" text-anchor="middle" font-size="30" font-weight="500" fill="#5B6B72">2024 Mortgage Originations (Purchase Loans Only)</text>
+
+  <!-- Info box -->
+  <rect x="150" y="160" width="1220" height="96" rx="14" fill="#EEF4E6"/>
+  <g transform="translate(190,178)">
+    <path d="M6 34 L30 12 L54 34 Z" fill="none" stroke="#6BA644" stroke-width="4" stroke-linejoin="round"/>
+    <rect x="14" y="34" width="32" height="26" fill="none" stroke="#6BA644" stroke-width="4"/>
+    <rect x="26" y="44" width="8" height="16" fill="#6BA644"/>
+  </g>
+  <text x="300" y="205" font-size="27" fill="#3A4A50">Based on <tspan font-weight="700" fill="#6BA644">2024 HMDA</tspan> data for the Denver metro area</text>
+  <text x="300" y="240" font-size="27" fill="#3A4A50">(Adams, Arapahoe, Broomfield, Denver, Douglas &amp; Jefferson Counties)</text>
+
+  <!-- ================= Donut ================= -->
+  <!-- center (300,470), R=210, r=120 -->
+  <path d="M300,260 A210,210 0 1 1 94.7,514.2 L182.7,495.2 A120,120 0 1 0 300,350 Z" fill="#17394A"/>
+  <path d="M94.7,514.2 A210,210 0 0 1 178.8,298.6 L230.8,372.0 A120,120 0 0 0 182.7,495.2 Z" fill="#6BA644"/>
+  <path d="M178.8,298.6 A210,210 0 0 1 288.1,260.3 L293.2,350.2 A120,120 0 0 0 230.8,372.0 Z" fill="#4A90D2"/>
+  <path d="M288.1,260.3 A210,210 0 0 1 300,260 L300,350 A120,120 0 0 0 293.2,350.2 Z" fill="#F2B01E"/>
+
+  <!-- segment labels -->
+  <text x="380" y="640" text-anchor="middle" font-size="40" font-weight="800" fill="#FFFFFF">71.6%</text>
+  <text x="150" y="470" text-anchor="middle" font-size="34" font-weight="800" fill="#FFFFFF">18.6%</text>
+  <text x="205" y="330" text-anchor="middle" font-size="30" font-weight="800" fill="#FFFFFF">8.9%</text>
+  <!-- USDA sliver (0.9%) is too small to label on-donut; shown in the legend -->
+  <line x1="308" y1="262" x2="330" y2="290" stroke="#F2B01E" stroke-width="3"/>
+  <text x="336" y="298" font-size="22" font-weight="800" fill="#B9820A">0.9%</text>
+
+  <!-- center label -->
+  <text x="300" y="465" text-anchor="middle" font-size="46" font-weight="900" fill="#123C4E">100%</text>
+  <text x="300" y="500" text-anchor="middle" font-size="24" fill="#5B6B72">of Purchase</text>
+  <text x="300" y="528" text-anchor="middle" font-size="24" fill="#5B6B72">Loans</text>
+
+  <!-- ================= Legend ================= -->
+  <text x="740" y="330" font-size="24" font-weight="700" letter-spacing="1.5" fill="#6B7B82">LOAN PROGRAM</text>
+  <text x="1440" y="330" text-anchor="end" font-size="24" font-weight="700" letter-spacing="1.5" fill="#6B7B82">SHARE OF PURCHASE LOANS</text>
+  <line x1="740" y1="352" x2="1440" y2="352" stroke="#D8DEE1" stroke-width="2"/>
+
+  <!-- Conventional -->
+  <circle cx="758" cy="410" r="16" fill="#17394A"/>
+  <text x="790" y="404" font-size="34" font-weight="800" fill="#123C4E">Conventional</text>
+  <text x="790" y="436" font-size="24" fill="#5B6B72">Includes conforming &amp; jumbo</text>
+  <text x="1440" y="426" text-anchor="end" font-size="46" font-weight="800" fill="#17394A">71.6%</text>
+  <line x1="740" y1="470" x2="1440" y2="470" stroke="#EBEFF1" stroke-width="2"/>
+
+  <!-- FHA -->
+  <circle cx="758" cy="528" r="16" fill="#6BA644"/>
+  <text x="790" y="522" font-size="34" font-weight="800" fill="#123C4E">FHA</text>
+  <text x="790" y="554" font-size="24" fill="#5B6B72">Federal Housing Administration</text>
+  <text x="1440" y="544" text-anchor="end" font-size="46" font-weight="800" fill="#6BA644">18.6%</text>
+  <line x1="740" y1="588" x2="1440" y2="588" stroke="#EBEFF1" stroke-width="2"/>
+
+  <!-- VA -->
+  <circle cx="758" cy="646" r="16" fill="#4A90D2"/>
+  <text x="790" y="640" font-size="34" font-weight="800" fill="#123C4E">VA</text>
+  <text x="790" y="672" font-size="24" fill="#5B6B72">Veterans Affairs</text>
+  <text x="1440" y="662" text-anchor="end" font-size="46" font-weight="800" fill="#4A90D2">8.9%</text>
+  <line x1="740" y1="706" x2="1440" y2="706" stroke="#EBEFF1" stroke-width="2"/>
+
+  <!-- USDA -->
+  <circle cx="758" cy="764" r="16" fill="#F2B01E"/>
+  <text x="790" y="758" font-size="34" font-weight="800" fill="#123C4E">USDA</text>
+  <text x="790" y="790" font-size="24" fill="#5B6B72">U.S. Department of Agriculture</text>
+  <text x="1440" y="780" text-anchor="end" font-size="46" font-weight="800" fill="#F2B01E">0.9%</text>
+
+  <!-- ================= Footer ================= -->
+  <rect x="90" y="880" width="1340" height="86" rx="14" fill="#F6F8F9"/>
+  <g transform="translate(120,908)" fill="#123C4E">
+    <rect x="0" y="30" width="12" height="24"/>
+    <rect x="18" y="16" width="12" height="38"/>
+    <rect x="36" y="2" width="12" height="52"/>
+  </g>
+  <text x="190" y="918" font-size="25" fill="#3A4A50">Most Denver metro buyers use Conventional</text>
+  <text x="190" y="950" font-size="25" fill="#3A4A50">loans, followed by FHA and VA programs.</text>
+  <text x="1400" y="912" text-anchor="end" font-size="21" fill="#7A888E">Source: CFPB HMDA Data Browser – 2024</text>
+  <text x="1400" y="940" text-anchor="end" font-size="21" fill="#7A888E">Counties: Adams, Arapahoe, Broomfield,</text>
+  <text x="1400" y="966" text-anchor="end" font-size="21" fill="#7A888E">Denver, Douglas &amp; Jefferson</text>
+</svg>
