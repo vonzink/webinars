@@ -1,0 +1,127 @@
+/* ============================================================================
+   SLIDE-SPECIFIC LAYOUT STYLING (Ridgeline)
+   ========================================================================= */
+
+/* Split photo panels */
+.split-photo { position: relative; }
+.split[data-ratio="photo-right"] .split-copy { padding-right: 72px; justify-content: center; }
+.split[data-ratio="1-1"] .split-copy { justify-content: center; }
+
+/* Figures */
+.figure-wrap { display: flex; align-items: center; justify-content: center; }
+.figure-wrap > svg { width: 100%; height: auto; }
+
+/* Payment breakdown — clean stacked bar + legend chips (no leader lines) */
+.pay-bar { width: 100%; height: 84px; }
+.pay-bar svg { width: 100%; height: 100%; display: block; }
+.pay-legend { display: flex; flex-wrap: wrap; gap: 14px 40px; margin-top: 20px; }
+.pay-chip { display: flex; align-items: center; gap: 12px;
+  font-family: var(--font-display); font-weight: var(--fw-700); font-size: 24px; color: var(--charcoal); }
+.pay-sw { width: 22px; height: 22px; flex: none; }
+
+/* Two-column locked / moves + can / cannot */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; }
+.col-head {
+  font-family: var(--font-display); font-weight: var(--fw-800); font-size: 30px;
+  color: var(--forest); padding-bottom: 14px; margin-bottom: 18px;
+  border-bottom: 3px solid var(--card-border-light);
+}
+.slide[data-bg="dark"] .col-head { color: #fff; }
+.col-head--lock { border-bottom-color: var(--sage); }
+.col-head--move { border-bottom-color: var(--green); }
+.mini-list > li {
+  position: relative; padding-left: 32px; margin-bottom: 14px;
+  font-family: var(--font-body); font-size: var(--fs-body-s); line-height: 1.3;
+}
+.mini-list > li::before { content: ""; position: absolute; left: 0; top: 12px;
+  width: 12px; height: 12px; background: var(--green); }
+
+/* Dense slides — tighten so diagram + columns + points clear the footer */
+#slide-budget-payment .slide-body { gap: 22px; }
+#slide-va-payment .slide-body { gap: 16px; }
+#slide-va-payment .pay-legend { margin-top: 12px; }
+#slide-va-payment .points > li { font-size: 22px; }
+#slide-budget-payment .slide-header,
+#slide-va-payment .slide-header,
+#slide-cash-makeup .slide-header { margin-bottom: 24px; }
+#slide-budget-payment .two-col,
+#slide-va-payment .two-col { gap: 48px; }
+#slide-budget-payment .mini-list > li,
+#slide-va-payment .mini-list > li { font-size: 24px; margin-bottom: 10px; }
+#slide-budget-payment .col-head,
+#slide-va-payment .col-head { font-size: 26px; padding-bottom: 10px; margin-bottom: 12px; }
+/* The explainers become a compact 3-across row, not full-width bullets */
+#slide-budget-payment .points,
+#slide-va-payment .points {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 34px;
+}
+#slide-budget-payment .points > li,
+#slide-va-payment .points > li { font-size: 23px; line-height: 1.3; padding-left: 26px; }
+#slide-budget-payment .points > li::before,
+#slide-va-payment .points > li::before { top: 9px; width: 10px; height: 10px; }
+#slide-cash-makeup .points > li { font-size: var(--fs-body-s); }
+
+/* Opening / wrap — trim so the contact block clears the footer */
+#slide-opening .headline { font-size: 84px !important; }
+#slide-opening .contact { gap: 10px; margin-top: 28px !important; }
+#slide-opening .contact li { font-size: 30px; }
+
+/* Compare-loans CTA on the closing-costs/APR slide */
+.compare-cta {
+  align-self: flex-start; margin-top: 34px;
+  display: inline-flex; align-items: center; gap: 14px;
+  padding: 18px 34px; background: var(--green); color: var(--forest);
+  font-family: var(--font-display); font-weight: var(--fw-800); font-size: 26px;
+  letter-spacing: 0.01em; transition: transform var(--dur-fast) var(--ease-out);
+}
+.compare-cta:hover { transform: translateY(-2px); }
+
+/* Do / Don't handout — client wants the red/green from the printed handout.
+   Scoped to these two slides so the rest of the deck keeps the Ridgeline system. */
+#slide-mistakes-donts .headline { color: var(--red); }
+#slide-mistakes-donts .marker[data-tone="dont"] { background: var(--red); }
+#slide-mistakes-donts .slide-header .accent-bar { background: var(--red); }
+#slide-mistakes-dos .headline { color: var(--do-green); }
+#slide-mistakes-dos .marker[data-tone="do"] { background: var(--do-green); }
+#slide-mistakes-dos .slide-header .accent-bar { background: var(--do-green); }
+
+/* Questions */
+#slide-questions .slide-header { margin-bottom: 30px; }
+.qa-list { display: flex; flex-direction: column; gap: 20px; max-width: 1500px; }
+.qa { display: flex; gap: 30px; align-items: baseline; }
+.qa-num {
+  flex: none; width: 56px; height: 56px; display: grid; place-items: center;
+  background: var(--green); color: var(--forest);
+  font-family: var(--font-display); font-weight: var(--fw-900); font-size: 28px;
+}
+.qa-q { font-family: var(--font-display); font-weight: var(--fw-800); font-size: 34px;
+  color: #fff; line-height: 1.15; }
+.slide[data-bg="white"] .qa-q, .slide[data-bg="mist"] .qa-q { color: var(--forest); }
+.qa-a { font-family: var(--font-body); font-size: 24px; line-height: 1.35;
+  color: var(--text-body-dark); margin-top: 6px; max-width: 1360px; }
+.slide[data-bg="white"] .qa-a, .slide[data-bg="mist"] .qa-a { color: var(--charcoal); }
+
+/* Wrap QR */
+.wrap-qr { position: relative; }
+.wrap-qr .photo { position: relative; inset: auto; width: 420px; height: 420px;
+  margin-left: auto; background: #fff; }
+.wrap-qr .photo img { object-fit: contain; padding: 24px; }
+.wrap-qr .photo .wash { display: none; }
+.wrap-qr .photo-placeholder { position: absolute; inset: 0; }
+
+/* ---------------------------------------------------------------------------
+   MOBILE
+   ------------------------------------------------------------------------ */
+@media (max-width: 900px) {
+  .two-col { grid-template-columns: 1fr; gap: 24px; }
+  .split[data-ratio="photo-right"] .split-copy { padding-right: 0; }
+  .split-photo { min-height: 240px; }
+  .qa { flex-direction: column; gap: 10px; }
+  .qa-num { width: 40px; height: 40px; font-size: 20px; }
+  .qa-q { font-size: 20px; }
+  .qa-a { font-size: 16px; }
+  .col-head { font-size: 18px; }
+  .mini-list > li { font-size: 16px; }
+  .wrap-qr .photo { width: 200px; height: 200px; margin: 0 auto; }
+  .headline[style] { font-size: 34px !important; }
+}
