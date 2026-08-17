@@ -127,7 +127,10 @@ def std_header(slide,d,dark):
     return y
 
 # ---------------------------------------------------------------------------
-# CONTENT (mirrors deck/content/modals.js + slides.js)
+# CONTENT
+# The MODALS/SLIDES literals below are a reference sample; the real content is
+# loaded from content.json at the end of this section (generated from the live
+# deck via `node scripts/dump-content.mjs`), so the PPTX always mirrors the deck.
 # ---------------------------------------------------------------------------
 def S(head,items,tone=None,note=None): return dict(head=head,items=items,tone=tone,note=note)
 
@@ -300,7 +303,15 @@ SLIDES=[
    ('What happens after pre-approval?','You shop with a real budget, make an offer, and it becomes a formal application — Loan Estimate within three business days.')]),
  dict(id='wrap',layout='wrap',bg='dark',footer=True,headline='Let’s build your plan.'),
 ]
-print("SLIDES:",len(SLIDES))
+print("SLIDES (sample):",len(SLIDES))
+
+# ---- Load the real deck content (overrides the sample literals above) --------
+import json as _json
+with open(os.path.join(os.path.dirname(__file__), 'content.json'), encoding='utf-8') as _f:
+    _content = _json.load(_f)
+MODALS = _content['modals']
+SLIDES = _content['slides']
+print("CONTENT:", len(SLIDES), "slides,", len(MODALS), "popouts (from content.json)")
 
 # ---------------------------------------------------------------------------
 # RENDERERS
@@ -409,7 +420,7 @@ def L_payment(s,d,dark):
     subhead(s,d['subhead'],dark,PADY+IN(180))
     top=PADY+IN(250)
     # banded bar
-    segs=[('Principal',210),('Interest',300),('Taxes',170),('Insurance',120),('Mortgage ins.',110),('HOA',90)]
+    segs=[('Principal',240),('Interest',340),('Taxes',190),('Insurance',130),('HOA',100)]
     total=sum(w for _,w in segs); barw=IN(1580); x=PADX; barh=IN(72)
     for i,(lbl,w) in enumerate(segs):
         sw=barw*w/total; rect(s,x,top,sw,barh,fill=PAY[i])
@@ -531,10 +542,10 @@ def render_popout(mid,m):
     # body
     by=IN(360)
     if m.get('intro'):
-        it=textbox(s,PADX,by,CW-PADX*2,IN(140)); set_text(line0(it),m['intro'],PT(25),CHARCOAL,BODY,False); by=IN(480)
+        it=textbox(s,PADX,by,CW-PADX*2,IN(130)); set_text(line0(it),m['intro'],PT(24),CHARCOAL,BODY,False); by=IN(440)
     if m.get('table'):
         t=m['table']; cols=len(t['columns'])+1; rows=len(t['rows'])+1
-        gt=s.shapes.add_table(rows,cols,PADX,by,CW-PADX*2,IN(52*rows)).table
+        gt=s.shapes.add_table(rows,cols,PADX,by,CW-PADX*2,IN(44*rows)).table
         gt.first_row=True; gt.horz_banding=True
         hdr=['']+t['columns']
         for c,txt in enumerate(hdr):
@@ -546,7 +557,7 @@ def render_popout(mid,m):
             for c,val in enumerate(cells,start=1):
                 cc=gt.cell(r,c); cc.fill.solid(); cc.fill.fore_color.rgb=WHITE
                 set_text(cc.text_frame.paragraphs[0],re.sub('<[^>]+>','',val),PT(20),CHARCOAL,BODY,False)
-        by = by + IN(54*rows) + IN(20)
+        by = by + IN(46*rows) + IN(16)
     tf2=textbox(s,PADX,by,CW-PADX*2,IN(700)-(by-IN(360)))
     first=True
     for sec in m['sections']:
@@ -564,8 +575,11 @@ def render_popout(mid,m):
             p=para(tf2,14,8); first=False
             rr=p.add_run(); rr.text='  '; add_rich(p,sec['note'],PT(26),FOREST)
     if m.get('compliance'):
+        _c=m['compliance']
         txt=('Hypothetical illustration for education only. Not a quote, offer, or commitment to lend.'
-             if m['compliance']=='hypothetical'
+             if _c=='hypothetical'
+             else 'General guidelines only. VA eligibility and benefits depend on your service record, entitlement, full underwriting, and lender overlays. Not affiliated with or endorsed by the VA or any government agency.'
+             if _c=='va'
              else 'General guidelines only. Actual eligibility depends on full underwriting, credit, property, and lender overlays.')
         ct=textbox(s,PADX,CH-IN(210),CW-PADX*2,IN(80))
         set_text(line0(ct),txt,PT(21),META_LIGHT,BODY,False)
@@ -585,6 +599,6 @@ for shape,mid in card_links:
 for back,parent in back_links:
     if parent is not None: back.click_action.target_slide=parent
 
-out=os.path.abspath(os.path.join(os.path.dirname(__file__),'..','Homebuyers-Playbook.pptx'))
+out=os.path.abspath(os.path.join(os.path.dirname(__file__),'..','Understanding-VA-Loans.pptx'))
 prs.save(out)
 print("saved:",out,"| slides:",len(prs.slides.__iter__.__self__._sldIdLst))
