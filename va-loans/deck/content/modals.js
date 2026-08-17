@@ -70,11 +70,12 @@ export const MODALS = {
     eyebrow: 'Who qualifies', title: 'Active duty & veterans', compliance: ['va'],
     sections: [
       { head: 'Generally eligible', items: [
-        'About 90 days of active service in wartime, or 181 continuous days in peacetime',
-        'Active-duty members typically qualify after ~90 continuous days',
+        'Wartime service: about 90 days of active duty',
+        'Peacetime service: about 181 continuous days',
+        'Currently serving: typically eligible after ~90 continuous days',
         'Character of discharge matters — generally other than dishonorable',
       ]},
-      { head: '', items: [], note: 'Short enlistments often still count. When in doubt, let us check.' },
+      { head: '', items: [], note: 'Short enlistments often still count. Exact requirements vary by era — when in doubt, let us check.' },
     ],
   },
   'elig-guard': {
@@ -93,9 +94,11 @@ export const MODALS = {
     sections: [
       { head: 'A benefit that can transfer', items: [
         'Spouses of service members who died in service or from a service-connected disability may be eligible',
-        'The funding fee is often waived entirely',
-        'A dedicated COE confirms it',
+        'Generally must not have remarried (some exceptions apply)',
+        'The funding fee is typically waived entirely',
+        'A dedicated COE confirms eligibility',
       ]},
+      { head: '', items: [], note: 'This is one of the most overlooked — and most meaningful — parts of the benefit.' },
     ],
   },
   'elig-coe': {

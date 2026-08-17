@@ -129,10 +129,10 @@ export const SLIDES = [
     points: [
       'A one-time fee, not monthly — and it can be rolled into the loan',
       'First use costs less than later uses; putting some money down lowers it further',
-      'Waived entirely for veterans receiving compensation for a service-connected disability',
+      'Waived for veterans with a service-connected disability rating — and for Purple Heart recipients',
       'It replaces mortgage insurance — pay once instead of every month for years',
     ],
-    callout: 'Waived for many disabled veterans. Always worth checking your status first.',
+    callout: 'Waived for many disabled veterans and Purple Heart recipients. Always check your status first.',
     time: 150,
     notes: 'De-fang it: it\'s one-time and financeable, and it\'s WHY there\'s no monthly MI. The disability waiver is the single most valuable thing to check — it can erase the fee entirely. Exact percentages change; don\'t quote them.',
   },
