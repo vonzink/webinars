@@ -3,9 +3,11 @@ import {
   calculatePayment,
   formatMoney,
 } from './calculator-math.js';
-import { fitOverlay, resizeOverlay, clampOverlay } from './overlay-geometry.js';
+import { createSurfaceController } from './surface-fit.js';
 
-const INTRINSIC_WIDTH = 560;
+const CALCULATOR_WIDTH = 560;
+const CALCULATOR_COLLAPSED_HEIGHT = 820;
+const CALCULATOR_EXPANDED_HEIGHT = 982;
 
 let root;
 let panel;
@@ -13,7 +15,7 @@ let canvas;
 let closeButton;
 let resizeHandle;
 let dragbar;
-let overlayGeometry = null;
+let fitController;
 let visible = false;
 let initialized = false;
 let onVisibilityChange = () => {};
@@ -33,8 +35,8 @@ const fieldNames = {
 function markup() {
   return `
     <div class="calculator-overlay" data-calculator-overlay hidden>
-      <section class="calculator-panel" role="dialog" aria-modal="true" aria-labelledby="calculator-title">
-        <div class="calculator-canvas">
+      <section class="calculator-panel" data-fit-shell>
+        <div class="calculator-canvas" data-fit-surface role="dialog" aria-modal="true" aria-labelledby="calculator-title">
           <header class="calculator-dragbar" data-calculator-dragbar>
             <span class="calculator-grip" aria-hidden="true"><i></i><i></i><i></i></span>
             <span class="calculator-drag-label">Mortgage payment calculator</span>
@@ -70,7 +72,7 @@ function markup() {
               <section class="calculator-result" aria-label="Estimated payment breakdown">
                 <p class="calculator-result-label">Estimated monthly payment</p>
                 <p class="calculator-total" data-calculator-total aria-live="polite">$0</p>
-                <div class="calculator-breakdown" data-calculator-breakdown></div>
+                <div class="calculator-breakdown" data-calculator-breakdown></div><!-- /calculator-breakdown -->
               </section>
             </div>
 
@@ -79,9 +81,9 @@ function markup() {
               <p>Mountain State Financial Group, LLC · NMLS# 1314257<br>Estimates are for illustration only and not a commitment to lend.</p>
             </footer>
           </div>
+          <button class="calculator-close" type="button" aria-label="Close calculator">&times;</button>
+          <button class="calculator-resize-handle" type="button" data-calculator-resize aria-label="Resize calculator"></button>
         </div>
-        <button class="calculator-close" type="button" aria-label="Close calculator">&times;</button>
-        <button class="calculator-resize-handle" type="button" data-calculator-resize aria-label="Resize calculator"></button>
       </section>
     </div>`;
 }
@@ -123,53 +125,11 @@ function render() {
   });
 }
 
-function applyGeometry(next) {
-  overlayGeometry = next;
-  Object.assign(panel.style, {
-    width: `${next.width}px`, height: `${next.height}px`,
-    left: `${next.left}px`, top: `${next.top}px`,
-  });
-  Object.assign(canvas.style, {
-    width: `${next.intrinsicWidth}px`, height: `${next.intrinsicHeight}px`,
-    transform: `scale(${next.scale})`,
-  });
-}
-
-function measureHeight() {
-  Object.assign(canvas.style, { width: `${INTRINSIC_WIDTH}px`, height: 'auto', transform: 'none' });
-  return Math.ceil(canvas.scrollHeight);
-}
-
-function fitCalculator({ preservePosition = false } = {}) {
-  const intrinsicHeight = measureHeight();
-  const fitted = fitOverlay({
-    intrinsicWidth: INTRINSIC_WIDTH, intrinsicHeight,
-    fallbackWidth: INTRINSIC_WIDTH, fallbackHeight: intrinsicHeight,
-    viewportWidth: innerWidth, viewportHeight: innerHeight,
-  });
-  if (!preservePosition || !overlayGeometry) return applyGeometry(fitted);
-  applyGeometry(clampOverlay({
-    intrinsicWidth: INTRINSIC_WIDTH, intrinsicHeight,
-    fallbackWidth: INTRINSIC_WIDTH, fallbackHeight: intrinsicHeight,
-    scale: Math.min(overlayGeometry.scale, fitted.scale),
-    left: overlayGeometry.left, top: overlayGeometry.top,
-    viewportWidth: innerWidth, viewportHeight: innerHeight,
-  }));
-}
-
-function clampCalculator() {
-  if (!visible) return;
-  const intrinsicHeight = measureHeight();
-  if (!overlayGeometry) {
-    fitCalculator();
-    return;
-  }
-  applyGeometry(clampOverlay({
-    intrinsicWidth: INTRINSIC_WIDTH, intrinsicHeight,
-    fallbackWidth: INTRINSIC_WIDTH, fallbackHeight: intrinsicHeight,
-    scale: overlayGeometry.scale, left: overlayGeometry.left, top: overlayGeometry.top,
-    viewportWidth: innerWidth, viewportHeight: innerHeight,
-  }));
+function calculatorDesignSize() {
+  return {
+    width: CALCULATOR_WIDTH,
+    height: state.showMore ? CALCULATOR_EXPANDED_HEIGHT : CALCULATOR_COLLAPSED_HEIGHT,
+  };
 }
 
 function focusables() {
@@ -206,32 +166,15 @@ function startPointerAction(event, mode) {
   if (!visible || event.button !== 0) return;
   if (mode === 'drag' && event.target.closest('button')) return;
   event.preventDefault();
-  const intrinsicHeight = measureHeight();
-  const start = { x: event.clientX, y: event.clientY, geometry: overlayGeometry };
+  const start = { x: event.clientX, y: event.clientY, geometry: fitController.getGeometry() };
   const target = event.currentTarget;
   target.setPointerCapture(event.pointerId);
 
   const move = moveEvent => {
     const dx = moveEvent.clientX - start.x;
     const dy = moveEvent.clientY - start.y;
-    if (mode === 'drag') {
-      applyGeometry(clampOverlay({
-        intrinsicWidth: INTRINSIC_WIDTH, intrinsicHeight,
-        fallbackWidth: INTRINSIC_WIDTH, fallbackHeight: intrinsicHeight,
-        scale: start.geometry.scale,
-        left: start.geometry.left + dx, top: start.geometry.top + dy,
-        viewportWidth: innerWidth, viewportHeight: innerHeight,
-      }));
-    } else {
-      applyGeometry(resizeOverlay({
-        intrinsicWidth: INTRINSIC_WIDTH, intrinsicHeight,
-        fallbackWidth: INTRINSIC_WIDTH, fallbackHeight: intrinsicHeight,
-        startScale: start.geometry.scale,
-        left: start.geometry.left, top: start.geometry.top,
-        deltaX: dx, deltaY: dy,
-        viewportWidth: innerWidth, viewportHeight: innerHeight,
-      }));
-    }
+    if (mode === 'drag') fitController.moveFrom(start.geometry, dx, dy);
+    else fitController.resizeFrom(start.geometry, dx, dy);
   };
   const end = () => {
     target.removeEventListener('pointermove', move);
@@ -257,6 +200,12 @@ export function initCalculator(options = {}) {
   closeButton = root.querySelector('.calculator-close');
   resizeHandle = root.querySelector('[data-calculator-resize]');
   dragbar = root.querySelector('[data-calculator-dragbar]');
+  fitController = createSurfaceController({
+    viewport: root,
+    shell: panel,
+    surface: canvas,
+    getDesignSize: calculatorDesignSize,
+  });
 
   root.querySelectorAll('[data-calculator-field]').forEach(input => {
     const stateName = fieldNames[input.dataset.calculatorField];
@@ -277,8 +226,7 @@ export function initCalculator(options = {}) {
     event.currentTarget.setAttribute('aria-expanded', String(state.showMore));
     root.querySelector('#calculator-advanced').hidden = !state.showMore;
     requestAnimationFrame(() => {
-      if (!visible) return;
-      fitCalculator({ preservePosition: true });
+      if (visible) fitController.fit();
     });
   });
   closeButton.addEventListener('click', closeFromAudience);
@@ -288,7 +236,6 @@ export function initCalculator(options = {}) {
   dragbar.addEventListener('pointerdown', event => startPointerAction(event, 'drag'));
   resizeHandle.addEventListener('pointerdown', event => startPointerAction(event, 'resize'));
   document.addEventListener('keydown', handleKeydown);
-  window.addEventListener('resize', clampCalculator);
   render();
 }
 
@@ -301,9 +248,12 @@ export function setCalculatorVisible(nextVisible, opener = null) {
     lastOpener = opener instanceof HTMLElement ? opener : document.activeElement;
     root.hidden = false;
     render();
-    fitCalculator();
+    fitController.reset();
+    fitController.setActive(true);
+    fitController.fit();
     closeButton.focus({ preventScroll: true });
   } else {
+    fitController.setActive(false);
     root.hidden = true;
     if (lastOpener instanceof HTMLElement && lastOpener.isConnected) lastOpener.focus({ preventScroll: true });
     lastOpener = null;

@@ -37,6 +37,36 @@ test('initial fit does not upscale', () => {
   );
 });
 
+test('fit honors a preferred scale without ever upscaling', () => {
+  const reduced = fitOverlay({
+    intrinsicWidth: 1000, intrinsicHeight: 500,
+    viewportWidth: 1600, viewportHeight: 1000,
+    maxScale: 0.6,
+  });
+  near(reduced.scale, 0.6);
+  near(reduced.width / reduced.height, 2);
+
+  const capped = fitOverlay({
+    intrinsicWidth: 1000, intrinsicHeight: 500,
+    viewportWidth: 3000, viewportHeight: 2000,
+    maxScale: 4,
+  });
+  near(capped.scale, 1);
+});
+
+test('fit remains finite when the viewport is smaller than both margins', () => {
+  const geometry = fitOverlay({
+    intrinsicWidth: 1920, intrinsicHeight: 1080,
+    viewportWidth: 20, viewportHeight: 12,
+  });
+  assert.ok(Object.values(geometry).every(Number.isFinite));
+  assert.ok(geometry.scale > 0 && geometry.scale <= 1);
+  assert.ok(geometry.left >= -0.000001);
+  assert.ok(geometry.top >= -0.000001);
+  assert.ok(geometry.left + geometry.width <= 20.000001);
+  assert.ok(geometry.top + geometry.height <= 12.000001);
+});
+
 test('invalid intrinsic size uses explicit fallback', () => {
   const geometry = fitOverlay({
     intrinsicWidth: Number.NaN,

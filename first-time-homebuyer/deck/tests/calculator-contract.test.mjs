@@ -29,22 +29,29 @@ test('calculator module exposes the approved dialog interface and content', asyn
   assert.doesNotMatch(source, /Get my real rate|msfg\.us/);
 });
 
-test('calculator uses shared proportional geometry without a scrolling mobile sheet', async () => {
+test('calculator scales two complete fixed design states without internal scrolling', async () => {
   const [source, css] = await Promise.all([read('js/calculator.js'), read('css/calculator.css')]);
 
-  assert.match(source, /from '\.\/overlay-geometry\.js'/);
-  assert.match(source, /INTRINSIC_WIDTH\s*=\s*560/);
-  for (const name of ['fitOverlay', 'resizeOverlay', 'clampOverlay']) {
-    assert.match(source, new RegExp(`${name}\\(`));
-  }
-  assert.match(source, /canvas\.scrollHeight/);
+  assert.match(source, /from '\.\/surface-fit\.js'/);
+  assert.match(source, /CALCULATOR_WIDTH\s*=\s*560/);
+  assert.match(source, /CALCULATOR_COLLAPSED_HEIGHT\s*=\s*820/);
+  assert.match(source, /CALCULATOR_EXPANDED_HEIGHT\s*=\s*982/);
+  assert.match(source, /createSurfaceController\(/);
+  assert.doesNotMatch(source, /canvas\.scrollHeight|measureHeight/);
+  assert.match(source, /data-fit-shell/);
+  assert.match(source, /data-fit-surface/);
   assert.match(css, /\.calculator-canvas\s*\{[^}]*transform-origin:\s*top left/s);
+  assert.match(css, /\.calculator-grid\s*\{[^}]*grid-template-columns:\s*1fr 1fr/s);
   assert.match(css, /\.calculator-scroll\s*\{[^}]*overflow:\s*visible/s);
-  assert.match(css, /\.calculator-advanced\[hidden\]\s*\{\s*display:\s*none/);
-  assert.doesNotMatch(css, /min-width:\s*420px|min-height:\s*420px/);
-  assert.doesNotMatch(css, /@media \(max-width:\s*560px\)/);
-  assert.doesNotMatch(css, /overflow:\s*auto/);
-  assert.doesNotMatch(css, /fonts\.googleapis\.com|@import\s+url/);
+  assert.doesNotMatch(css, /overflow(?:-x|-y)?:\s*(?:auto|scroll)/);
+  assert.doesNotMatch(css, /@media\s*\(max-width/);
+});
+
+test('calculator controls are inside the uniformly scaled surface', async () => {
+  const source = await read('js/calculator.js');
+  const canvasMarkup = source.match(/<div class="calculator-canvas"[\s\S]*?<\/div>\s*<\/section>/)?.[0] || '';
+  assert.match(canvasMarkup, /calculator-close/);
+  assert.match(canvasMarkup, /calculator-resize-handle/);
 });
 
 test('advanced toggle skips its queued refit after the calculator closes', async () => {
@@ -52,8 +59,8 @@ test('advanced toggle skips its queued refit after the calculator closes', async
 
   assert.match(
     source,
-    /requestAnimationFrame\(\(\)\s*=>\s*\{\s*if\s*\(!visible\)\s*return;\s*fitCalculator\(\{\s*preservePosition:\s*true\s*}\);?\s*}\)/s,
-    'calculator.js must guard the queued advanced-toggle refit with visible before measuring a hidden canvas',
+    /requestAnimationFrame\(\(\)\s*=>\s*\{\s*if\s*\(visible\)\s*fitController\.fit\(\);?\s*}\)/s,
+    'calculator.js must guard the queued advanced-toggle refit with visible before fitting a hidden canvas',
   );
 });
 

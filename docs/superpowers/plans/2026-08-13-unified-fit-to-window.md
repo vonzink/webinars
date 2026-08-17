@@ -19,7 +19,7 @@
 - The base slide remains 1920 by 1080 at every viewport, including below 900px.
 - Calculator design states are 560 by 820 collapsed and 560 by 982 expanded. These dimensions include room for all five result rows, including a non-zero HOA row.
 - Educational popouts are measured only at a fixed authored width: 1200px standard and 1500px for any table popout. Viewport width must never participate in text layout.
-- Presenter graphics retain every source pixel at the decoded native image ratio; their compact 52px utility bar scales with the image composition.
+- Every presenter-opened educational popout and graphic uses the same compact 52px top title strip with a 20px title and close control. The former eyebrow, oversized heading, accent underline, and inset media mat are removed. Presenter graphics retain every source pixel at the decoded native image ratio; the compact strip scales with the image composition.
 - Complete visibility takes priority over minimum rendered text size on very small screens.
 - Preserve calculator formulas, values, content, slide order, presenter controls, annotations, BroadcastChannel payloads, navigation, focus behavior, and fullscreen behavior.
 - Preserve these file hashes unless a task explicitly names the file:
@@ -731,6 +731,7 @@ git commit -m "feat: scale the complete calculator surface"
 - Produces: `openModal(id, opener)` that resolves after fixed-width measurement and first fit.
 - Uses authored widths 1200px standard and 1500px when `d.table` exists.
 - Produces: design height measured only after the surface is laid out at the authored width with no viewport constraint.
+- Produces: one 52px compact top title strip with a 20px title and close control for every educational popout; no eyebrow, display-size title block, or accent underline.
 - Preserves: modal ID lookup, content markup, Escape, backdrop close, focus trap/return, compliance footers, drag, and resize.
 
 - [ ] **Step 1: Write the failing educational-popout contract**
@@ -756,6 +757,9 @@ test('educational popouts measure at authored width and use the shared controlle
   assert.match(source, /data-fit-shell/);
   assert.match(source, /data-fit-surface/);
   assert.match(css, /\.modal\s*\{[^}]*transform-origin:\s*top left/s);
+  assert.match(css, /\.modal-head\s*\{[^}]*height:\s*52px/s);
+  assert.match(css, /\.modal-title\s*\{[^}]*font-size:\s*20px/s);
+  assert.doesNotMatch(source, /modal-eyebrow|modal-title-bar/);
   assert.doesNotMatch(css, /\.modal-body\s*\{[^}]*overflow-y:\s*(?:auto|scroll)/s);
   assert.doesNotMatch(css, /\.modal-table-wrap\s*\{[^}]*overflow-x:\s*(?:auto|scroll)/s);
   assert.doesNotMatch(css, /max-height:\s*\d+vh|height:\s*min\([^;]*vh/);
@@ -840,6 +844,15 @@ async function fitEducational(d, token) {
 
 `openModal` must render content, set `isOpen = true`, set `activeKind = 'content'`, add `is-open is-measuring`, increment `openToken`, and return `fitEducational(d, token)`. Do not read `bodyEl.scrollTop`.
 
+Render only the registered title in the shared header:
+
+```js
+headEl.innerHTML = `<h2 class="modal-title" id="modal-title">${d.title}</h2>`;
+```
+
+Do not render the modal eyebrow or decorative title bar. The compact strip is
+the only overlay heading for every educational popout.
+
 On close, increment `openToken`, call `fitController.setActive(false)`, and clear only fit-related inline geometry after the existing focus return completes.
 
 - [ ] **Step 5: Keep the existing graphics operational through the shared shell**
@@ -892,11 +905,29 @@ Use:
   background: var(--white);
   transform-origin: top left;
 }
+.modal-head {
+  height: 52px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  padding: 8px 64px 8px 18px;
+  background: var(--forest);
+}
+.modal-title {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--white);
+  font-size: 20px;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.modal-close { top: 8px; right: 10px; width: 36px; height: 36px; }
 .modal-body { flex: none; overflow: visible; padding: 44px 56px; }
 .modal-table-wrap { overflow: visible; margin-bottom: 8px; }
 ```
 
-Remove `max-height`, viewport-relative width/height, the old `.modal--wide` sizing rule, and all internal scroll fallbacks. Keep authored desktop typography and padding unchanged.
+Remove `max-height`, viewport-relative width/height, the old `.modal--wide` sizing rule, and all internal scroll fallbacks. Remove the oversized eyebrow/title/underline markup and styles. Keep authored body typography and padding unchanged. The 52px strip applies to content and media surfaces alike; Task 5 refines the image area below it.
 
 - [ ] **Step 8: Run modal tests, full suite, syntax, and protected content hash**
 
@@ -961,6 +992,7 @@ test('media image and compact toolbar form one fixed scaled composition', () => 
   const body = css.match(/\.modal--media \.modal-body\s*\{([^}]*)\}/)?.[1] || '';
   const image = css.match(/\.modal-media-frame img\s*\{([^}]*)\}/)?.[1] || '';
   assert.match(toolbar, /height:\s*52px/);
+  assert.match(toolbar, /padding:\s*8px 64px 8px 18px/);
   assert.match(body, /overflow:\s*hidden/);
   assert.match(image, /width:\s*100%/);
   assert.match(image, /height:\s*100%/);
@@ -1004,7 +1036,9 @@ const MEDIA_TOOLBAR_HEIGHT = 52;
 const MEDIA_FALLBACK = Object.freeze({ width: 960, height: 592 });
 ```
 
-In `openMedia`, render the small toolbar in `headEl`, render one full-size image frame in `bodyEl`, set `activeKind = 'media'`, and await decode:
+In `openMedia`, render only the small registered title in `headEl` (no eyebrow
+or title bar), render one full-size image frame in `bodyEl`, set
+`activeKind = 'media'`, and await decode:
 
 ```js
 try {
@@ -1043,8 +1077,6 @@ Use:
   align-items: center;
   padding: 8px 64px 8px 18px;
 }
-.modal--media .modal-eyebrow,
-.modal--media .modal-title-bar,
 .modal--media .modal-foot { display: none; }
 .modal--media .modal-title { font-size: 20px; line-height: 1; }
 .modal--media .modal-body { flex: 1 1 auto; min-height: 0; padding: 0; overflow: hidden; }
@@ -1053,6 +1085,8 @@ Use:
 ```
 
 Do not use `max-width`, `max-height`, viewport units, or an internally scrolling frame. Keep the error message centered in the fixed fallback surface.
+The image must begin immediately below the 52px strip; do not add an inset mat,
+padding, secondary heading, eyebrow, or decorative underline.
 
 - [ ] **Step 5: Run media, registry, modal, and full tests**
 
@@ -1213,7 +1247,8 @@ At 480 by 800 and 800 by 480:
 2. For every `Object.keys(MODALS)`, await `openModal(id)`.
 3. Audit `.modal-shell` and `.modal`.
 4. Assert `.modal-body` has no internal scrolling and no descendant creates an auto/scroll container.
-5. Close and continue.
+5. Assert the overlay header is 52px at design size, the title is 20px, and no eyebrow or accent underline is rendered.
+6. Close and continue.
 
 Also drag `myth-lowest-rate` to each viewport edge and manually resize it smaller and larger. After every operation, assert the full shell is clamped inside the viewport and the surface ratio is unchanged.
 
@@ -1226,7 +1261,8 @@ At 480 by 800 and 800 by 480:
 3. Audit `.modal-shell` and `.modal`.
 4. Assert the image is fully decoded, `naturalWidth > 0`, `naturalHeight > 0`, and the rendered image-area ratio equals `naturalWidth / naturalHeight` within `0.001`.
 5. Assert the 52px toolbar is visible and no image pixel is cropped by `object-fit`.
-6. Close and continue.
+6. Assert the image begins directly below the compact strip with zero body padding and no duplicate eyebrow, oversized heading, or accent underline.
+7. Close and continue.
 
 Drag and resize one portrait graphic (`debt-to-income`) and one landscape graphic (`budget-smart`) at both viewports. The complete toolbar and image must remain visible.
 

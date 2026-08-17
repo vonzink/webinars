@@ -16,8 +16,9 @@
 }
 
 .calculator-canvas {
+  position: relative;
   width: 560px;
-  height: auto;
+  height: 820px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
