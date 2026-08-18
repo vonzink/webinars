@@ -62,10 +62,9 @@ export const SLIDES = [
     points: [
       'Escrow collects a slice of taxes and insurance each month and pays them for you — not a fee, your money held early',
       'Amortization: early payments are mostly interest; it shifts to principal over years',
-      'Refinancing resets the clock — a new 30-year loan starts over at the interest-heavy beginning',
     ],
     time: 210,
-    notes: 'The most misunderstood thing in the business: fixed rate does NOT mean fixed payment. Rate is fixed; taxes and insurance are not. A tax increase or special assessment raises your payment — that\'s not a fee, it surprises people every year. Refinancing lowers the rate but restarts amortization.',
+    notes: 'The most misunderstood thing in the business: fixed rate does NOT mean fixed payment. Rate is fixed; taxes and insurance are not. A tax increase or special assessment raises your payment — that\'s not a fee, it surprises people every year.',
   },
 
   /* 6 — BUDGET: comfort zone */

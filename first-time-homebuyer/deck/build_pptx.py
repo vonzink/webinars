@@ -244,8 +244,7 @@ SLIDES=[
    fixed=['Your interest rate','Your principal & interest','Your loan term'],
    moves=['Property taxes','Insurance premiums','Mortgage insurance (it can come off)','HOA dues','A special assessment'],
    points=['Escrow collects taxes and insurance monthly and pays them for you — not a fee, your money held early',
-     'Amortization: early payments are mostly interest; it shifts to principal over years',
-     'Refinancing resets the clock — a new 30-year loan starts over at the interest-heavy beginning']),
+     'Amortization: early payments are mostly interest; it shifts to principal over years']),
  dict(id='budget-comfort',layout='points',bg='dark',eyebrow='Budget',headline='Keep the payment in your comfort zone',
    subhead='The number you can qualify for and the number you can live with are rarely the same.',points=[
    "Don’t become house poor — the guidelines ask if you’ll repay, not if you’ll be okay",
