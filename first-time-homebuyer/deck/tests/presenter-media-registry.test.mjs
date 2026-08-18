@@ -51,7 +51,7 @@ test('every registered graph resolves to a copied local PNG', async () => {
   const registry = await import('../content/presenter-media.js').catch(() => null);
   assert.ok(registry, 'presenter media registry must exist');
   for (const item of registry.PRESENTER_MEDIA) {
-    assert.ok(['myths', 'budget-rent-buy', 'budget-comfort'].includes(item.slideId), `${item.id} has an unknown slide`);
+    assert.ok(['myths', 'budget-rent-buy', 'budget-comfort', 'programs'].includes(item.slideId), `${item.id} has an unknown slide`);
     assert.ok(item.alt.length >= 20, `${item.id} needs descriptive alt text`);
     const assetUrl = new URL(`../${item.src.replace('./', '')}`, import.meta.url);
     assert.ok(existsSync(fileURLToPath(assetUrl)), `${item.src} must exist`);

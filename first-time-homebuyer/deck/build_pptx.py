@@ -173,12 +173,12 @@ MODALS={
    S('Who it fits',['Eligible area, under the household income limit · 0% down']),
    S('Pros',['No down payment','Annual fee often lower than FHA'],'pros'),
    S('Cons',['Geography decides — check the map','Income limits count everyone in the home'],'cons')]),
- 'prog-jumbo':dict(eyebrow='Loan program',title='Jumbo',compliance=True,sections=[
-   S('Who it fits',['Loan amount above the conforming limit for the county']),
-   S('Pros',['Finances higher-priced homes','Flexible structures available'],'pros'),
-   S('Cons',['Strongest credit and reserves expected','Rules vary a lot by investor — shop it'],'cons')]),
- 'src-savings':dict(eyebrow='Where it comes from',title='Savings',sections=[
+ 'src-savings':dict(eyebrow='Where it comes from',title='Checking & Savings',sections=[
    S('The rules',['Must be seasoned — sitting in your account, documented','No undocumented cash. Cash deposits without a trail can’t be used','Large non-payroll deposits must be sourced and explained'],note='Move money <strong>before</strong> you apply, not during.')]),
+ 'src-investments':dict(eyebrow='Where it comes from',title='Investment Accounts',sections=[
+   S('The rules',['Brokerage, stocks, and mutual funds count — a recent statement documents them','To use the money you sell the assets, then show the sale and the deposit','For reserves, underwriting may count only part of the balance, not the full amount'],note='You don’t have to sell to <strong>prove</strong> reserves — only to <strong>spend</strong> them.')]),
+ 'src-retirement':dict(eyebrow='Where it comes from',title='Retirement Accounts',sections=[
+   S('The rules',['Vested 401(k) and IRA balances count — a statement documents them','To use the funds, document the withdrawal or loan and the money landing in your account','A 401(k) loan payment can count in your DTI; a withdrawal may bring taxes or penalties'],note='Weigh the tax hit with your advisor <strong>before</strong> you pull from retirement.')]),
  'src-gift':dict(eyebrow='Where it comes from',title='Gift Funds',sections=[
    S('The rules',['Gift letter required — stating it is not a loan','Generally must come from family','The donor’s funds must be sourced, and the transfer documented'],note='Tell your lender <strong>before</strong> the money moves.')]),
  'src-seller':dict(eyebrow='Where it comes from',title='Seller Credits',sections=[
@@ -186,8 +186,6 @@ MODALS={
  'src-buydown':dict(eyebrow='Where it comes from',title='2-1 Buydowns',compliance=True,sections=[
    S('How it works',['A temporary payment reduction for the first two years','Usually paid by the seller or builder, not you']),
    S('The catch',['You qualify at the real rate — full payment in year three','A plan to refinance first depends on rates nobody controls'],'cons')]),
- 'src-agent':dict(eyebrow='Where it comes from',title='Agent Credits',sections=[
-   S('The rules',['An agent may contribute part of their commission','Must be disclosed and appear on closing documents','Counts toward overall contribution limits'],note='Ask early — it can’t be added at the closing table.')]),
  'src-assistance':dict(eyebrow='Where it comes from',title='Down Payment Assistance',sections=[
    S('What it is',['Grants or second mortgages that reduce cash to close']),
    S('The trade-offs',['Complicates the process — extra underwriting and timelines','Often makes your offer less attractive to sellers','Usually a higher rate, caps, and fine print'],'cons'),
@@ -211,9 +209,9 @@ MODALS={
  'assume-preapproval':dict(eyebrow='Small assumption',title='"I’ll get pre-approved once I find a house"',sections=[
    S('What actually happens',['The house goes under contract while you’re getting a letter']),
    S('Do instead',['Pre-approval first — it’s free and nothing is committed'],'pros')]),
- 'assume-one-lender':dict(eyebrow='Small assumption',title='"They’re all the same, I’ll use one lender"',sections=[
-   S('What actually happens',['Lender fees vary by thousands at the identical rate']),
-   S('Do instead',['Get more than one Loan Estimate the same day and compare fees','Shopping inside the window counts as one credit pull'],'pros')]),
+ 'assume-my-bank':dict(eyebrow='Small assumption',title='"I’ll just use my bank"',sections=[
+   S('What actually happens',['A bank offers its own products; fees and pricing can run thousands higher at the same rate']),
+   S('Do instead',['Get more than one Loan Estimate the same day and compare fees','A broker shops many lenders for you — and it counts as one credit pull'],'pros')]),
  'assume-closing-costs':dict(eyebrow='Small assumption',title='"Closing costs are what I need at closing"',sections=[
    S('What actually happens',['You arrive short — cash to close also has down payment, prepaids, escrows, reserves']),
    S('Do instead',['Plan around Cash to Close on page one, not closing costs'],'pros')]),
@@ -239,7 +237,7 @@ SLIDES=[
    C('myth-renting','Renting is cheaper'),C('myth-lowest-rate','The lowest rate is the best deal')]),
  dict(id='budget-rent-buy',layout='compare',bg='dark',eyebrow='Budget',
    left=dict(label='Renting',items=['Rent in Denver has trended up, year after year','Flexible — but every payment builds someone else’s equity','The longer you wait, the more expensive buying becomes.']),
-   right=dict(label='Buying',items=['A fixed payment while home values generally appreciate','Equity compounds; you’re paying yourself','Most people step up — the first home isn’t the last','You can personalize the home to fit your style and needs.']),
+   right=dict(label='Buying',items=['A fixed payment while home values generally appreciate','Equity builds two ways — paying down principal and appreciation','Most people step up — the first home isn’t the last','You can personalize the home to fit your style and needs.']),
    callout='Waiting isn’t neutral. It usually costs something.'),
  dict(id='budget-payment',layout='payment',bg='white',footer=True,eyebrow='Budget',headline="What's actually in the payment",
    subhead='On a fixed-rate loan — what’s locked, and what can still move.',
@@ -253,14 +251,13 @@ SLIDES=[
    "Don’t become house poor — the guidelines ask if you’ll repay, not if you’ll be okay",
    'Protect quality of life — leave room for disposable income and emergencies',
    'The payment can change after you close']),
- dict(id='programs',layout='grid',bg='white',footer=True,cols=3,headline='Most Common Loan Programs',subhead='Five doors, different people. Tap any program for pros and cons.',cards=[
-   C('prog-conventional','Conventional','The default for most buyers','3% down'),C('prog-fha','FHA','Built for credit flexibility','3.5% down'),
-   C('prog-va','VA','If you served, check this first','0% down'),C('prog-usda','USDA','Eligible areas, income limits','0% down'),
-   C('prog-jumbo','Jumbo','Above conforming limits','Varies')]),
- dict(id='cash-sources',layout='grid',bg='dark',footer=True,cols=3,headline='Cash to close: where it comes from',subhead='It doesn’t all have to be your savings. Tap any source for the rules.',cards=[
-   C('src-savings','Savings'),C('src-gift','Gift Funds'),C('src-seller','Seller Credits'),C('src-buydown','2-1 Buydowns'),C('src-agent','Agent Credits'),C('src-assistance','Down Payment Assistance')]),
+ dict(id='programs',layout='grid',bg='white',footer=True,cols=2,headline='Most Common Loan Programs',subhead='Four doors, different people. Tap any program for pros and cons.',cards=[
+   C('prog-conventional','Conventional','The default for most buyers','3% down'),C('prog-usda','USDA','Eligible areas, income limits','0% down'),
+   C('prog-fha','FHA','Built for credit flexibility','3.5% down'),C('prog-va','VA','If you served, check this first','0% down')]),
+ dict(id='cash-sources',layout='grid',bg='dark',footer=True,cols=3,headline='Cash to close: where it comes from',subhead='It doesn’t all have to sit in one account. Tap any source for the rules.',cards=[
+   C('src-savings','Checking & Savings'),C('src-investments','Investment Accounts'),C('src-retirement','Retirement Accounts'),C('src-gift','Gift Funds'),C('src-seller','Seller Credits'),C('src-buydown','2-1 Buydowns'),C('src-assistance','Down Payment Assistance')]),
  dict(id='cash-makeup',layout='cashmakeup',bg='white',footer=True,numbers=True,eyebrow='Cash to close',headline='Closing costs are not cash to close',
-   subhead='Closing costs get the loan. Cash to close is everything you bring — and it’s bigger.',
+   subhead='Closing costs are the fees to set up the loan. Cash to close is the total amount you bring to closing — and it’s the bigger number.',
    canpay=['Allowable closing costs','Prepaid items','Escrow deposits','Points to lower the rate'],
    cannotpay=['Your down payment','More than your actual costs','Cash back to you'],
    points=['You can use points to buy down the rate — or credits to cover closing costs',
@@ -285,18 +282,18 @@ SLIDES=[
  dict(id='mistakes-rate',layout='points',bg='dark',eyebrow='Mistakes to avoid',headline='Don’t assume the lowest rate wins',points=[
    'Breakeven: a rate bought with points only pays off if you keep the loan long enough',
    'Points are a bet on how long you keep this exact loan — not this house',
-   'Refinancing ends the loan early and restarts amortization',
+   'Refinancing ends the loan early and could restart amortization',
    'Real wealth comes from building equity — payments and time'],
    callout='Equity is built by payments and time — not the third decimal of your rate.'),
  dict(id='mistakes-assumptions',layout='grid',bg='white',footer=True,cols=3,quote=True,eyebrow='Mistakes to avoid',headline='The most expensive mistakes start as small assumptions',subhead='Tap any one for what actually happens.',cards=[
-   C('assume-preapproval','“I’ll get pre-approved once I find a house.”'),C('assume-one-lender','“They’re all the same — I’ll use one lender.”'),
+   C('assume-preapproval','“I’ll get pre-approved once I find a house.”'),C('assume-my-bank','“I’ll just use my bank.”'),
    C('assume-closing-costs','“Closing costs are what I need at closing.”'),C('assume-approved','“I’m approved, so I’m done.”'),
    C('assume-wait-20','“I’ll wait until I have twenty percent.”'),C('assume-builder','“The builder’s incentive is free money.”')]),
  dict(id='questions',layout='questions',bg='dark',footer=True,eyebrow='Questions',headline='The questions everyone asks',items=[
    ('How much money do I actually need?','Less than most think — 3% conventional, 3.5% FHA, 0% VA/USDA — plus closing costs and an emergency fund you don’t touch.'),
    ('What credit score do I need?','No single number. It depends on the program, and you’re probably closer than you think.'),
    ('How long does it take?','Contract to keys is typically 30–45 days. The biggest variable is how fast you return documents.'),
-   ('Should I lock my rate?','Generally once you’re under contract. Ask about a float-down before you lock.'),
+   ('Should I lock my rate?','Generally once you’re under contract. A lock holds your rate while the loan is in process — ask how long it lasts and what happens if closing runs past it.'),
    ('What happens after pre-approval?','You shop with a real budget, make an offer, and it becomes a formal application — Loan Estimate within three business days.')]),
  dict(id='wrap',layout='wrap',bg='dark',footer=True,headline='Let’s build your plan.'),
 ]

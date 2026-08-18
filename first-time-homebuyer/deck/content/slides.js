@@ -42,13 +42,13 @@ export const SLIDES = [
     ]},
     right: { label: 'Buying', items: [
       'A fixed payment while home values generally appreciate',
-      'Equity compounds; you\'re paying yourself',
+      'Equity builds two ways — paying down principal and appreciation',
       'Most people step up — the first home isn\'t the last',
       'You can personalize the home to fit your style and needs.',
     ]},
     callout: 'Waiting isn\'t neutral. It usually costs something.',
     time: 150,
-    notes: 'Two things move at once — rent goes up, home values go up. Waiting has a price. But take the pressure off: almost nobody\'s first house is their last. You\'re choosing where you START. (No specific dollar figures — talk the trend.)',
+    notes: 'Two things move at once — rent goes up, home values go up. Waiting has a price. And equity builds two ways at the same time: every payment knocks the principal down while the home appreciates. But take the pressure off: almost nobody\'s first house is their last. You\'re choosing where you START. (No specific dollar figures — talk the trend.)',
   },
 
   /* 5 — BUDGET: the payment (combined) */
@@ -85,36 +85,36 @@ export const SLIDES = [
 
   /* 7 — PROGRAMS grid */
   {
-    id: 'programs', layout: 'grid', bg: 'white', footer: true, cols: 3,
+    id: 'programs', layout: 'grid', bg: 'white', footer: true, cols: 2,
     headline: 'Most Common Loan Programs',
-    subhead: 'Five doors, different people. Tap any program for pros and cons.',
+    subhead: 'Four doors, different people. Tap any program for pros and cons.',
     compliance: 'generalGuidelines',
     cards: [
       { modal: 'prog-conventional', title: 'Conventional', meta: 'The default for most buyers', stat: '3% down' },
+      { modal: 'prog-usda',         title: 'USDA',         meta: 'Eligible areas, income limits', stat: '0% down' },
       { modal: 'prog-fha',          title: 'FHA',          meta: 'Built for credit flexibility', stat: '3.5% down' },
       { modal: 'prog-va',           title: 'VA',           meta: 'If you served, check this first', stat: '0% down' },
-      { modal: 'prog-usda',         title: 'USDA',         meta: 'Eligible areas, income limits', stat: '0% down' },
-      { modal: 'prog-jumbo',        title: 'Jumbo',        meta: 'Above conforming limits', stat: 'Varies' },
     ],
     time: 180,
-    notes: 'Don\'t walk all five. Ask which they\'ve heard of and open those. Always mention VA out loud — eligible people routinely don\'t know they qualify. Each card opens to pros/cons; those are the in-between slides in the PowerPoint.',
+    notes: 'Don\'t walk all four. Ask which they\'ve heard of and open those. Always mention VA out loud — eligible people routinely don\'t know they qualify. Each card opens to pros/cons; those are the in-between slides in the PowerPoint.',
   },
 
   /* 8 — CASH TO CLOSE: sources */
   {
     id: 'cash-sources', layout: 'grid', bg: 'dark', footer: true, cols: 3,
     headline: 'Cash to close: where it comes from',
-    subhead: 'It doesn\'t all have to be your savings. Tap any source for the rules.',
+    subhead: 'It doesn\'t all have to sit in one account. Tap any source for the rules.',
     cards: [
-      { modal: 'src-savings',    title: 'Savings' },
+      { modal: 'src-savings',    title: 'Checking & Savings' },
+      { modal: 'src-investments',title: 'Investment Accounts' },
+      { modal: 'src-retirement', title: 'Retirement Accounts' },
       { modal: 'src-gift',       title: 'Gift Funds' },
       { modal: 'src-seller',     title: 'Seller Credits' },
       { modal: 'src-buydown',    title: '2-1 Buydowns' },
-      { modal: 'src-agent',      title: 'Agent Credits' },
       { modal: 'src-assistance', title: 'Down Payment Assistance' },
     ],
     time: 210,
-    notes: 'Most buyers assume every dollar is theirs. It isn\'t. Each source has real rules — seasoning, gift letters, concession caps. Assistance deserves a candid word: it helps some buyers, but it complicates the file and can weaken the offer.',
+    notes: 'Most buyers count only their checking account and stop there. Brokerage and retirement money counts too — people forget to mention it. Each source has real rules — seasoning, gift letters, concession caps, proof you actually liquidated. Assistance deserves a candid word: it helps some buyers, but it complicates the file and can weaken the offer.',
   },
 
   /* 9 — CASH TO CLOSE: makeup */
@@ -122,7 +122,7 @@ export const SLIDES = [
     id: 'cash-makeup', layout: 'cashmakeup', bg: 'white', footer: true, hasNumbers: true,
     eyebrow: 'Cash to close',
     headline: 'Closing costs are not cash to close',
-    subhead: 'Closing costs get the loan. Cash to close is everything you bring — and it\'s bigger.',
+    subhead: 'Closing costs are the fees to set up the loan. Cash to close is the total amount you bring to closing — and it\'s the bigger number.',
     canPay:    ['Allowable closing costs', 'Prepaid items', 'Escrow deposits', 'Points to lower the rate'],
     cannotPay: ['Your down payment', 'More than your actual costs', 'Cash back to you'],
     points: [
@@ -131,7 +131,7 @@ export const SLIDES = [
       'Reserves are funds you keep after closing — some programs require them',
     ],
     time: 150,
-    notes: 'Two lines on the Loan Estimate get confused. Closing costs is what you pay to get the loan. Cash to close is everything — down payment, closing costs, prepaids, escrows, reserves — minus credits. It\'s the bigger number, it\'s on page one, and it decides whether you get to the table.',
+    notes: 'Two lines on the Loan Estimate get confused. Closing costs are the fees charged to set up the loan. Cash to close is the total amount you have to bring — down payment, closing costs, prepaids, escrows, reserves — minus any credits. It\'s the bigger number, it\'s on page one, and it decides whether you get to the table.',
   },
 
   /* 10 — PROCESS: meet the players */
@@ -219,7 +219,7 @@ export const SLIDES = [
     points: [
       'Breakeven: a rate bought with points only pays off if you keep the loan long enough',
       'Points are a bet on how long you keep this exact loan — not this house',
-      'Refinancing ends the loan early and restarts amortization',
+      'Refinancing ends the loan early and could restart amortization',
       'Real wealth comes from building equity — payments and time',
     ],
     callout: 'Equity is built by payments and time — not the third decimal of your rate.',
@@ -235,7 +235,7 @@ export const SLIDES = [
     subhead: 'Tap any one for what actually happens.',
     cards: [
       { modal: 'assume-preapproval',   title: '“I’ll get pre-approved once I find a house.”' },
-      { modal: 'assume-one-lender',    title: '“They’re all about the same — I’ll use one lender.”' },
+      { modal: 'assume-my-bank',       title: '“I’ll just use my bank.”' },
       { modal: 'assume-closing-costs', title: '“Closing costs are what I need at closing.”' },
       { modal: 'assume-approved',      title: '“I’m approved, so I’m done.”' },
       { modal: 'assume-wait-20',       title: '“I’ll wait until I have twenty percent.”' },
@@ -254,7 +254,7 @@ export const SLIDES = [
       { q: 'How much money do I actually need?', a: 'Less than most think — 3% conventional, 3.5% FHA, 0% VA/USDA — plus closing costs and an emergency fund you don\'t touch.' },
       { q: 'What credit score do I need?', a: 'No single number. It depends on the program, and you\'re probably closer than you think. It\'s a five-minute question.' },
       { q: 'How long does it take?', a: 'Contract to keys is typically 30–45 days. The biggest variable is how fast you return documents.' },
-      { q: 'Should I lock my rate?', a: 'Generally once you\'re under contract. Ask about a float-down before you lock.' },
+      { q: 'Should I lock my rate?', a: 'Generally once you\'re under contract. A lock holds your rate while the loan is in process — ask how long it lasts and what happens if closing runs past it.' },
       { q: 'What happens after pre-approval?', a: 'You shop with a real budget, make an offer, and it becomes a formal application — Loan Estimate within three business days.' },
     ],
     time: 180,

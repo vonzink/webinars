@@ -34,8 +34,8 @@ Cards open popouts on click; each traps focus and closes on ✕ / Esc / backdrop
 | 4 | Rent vs buy / cost of waiting (two-panel) | — |
 | 5 | What's in the payment (combined) | — |
 | 6 | Keep the payment in your comfort zone | — |
-| 7 | **Most Common Loan Programs** (grid) | 5 programs → pros/cons |
-| 8 | Cash to close: where it comes from (grid) | 6 sources → Fannie rules |
+| 7 | **Most Common Loan Programs** (grid) | 4 programs → pros/cons |
+| 8 | Cash to close: where it comes from (grid) | 7 sources → Fannie rules |
 | 9 | Closing costs vs cash to close | — |
 | 10 | Meet the players (grid) | 8 roles → what they do |
 | 11 | The loan process (stepper) | — |
