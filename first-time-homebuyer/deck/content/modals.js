@@ -172,31 +172,6 @@ export const MODALS = {
       'Cannot pay your down payment or exceed your actual costs',
     ], note: 'You have to <strong>negotiate</strong> for it — ask your agent to ask.' }],
   },
-  'src-buydown': {
-    eyebrow: 'Where it comes from', title: '2-1 Buydowns', compliance: ['hypothetical'],
-    sections: [
-      { head: 'How it works', items: [
-        'A temporary payment reduction for the first two years',
-        'Usually paid by the seller or builder, not you',
-      ]},
-      { head: 'The catch', tone: 'cons', items: [
-        'You qualify at the real rate — full payment in year three',
-        'A plan to refinance first depends on rates nobody controls',
-      ]},
-    ],
-  },
-  'src-assistance': {
-    eyebrow: 'Where it comes from', title: 'Down Payment Assistance',
-    sections: [
-      { head: 'What it is', items: ['Grants or second mortgages that reduce cash to close'] },
-      { head: 'The trade-offs', tone: 'cons', items: [
-        'Complicates the process — extra underwriting and timelines',
-        'Often makes your offer less attractive to sellers',
-        'Usually comes with a higher rate, caps, and fine print',
-      ]},
-      { head: '', items: [], note: 'Sometimes it clearly wins. Run it against the higher rate before deciding.' },
-    ],
-  },
 
   /* ---- THE PROCESS — MEET THE PLAYERS ---------------------------------- */
   'role-lender': {

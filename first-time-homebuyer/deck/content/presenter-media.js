@@ -1,5 +1,10 @@
 const items = [
   {
+    id: 'worksheet', slideId: 'prepaid', title: 'Itemized fee worksheet',
+    src: './assets/john-doe-worksheet.png',
+    alt: 'Example itemized fee worksheet for a sample borrower (John Doe): origination charges, services, prepaids, and total estimated funds needed to close.',
+  },
+  {
     id: 'fha-buyers', slideId: 'myths', title: 'FHA Buyers',
     src: './assets/presenter/slide-02/fha-buyers.png',
     alt: 'Chart showing the percentage of FHA purchase loans made to first-time homebuyers.',

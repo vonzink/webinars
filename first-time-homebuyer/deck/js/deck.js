@@ -218,11 +218,14 @@ const layouts = {
           <ul class="prepaid-upfront">${d.upfront.map(i => `<li>${i}</li>`).join('')}</ul>
           <div class="prepaid-note">${d.note}</div>
         </div>
-        <figure class="prepaid-figure build">
+        <button type="button" class="prepaid-figure build" aria-label="Enlarge the itemized fee worksheet">
           <img src="${d.image}" alt="Example closing-cost worksheet for John Doe">
-          <figcaption>${d.imageCaption}</figcaption>
-        </figure>
-      </div>`;
+          <figcaption>${d.imageCaption} <span class="prepaid-zoom" aria-hidden="true">⤢ Tap to enlarge</span></figcaption>
+        </button>`;
+    if (d.media) {
+      const fig = el.querySelector('.prepaid-figure');
+      fig.addEventListener('click', () => openMedia(d.media, fig));
+    }
   },
 
   stepper(el, d) {
@@ -608,7 +611,7 @@ export function initDeck() {
   const fromHash = SLIDES.findIndex(s => s.id === location.hash.slice(1));
   show(fromHash >= 0 ? fromHash : 0);
 
-  const ok = SLIDES.length === 16 && MODAL_COUNT === 28;
+  const ok = SLIDES.length === 15 && MODAL_COUNT === 26;
   console.log(
     `%c Homebuyer's Playbook · Ridgeline %c ${SLIDES.length} slides · ${MODAL_COUNT} popouts · ` +
     `${Math.round(TARGET_RUNTIME_SECONDS / 60)} min ${ok ? '✓' : '✗ count check'}`,

@@ -86,7 +86,6 @@ export const SLIDES = [
   {
     id: 'programs', layout: 'grid', bg: 'white', footer: true, cols: 2,
     headline: 'Most Common Loan Programs',
-    subhead: 'Four doors, different people. Tap any program for pros and cons.',
     compliance: 'generalGuidelines',
     cards: [
       { modal: 'prog-conventional', title: 'Conventional', meta: 'The default for most buyers', stat: '3% down' },
@@ -111,13 +110,14 @@ export const SLIDES = [
     note: 'At MSFG we don\'t charge for the credit report, and we defer the appraisal fee until closing — so before closing you\'re usually only out your inspection and earnest money.',
     image: './assets/john-doe-worksheet.png',
     imageCaption: 'Example — actual charges vary',
+    media: 'worksheet',
     time: 150,
     notes: 'Closing costs set up the loan; prepaids are your own money paid ahead — not fees. Walk what a buyer actually pays before closing, and that we defer the appraisal and don\'t charge for credit, so it\'s usually just inspection + earnest money up front. The worksheet is a generic example (John Doe) — actual charges vary.',
   },
 
   /* 8 — CASH TO CLOSE: sources */
   {
-    id: 'cash-sources', layout: 'grid', bg: 'dark', footer: true, cols: 3, calc: 'buydown',
+    id: 'cash-sources', layout: 'grid', bg: 'dark', footer: true, cols: 3,
     headline: 'Cash to close: Where it can come from',
     subhead: 'It doesn\'t all have to be your savings. Tap any source for the rules.',
     cards: [
@@ -126,8 +126,6 @@ export const SLIDES = [
       { modal: 'src-retirement', title: 'Retirement Accounts' },
       { modal: 'src-gift',       title: 'Gift Funds' },
       { modal: 'src-seller',     title: 'Seller Credits' },
-      { modal: 'src-buydown',    title: '2-1 Buydowns' },
-      { modal: 'src-assistance', title: 'Down Payment Assistance' },
     ],
     time: 210,
     notes: 'Most buyers assume every dollar is theirs. It isn\'t. Each source has real rules — seasoning, gift letters, concession caps. Assistance deserves a candid word: it helps some buyers, but it complicates the file and can weaken the offer.',
@@ -212,23 +210,7 @@ export const SLIDES = [
     notes: 'Five, and the last does the most work. The biggest predictor of a smooth closing isn\'t your score or your down payment — it\'s how fast you send documents back. Same-day beats perfect.',
   },
 
-  /* 14 — MISTAKES: lowest rate */
-  {
-    id: 'mistakes-rate', layout: 'points', bg: 'dark',
-    eyebrow: 'Mistakes to avoid',
-    headline: 'Don\'t assume the lowest rate wins',
-    points: [
-      'Breakeven: a rate bought with points only pays off if you keep the loan long enough',
-      'Points are a bet on how long you keep this exact loan — not this house',
-      'Refinancing ends the loan early and could restart amortization',
-      'Real wealth comes from building equity — payments and time',
-    ],
-    callout: 'Equity is built by payments and time — not the third decimal of your rate.',
-    time: 120,
-    notes: 'The mistake isn\'t paying points — sometimes that\'s right. The mistake is paying them without asking the one question that decides it: how long will I keep THIS loan? Most first-timers badly overestimate it. "I don\'t know" is itself an argument against paying.',
-  },
-
-  /* 15 — MISTAKES: small assumptions */
+  /* MISTAKES: small assumptions */
   {
     id: 'mistakes-assumptions', layout: 'grid', bg: 'white', footer: true, cols: 2, cardVariant: 'quote',
     eyebrow: 'Mistakes to avoid',
