@@ -45,20 +45,37 @@ export function processStepper(steps) {
     const idx = Math.min(4, Math.round((i / (n - 1)) * 4));
     return ['var(--band-1)','var(--band-2)','var(--band-3)','var(--band-4)','var(--band-5)'][idx];
   };
+  /* Wrap a long, spaced label onto two lines at the space nearest its middle,
+     so adjacent labels never collide. The note keeps a fixed baseline for all. */
+  const wrap = label => {
+    if (label.length <= 12 || !label.includes(' ')) return [label];
+    const mid = label.length / 2;
+    let best = -1;
+    for (let i = 0; i < label.length; i += 1) {
+      if (label[i] === ' ' && (best < 0 || Math.abs(i - mid) < Math.abs(best - mid))) best = i;
+    }
+    return best < 0 ? [label] : [label.slice(0, best), label.slice(best + 1)];
+  };
   const line = `<line x1="${x0}" y1="70" x2="${W - x0}" y2="70" stroke="rgba(255,255,255,0.22)" stroke-width="4"/>`;
   const nodes = steps.map((s, i) => {
     const cx = x0 + i * gap; const fill = ramp(i);
+    const lines = wrap(s.label);
+    const labelSvg = lines.length === 2
+      ? `<text x="${cx}" y="140" text-anchor="middle" font-family="Montserrat, sans-serif"
+              font-weight="800" font-size="23" fill="#FFFFFF">${lines[0]}</text>
+         <text x="${cx}" y="167" text-anchor="middle" font-family="Montserrat, sans-serif"
+              font-weight="800" font-size="23" fill="#FFFFFF">${lines[1]}</text>`
+      : `<text x="${cx}" y="150" text-anchor="middle" font-family="Montserrat, sans-serif"
+              font-weight="800" font-size="26" fill="#FFFFFF">${s.label}</text>`;
     return `
-      <line x1="${cx}" y1="70" x2="${cx}" y2="70" />
       <circle cx="${cx}" cy="70" r="26" fill="${fill}" stroke="#0C3335" stroke-width="4"/>
       <circle cx="${cx}" cy="70" r="9" fill="#0C3335"/>
-      <text x="${cx}" y="150" text-anchor="middle" font-family="Montserrat, sans-serif"
-            font-weight="800" font-size="${s.label.length > 14 ? 22 : 26}" fill="#FFFFFF">${s.label}</text>
-      <text x="${cx}" y="188" text-anchor="middle" font-family="'Open Sans', sans-serif"
+      ${labelSvg}
+      <text x="${cx}" y="196" text-anchor="middle" font-family="'Open Sans', sans-serif"
             font-size="21" fill="rgba(255,255,255,0.62)">${s.note}</text>`;
   }).join('');
   return `
-  <svg viewBox="0 0 1760 210" role="img"
+  <svg viewBox="0 0 1760 214" role="img"
        aria-label="Eight loan-process steps from pre-approval to funded.">
     ${line}${nodes}
   </svg>`;

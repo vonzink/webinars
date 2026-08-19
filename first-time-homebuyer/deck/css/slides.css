@@ -12,12 +12,12 @@
 .figure-wrap > svg { width: 100%; height: auto; }
 
 /* Payment breakdown — clean stacked bar + legend chips (no leader lines) */
-.pay-bar { width: 100%; height: 84px; }
+.pay-bar { width: 100%; height: 84px; border-radius: 12px; overflow: hidden; }
 .pay-bar svg { width: 100%; height: 100%; display: block; }
 .pay-legend { display: flex; flex-wrap: wrap; gap: 14px 40px; margin-top: 20px; }
 .pay-chip { display: flex; align-items: center; gap: 12px;
   font-family: var(--font-display); font-weight: var(--fw-700); font-size: 24px; color: var(--charcoal); }
-.pay-sw { width: 22px; height: 22px; flex: none; }
+.pay-sw { width: 22px; height: 22px; flex: none; border-radius: 5px; }
 
 /* Two-column locked / moves + can / cannot */
 .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; }
@@ -33,8 +33,8 @@
   position: relative; padding-left: 32px; margin-bottom: 14px;
   font-family: var(--font-body); font-size: var(--fs-body-s); line-height: 1.3;
 }
-.mini-list > li::before { content: ""; position: absolute; left: 0; top: 12px;
-  width: 12px; height: 12px; background: var(--green); }
+.mini-list > li::before { content: ""; position: absolute; left: 0; top: 13px;
+  width: 11px; height: 11px; border-radius: 50%; background: var(--green); }
 
 /* Dense slides — tighten so diagram + columns + points clear the footer */
 #slide-budget-payment .slide-body { gap: 22px; }
@@ -80,7 +80,7 @@
 .qa-list { display: flex; flex-direction: column; gap: 20px; max-width: 1500px; }
 .qa { display: flex; gap: 30px; align-items: baseline; }
 .qa-num {
-  flex: none; width: 56px; height: 56px; display: grid; place-items: center;
+  flex: none; width: 56px; height: 56px; display: grid; place-items: center; border-radius: 50%;
   background: var(--green); color: var(--forest);
   font-family: var(--font-display); font-weight: var(--fw-900); font-size: 28px;
 }
@@ -90,6 +90,33 @@
 .qa-a { font-family: var(--font-body); font-size: 24px; line-height: 1.35;
   color: var(--text-body-dark); margin-top: 6px; max-width: 1360px; }
 .slide[data-bg="white"] .qa-a, .slide[data-bg="mist"] .qa-a { color: var(--charcoal); }
+
+/* Clickable contact lines (opening / wrap) */
+.contact a { color: inherit; text-decoration: none; border-bottom: 1px solid rgba(255,255,255,0.28); }
+.contact a:hover { color: var(--green); border-bottom-color: var(--green); }
+.wrap-qr-cap { margin-top: 16px; text-align: center; font-family: var(--font-body);
+  font-size: 22px; color: var(--text-body-dark); }
+
+/* "Closing costs vs. prepaid items" slide */
+.prepaid-body { flex-direction: row; gap: 56px; align-items: stretch; }
+.prepaid-copy { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; }
+.prepaid-def { margin-bottom: 24px; }
+.prepaid-def-head { font-family: var(--font-display); font-weight: var(--fw-800);
+  font-size: 32px; color: var(--forest); margin-bottom: 6px; }
+.prepaid-def-body { font-size: 25px; line-height: 1.4; color: var(--charcoal); max-width: 760px; }
+.prepaid-upfront-label { font-family: var(--font-display); font-weight: var(--fw-800);
+  font-size: 22px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--sage); margin: 6px 0 14px; }
+.prepaid-upfront { display: flex; flex-wrap: wrap; gap: 12px 14px; margin-bottom: 26px; }
+.prepaid-upfront li { display: inline-flex; align-items: center; padding: 9px 20px; border-radius: 999px;
+  background: var(--mist); font-family: var(--font-display); font-weight: var(--fw-700); font-size: 23px; color: var(--forest); }
+.prepaid-note { margin-top: auto; padding: 20px 26px; border-radius: 12px;
+  border-left: 6px solid var(--green); background: var(--mist);
+  font-size: 23px; line-height: 1.4; color: var(--charcoal); font-style: italic; }
+.prepaid-figure { flex: 0 0 42%; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; margin: 0; }
+.prepaid-figure img { max-width: 100%; max-height: 660px; object-fit: contain;
+  border: 1px solid var(--card-border-light); border-radius: 12px; box-shadow: 0 10px 34px rgba(12,51,53,0.14); }
+.prepaid-figure figcaption { margin-top: 14px; font-size: 19px; color: var(--text-meta-light); }
 
 /* Wrap QR */
 .wrap-qr { position: relative; }

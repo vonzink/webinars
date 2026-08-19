@@ -1,0 +1,111 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" width="1600" height="1000" font-family="'Helvetica Neue', Arial, sans-serif">
+  <rect width="1600" height="1000" fill="#F4F6F5"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1600" height="150" fill="#0C3335"/>
+  <rect x="80" y="50" width="8" height="48" fill="#8CC63E"/>
+  <text x="112" y="74" font-size="40" font-weight="800" fill="#FFFFFF">A Sample 30&#8211;45 Day Timeline</text>
+  <text x="112" y="116" font-size="25" font-weight="500" fill="#AEC6C2">Every file is different &#8212; this is a typical purchase, from application to keys.</text>
+  <!-- legend -->
+  <circle cx="1170" cy="66" r="11" fill="#8CC63E"/>
+  <text x="1190" y="74" font-size="22" fill="#DDE7E6">Your action</text>
+  <circle cx="1360" cy="66" r="11" fill="#E8A33D"/>
+  <text x="1380" y="74" font-size="22" fill="#DDE7E6">Key deadline</text>
+
+  <!-- Spine -->
+  <line x1="130" y1="520" x2="1470" y2="520" stroke="#0C3335" stroke-width="4"/>
+
+  <!-- Connectors -->
+  <g stroke="#B9C6C2" stroke-width="3">
+    <line x1="130" y1="410" x2="130" y2="508"/>
+    <line x1="353" y1="532" x2="353" y2="632"/>
+    <line x1="577" y1="410" x2="577" y2="508"/>
+    <line x1="800" y1="532" x2="800" y2="632"/>
+    <line x1="1023" y1="410" x2="1023" y2="508"/>
+    <line x1="1247" y1="532" x2="1247" y2="632"/>
+    <line x1="1470" y1="410" x2="1470" y2="508"/>
+  </g>
+
+  <!-- Node dots -->
+  <g>
+    <circle cx="130" cy="520" r="13" fill="#8CC63E" stroke="#F4F6F5" stroke-width="3"/>
+    <circle cx="353" cy="520" r="13" fill="#E8A33D" stroke="#F4F6F5" stroke-width="3"/>
+    <circle cx="577" cy="520" r="13" fill="#8CC63E" stroke="#F4F6F5" stroke-width="3"/>
+    <circle cx="800" cy="520" r="13" fill="#0C3335" stroke="#F4F6F5" stroke-width="3"/>
+    <circle cx="1023" cy="520" r="13" fill="#8CC63E" stroke="#F4F6F5" stroke-width="3"/>
+    <circle cx="1247" cy="520" r="13" fill="#E8A33D" stroke="#F4F6F5" stroke-width="3"/>
+    <circle cx="1470" cy="520" r="13" fill="#8CC63E" stroke="#F4F6F5" stroke-width="3"/>
+  </g>
+
+  <!-- ===== Cards (width 226, centered on node x) ===== -->
+  <!-- 1 Day 0 (above) cx=130 -->
+  <g transform="translate(17,250)">
+    <rect width="226" height="160" rx="12" fill="#FFFFFF" stroke="#DCE4E1" stroke-width="2"/>
+    <rect width="8" height="160" fill="#8CC63E"/>
+    <text x="26" y="42" font-size="20" font-weight="800" fill="#5E9022">DAY 0</text>
+    <text x="26" y="79" font-size="21" font-weight="700" fill="#16302F">Apply &amp; sign your</text>
+    <text x="26" y="106" font-size="21" font-weight="700" fill="#16302F">initial disclosures</text>
+    <text x="26" y="142" font-size="17" fill="#5E9022">You: e-sign to start</text>
+  </g>
+  <!-- 2 Days 1-3 (below) cx=353 -->
+  <g transform="translate(240,632)">
+    <rect width="226" height="160" rx="12" fill="#FFFFFF" stroke="#DCE4E1" stroke-width="2"/>
+    <rect width="8" height="160" fill="#E8A33D"/>
+    <text x="26" y="42" font-size="20" font-weight="800" fill="#B9791E">DAYS 1&#8211;3</text>
+    <text x="26" y="79" font-size="21" font-weight="700" fill="#16302F">Loan Estimate</text>
+    <text x="26" y="106" font-size="21" font-weight="700" fill="#16302F">delivered</text>
+    <text x="26" y="142" font-size="17" fill="#5B6B6C">Review costs &amp; terms</text>
+  </g>
+  <!-- 3 Week 1 (above) cx=577 -->
+  <g transform="translate(464,250)">
+    <rect width="226" height="160" rx="12" fill="#FFFFFF" stroke="#DCE4E1" stroke-width="2"/>
+    <rect width="8" height="160" fill="#8CC63E"/>
+    <text x="26" y="42" font-size="20" font-weight="800" fill="#5E9022">WEEK 1</text>
+    <text x="26" y="79" font-size="21" font-weight="700" fill="#16302F">Docs to processor,</text>
+    <text x="26" y="106" font-size="21" font-weight="700" fill="#16302F">appraisal ordered</text>
+    <text x="26" y="142" font-size="17" fill="#5E9022">You: send items fast</text>
+  </g>
+  <!-- 4 Week 2 (below) cx=800 -->
+  <g transform="translate(687,632)">
+    <rect width="226" height="160" rx="12" fill="#FFFFFF" stroke="#DCE4E1" stroke-width="2"/>
+    <rect width="8" height="160" fill="#0C3335"/>
+    <text x="26" y="42" font-size="20" font-weight="800" fill="#3E5B5C">WEEK 2</text>
+    <text x="26" y="79" font-size="21" font-weight="700" fill="#16302F">Appraisal received,</text>
+    <text x="26" y="106" font-size="21" font-weight="700" fill="#16302F">in processing</text>
+    <text x="26" y="142" font-size="17" fill="#5B6B6C">Value confirmed</text>
+  </g>
+  <!-- 5 Week 3 (above) cx=1023 -->
+  <g transform="translate(910,250)">
+    <rect width="226" height="160" rx="12" fill="#FFFFFF" stroke="#DCE4E1" stroke-width="2"/>
+    <rect width="8" height="160" fill="#8CC63E"/>
+    <text x="26" y="42" font-size="20" font-weight="800" fill="#5E9022">WEEK 3</text>
+    <text x="26" y="79" font-size="21" font-weight="700" fill="#16302F">Underwriting;</text>
+    <text x="26" y="106" font-size="21" font-weight="700" fill="#16302F">conditions issued</text>
+    <text x="26" y="142" font-size="17" fill="#5E9022">You: clear conditions</text>
+  </g>
+  <!-- 6 Week 4 (below) cx=1247 -->
+  <g transform="translate(1134,632)">
+    <rect width="226" height="160" rx="12" fill="#FFFFFF" stroke="#DCE4E1" stroke-width="2"/>
+    <rect width="8" height="160" fill="#E8A33D"/>
+    <text x="26" y="42" font-size="20" font-weight="800" fill="#B9791E">WEEK 4</text>
+    <text x="26" y="79" font-size="21" font-weight="700" fill="#16302F">Closing Disclosure</text>
+    <text x="26" y="106" font-size="21" font-weight="700" fill="#16302F">issued</text>
+    <text x="26" y="142" font-size="17" fill="#B9791E">3-day clock starts</text>
+  </g>
+  <!-- 7 Closing (above) cx=1470 -->
+  <g transform="translate(1357,250)">
+    <rect width="226" height="160" rx="12" fill="#FFFFFF" stroke="#DCE4E1" stroke-width="2"/>
+    <rect width="8" height="160" fill="#8CC63E"/>
+    <text x="26" y="42" font-size="20" font-weight="800" fill="#5E9022">CLOSING</text>
+    <text x="26" y="79" font-size="21" font-weight="700" fill="#16302F">Sign &amp; fund</text>
+    <text x="26" y="106" font-size="21" font-weight="700" fill="#16302F">&#8594; keys</text>
+    <text x="26" y="142" font-size="17" fill="#5E9022">You: ID &amp; wired funds</text>
+  </g>
+
+  <!-- CD callout -->
+  <rect x="80" y="852" width="1440" height="96" rx="14" fill="#FBEEDA" stroke="#E8A33D" stroke-width="2"/>
+  <circle cx="140" cy="900" r="24" fill="#E8A33D"/>
+  <text x="140" y="912" text-anchor="middle" font-size="32" font-weight="800" fill="#FFFFFF">!</text>
+  <text x="190" y="890" font-size="24" font-weight="700" fill="#0C3335">The Closing Disclosure must be acknowledged at least 3 business days before you sign.</text>
+  <text x="190" y="924" font-size="22" fill="#6B5A32">This federal clock cannot be skipped or shortened &#8212; plan your closing date around it.</text>
+</svg>

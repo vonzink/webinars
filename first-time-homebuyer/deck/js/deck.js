@@ -9,14 +9,16 @@ import { MODALS, MODAL_COUNT } from '../content/modals.js';
 import {
   activePresenter, COMPANY, COMPLIANCE, LINKS, LOGO,
 } from '../content/presenters.js';
+import { mediaForSlide } from '../content/presenter-media.js';
 import { initModal, openModal, openMedia, closeModal, isModalOpen } from './modal.js';
 import { initCalculator, setCalculatorVisible, isCalculatorVisible } from './calculator.js';
+import { initBuydown, setBuydownVisible, isBuydownVisible } from './buydown-calculator.js';
 import { makeCard, makeCardGrid } from './card.js';
 import { FIGURES } from './figures.js';
 import * as annotate from './annotate.js';
 import { createSurfaceController } from './surface-fit.js';
 
-const P = activePresenter();
+let P = activePresenter();
 const PREVIEW = new URLSearchParams(location.search).has('preview');
 let current = 0, scaler, stage, slideFit, channel;
 let presenterWindow = null, presenterClosedWatch = null, navHidden = false;
@@ -24,6 +26,18 @@ let presenterWindow = null, presenterClosedWatch = null, navHidden = false;
 /* ---- helpers -------------------------------------------------------------- */
 const ph = (val, label) => val ? esc(val) : `<span class="ph">${label}</span>`;
 function esc(s){ return String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+
+/* Contact rows for the presenter's card — only the values that exist, so a loan
+   officer without a phone/email doesn't show placeholder chips to the audience. */
+function contactList(rows) {
+  return rows.filter(r => r.value).map(r => {
+    const val = r.href ? `<a href="${r.href}">${esc(r.value)}</a>` : esc(r.value);
+    return `<li><span class="c-label">${r.label}</span> ${val}</li>`;
+  }).join('');
+}
+const telHref = v => v ? 'tel:' + String(v).replace(/[^\d+]/g, '') : null;
+const mailHref = v => v ? 'mailto:' + v : null;
+const webHref = v => v ? (/^https?:/.test(v) ? v : 'https://' + v) : null;
 
 function photo(label, dir = 'v', src = null, wash = true) {
   const w = wash ? `<div class="wash" data-dir="${dir}"></div>` : '';
@@ -81,11 +95,14 @@ const layouts = {
           <h1 class="headline build" style="font-size:96px;line-height:.95;margin-top:22px">${d.headline}</h1>
           <div class="accent-bar build" style="margin:34px 0"></div>
           <p class="build" style="font-family:var(--font-display);font-weight:800;font-size:46px;color:#fff">${P.name}</p>
-          <p class="build" style="font-size:28px;color:var(--text-body-dark);margin-top:4px">${P.title} · ${P.nmls}</p>
+          <p class="build" style="font-size:28px;color:var(--text-body-dark);margin-top:4px">${[P.title, P.nmls].filter(Boolean).join(' · ')}</p>
           <ul class="contact build" style="margin-top:36px">
-            <li><span class="c-label">Call</span> ${ph(P.phone, 'PHONE')}</li>
-            <li><span class="c-label">Email</span> ${ph(P.email, 'EMAIL')}</li>
-            <li><span class="c-label">Also</span> ${ph(P.email2, 'SECONDARY EMAIL')}</li>
+            ${contactList([
+              { label: 'Call',    value: P.phone,  href: telHref(P.phone) },
+              { label: 'Email',   value: P.email,  href: mailHref(P.email) },
+              { label: 'Also',    value: P.email2, href: mailHref(P.email2) },
+              { label: 'Serving', value: P.city && P.state ? `${P.city}, ${P.state}` : null },
+            ])}
           </ul>
         </div>
         <div class="split-photo build">${photo('Presenter portrait', 'h', P.portrait, false)}</div>
@@ -99,6 +116,21 @@ const layouts = {
     });
     grid.querySelectorAll('.card').forEach(c => c.classList.add('build'));
     el.querySelector('.grid-slot').appendChild(grid);
+  },
+
+  /* Interactive diagram slide: the SVG IS the slide. Nodes carrying data-modal
+     open the matching educational popout when clicked. */
+  web(el, d) {
+    el.innerHTML = `<div class="web-slot build"></div>`;
+    const slot = el.querySelector('.web-slot');
+    slot.addEventListener('click', e => {
+      const node = e.target.closest('[data-modal]');
+      if (node) openModal(node.dataset.modal, node);
+    });
+    fetch(d.svg)
+      .then(r => r.text())
+      .then(svg => { slot.innerHTML = svg; })
+      .catch(() => { slot.innerHTML = '<p class="web-fallback">Diagram unavailable</p>'; });
   },
 
   points(el, d) {
@@ -173,6 +205,26 @@ const layouts = {
       </div>`;
   },
 
+  prepaid(el, d) {
+    el.innerHTML = header(d) + `
+      <div class="slide-body prepaid-body">
+        <div class="prepaid-copy build">
+          ${d.defs.map(x => `
+            <div class="prepaid-def">
+              <p class="prepaid-def-head">${x.head}</p>
+              <p class="prepaid-def-body">${x.body}</p>
+            </div>`).join('')}
+          <p class="prepaid-upfront-label">Paid up front (before closing)</p>
+          <ul class="prepaid-upfront">${d.upfront.map(i => `<li>${i}</li>`).join('')}</ul>
+          <div class="prepaid-note">${d.note}</div>
+        </div>
+        <figure class="prepaid-figure build">
+          <img src="${d.image}" alt="Example closing-cost worksheet for John Doe">
+          <figcaption>${d.imageCaption}</figcaption>
+        </figure>
+      </div>`;
+  },
+
   stepper(el, d) {
     el.innerHTML = header(d) + `
       <div class="slide-body" style="justify-content:center">
@@ -215,19 +267,22 @@ const layouts = {
           <h1 class="headline build" style="font-size:92px">${d.headline}</h1>
           <div class="accent-bar build" style="margin:34px 0"></div>
           <p class="build" style="font-family:var(--font-display);font-weight:800;font-size:42px;color:#fff">${P.name}</p>
-          <p class="build" style="font-size:26px;color:var(--text-body-dark);margin-top:4px">${P.title} · ${P.nmls}</p>
+          <p class="build" style="font-size:26px;color:var(--text-body-dark);margin-top:4px">${[P.title, P.nmls].filter(Boolean).join(' · ')}</p>
           <ul class="contact build" style="margin-top:30px">
-            <li><span class="c-label">Call</span> ${ph(P.phone, 'PHONE')}</li>
-            <li><span class="c-label">Email</span> ${ph(P.email, 'EMAIL')}</li>
-            <li><span class="c-label">Web</span> ${ph(LINKS.website, 'WEBSITE')}</li>
+            ${contactList([
+              { label: 'Call',  value: P.phone, href: telHref(P.phone) },
+              { label: 'Email', value: P.email, href: mailHref(P.email) },
+              { label: 'Web',   value: LINKS.website, href: webHref(LINKS.website) },
+            ])}
           </ul>
           <div class="btn-row build" style="margin-top:40px">
             ${btn('Apply Now', LINKS.applyUrl, 'primary')}
-            ${btn('Schedule a Consultation', LINKS.bookingUrl, 'ghost')}
+            ${btn('Schedule a Consultation', P.scheduleUrl || LINKS.bookingUrl, 'ghost')}
           </div>
         </div>
         <div class="wrap-qr build">
           ${photo('QR code', 'v', LINKS.qrAsset)}
+          <p class="wrap-qr-cap">Scan to open this presentation.</p>
         </div>
       </div>`;
   },
@@ -238,6 +293,106 @@ function btn(label, url, variant) {
      shows on the public site. It reappears automatically once the URL is set. */
   if (url) return `<a class="btn btn--${variant}" href="${url}" target="_blank" rel="noopener">${label}</a>`;
   return '';
+}
+
+/* Slide-level actions bar: pull-up graphics (open the graphics window) and
+   download links (PDF handouts). Rendered under any slide with `actions`, so it
+   works for the live presenter AND self-serve viewers on the website. */
+function renderActions(el, d) {
+  if (!d.actions || !d.actions.length) return;
+  const bar = document.createElement('div');
+  bar.className = 'slide-actions build';
+  d.actions.forEach(a => {
+    const variant = a.variant || 'ghost';
+    const dark = d.bg === 'dark';
+    const ghostLight = variant === 'ghost' && !dark ? ' on-light' : '';
+    if (a.href) {
+      const dl = a.download ? ` download` : '';
+      const link = document.createElement('a');
+      link.className = `btn btn--sm btn--${variant}${ghostLight}`;
+      link.href = a.href;
+      link.target = '_blank';
+      link.rel = 'noopener';
+      if (a.download) link.setAttribute('download', '');
+      link.innerHTML = `${a.icon === 'download' ? '<span class="btn-ico" aria-hidden="true">↓</span>' : ''}${a.label}`;
+      bar.appendChild(link);
+    } else if (a.media) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = `btn btn--sm btn--${variant}${ghostLight}`;
+      b.innerHTML = `<span class="btn-ico" aria-hidden="true">▦</span>${a.label}`;
+      b.addEventListener('click', () => { openMedia(a.media, b); });
+      bar.appendChild(b);
+    }
+  });
+  if (bar.children.length) el.appendChild(bar);
+}
+
+/* Subtle top-right control: a small graph icon that opens the list of graphics
+   available on this slide. Viewers can open them, but the presenter drives.
+   Only appears on slides that actually have associated graphics. */
+function renderGraphicsControl(el, d) {
+  const media = mediaForSlide(d.id);
+  if (!media.length) return;
+  const wrap = document.createElement('div');
+  wrap.className = 'slide-graphics';
+  wrap.innerHTML = `
+    <button type="button" class="sg-btn" aria-haspopup="true" aria-expanded="false" aria-label="Slide graphics">
+      <svg viewBox="0 0 24 24" aria-hidden="true" width="24" height="24">
+        <rect x="3" y="13" width="4" height="7" rx="1"></rect>
+        <rect x="10" y="8" width="4" height="12" rx="1"></rect>
+        <rect x="17" y="4" width="4" height="16" rx="1"></rect>
+      </svg>
+    </button>
+    <div class="sg-menu" role="menu" hidden>
+      <p class="sg-menu-label">Graphics</p>
+      ${media.map(m => `<button type="button" class="sg-item" role="menuitem" data-media="${m.id}">${esc(m.title)}</button>`).join('')}
+    </div>`;
+  const btnEl = wrap.querySelector('.sg-btn');
+  const menu = wrap.querySelector('.sg-menu');
+  const setOpen = open => {
+    menu.hidden = !open;
+    wrap.classList.toggle('is-open', open);
+    btnEl.setAttribute('aria-expanded', String(open));
+  };
+  btnEl.addEventListener('click', e => { e.stopPropagation(); setOpen(menu.hidden); });
+  menu.addEventListener('click', e => {
+    const item = e.target.closest('[data-media]');
+    if (!item) return;
+    setOpen(false);
+    openMedia(item.dataset.media, item);
+  });
+  document.addEventListener('click', e => { if (!wrap.contains(e.target)) setOpen(false); });
+  el.appendChild(wrap);
+}
+
+/* Subtle top-right calculator icon. `calc: 'mortgage'` opens the payment
+   calculator; `calc: 'buydown'` opens the 2-1 buydown calculator. Shown on the
+   shared slide window only (not the presenter's mini-preview). */
+function renderCalcControl(el, d) {
+  if (!d.calc || PREVIEW) return;
+  const btnEl = document.createElement('button');
+  btnEl.type = 'button';
+  btnEl.className = 'slide-calc sg-btn';
+  const label = d.calc === 'buydown' ? 'Open the 2-1 buydown calculator' : 'Open the mortgage calculator';
+  btnEl.setAttribute('aria-label', label);
+  btnEl.setAttribute('title', label);
+  btnEl.innerHTML = `
+    <svg viewBox="0 0 24 24" aria-hidden="true" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="5" y="3" width="14" height="18" rx="2.5"></rect>
+      <line x1="8" y1="7" x2="16" y2="7"></line>
+      <line x1="8" y1="11.5" x2="8.01" y2="11.5"></line>
+      <line x1="12" y1="11.5" x2="12.01" y2="11.5"></line>
+      <line x1="16" y1="11.5" x2="16.01" y2="11.5"></line>
+      <line x1="8" y1="15.5" x2="8.01" y2="15.5"></line>
+      <line x1="12" y1="15.5" x2="12.01" y2="15.5"></line>
+      <line x1="16" y1="15" x2="16" y2="18"></line>
+    </svg>`;
+  btnEl.addEventListener('click', () => {
+    if (d.calc === 'buydown') setBuydownVisible(true, btnEl);
+    else setCalculatorVisible(true, btnEl);
+  });
+  el.appendChild(btnEl);
 }
 
 /* ---- build sequencing ----------------------------------------------------- */
@@ -284,6 +439,9 @@ function broadcast() { if (channel) channel.postMessage({ type: 'slide', index: 
 function broadcastCalculatorState() {
   if (channel) channel.postMessage({ type: 'calculator-state', visible: isCalculatorVisible() });
 }
+function broadcastBuydownState() {
+  if (channel) channel.postMessage({ type: 'buydown-state', visible: isBuydownVisible() });
+}
 function initChannel() {
   if (!('BroadcastChannel' in window) || PREVIEW) return;   // preview instance stays silent
   channel = new BroadcastChannel('msfg-deck');
@@ -297,11 +455,16 @@ function initChannel() {
     if (m.type === 'calculator-visibility' && typeof m.visible === 'boolean') {
       setCalculatorVisible(m.visible);
     }
+    if (m.type === 'buydown-visibility' && typeof m.visible === 'boolean') {
+      setBuydownVisible(m.visible);
+    }
     if (m.type === 'hello') {
       broadcast();
       channel.postMessage({ type: 'navstate', hidden: navHidden });
       broadcastCalculatorState();
+      broadcastBuydownState();
     }
+    if (m.type === 'set-presenter' && m.presenter) applyPresenter(m.presenter);
     if (m.type === 'annotate') handleAnnotate(m);
     if (m.type === 'fullscreen') setFullscreen(m.on);
     if (m.type === 'nav-visibility') setNavigationHidden(m.hidden);
@@ -343,6 +506,22 @@ function toast(msg) {
   clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), 2600);
 }
 
+/* Swap the shown presenter (from the presenter view's picker). Only the opening
+   and wrap slides depend on the presenter; re-render those in place. */
+function applyPresenter(p) {
+  if (!p || !p.name) return;
+  P = p;
+  ['opening', 'wrap'].forEach(id => {
+    const el = document.getElementById(`slide-${id}`);
+    if (!el) return;
+    const d = SLIDES.find(s => s.id === id);
+    if (!d) return;
+    (layouts[d.layout] || layouts.grid)(el, d);   // re-render with new P
+    furniture(el, d);                              // innerHTML reset dropped the footer
+    if (el.classList.contains('is-active')) runBuild(el);
+  });
+}
+
 function handleAnnotate(m) {
   if (m.on !== undefined) annotate.enable(m.on);
   if (m.toggle) annotate.toggle();
@@ -371,6 +550,7 @@ export function initDeck() {
   initModal();
   if (!PREVIEW) {
     initCalculator({ onVisibilityChange: broadcastCalculatorState });
+    initBuydown({ onVisibilityChange: broadcastBuydownState });
     annotate.initAnnotate();
     /* When auto-off flips drawing off after a stroke, tell the presenter view. */
     annotate.onStateChange(on => { if (channel) channel.postMessage({ type: 'annstate', on }); });
@@ -379,6 +559,9 @@ export function initDeck() {
   SLIDES.forEach((d, i) => {
     const el = shell(d, i);
     (layouts[d.layout] || layouts.grid)(el, d);
+    renderActions(el, d);
+    renderGraphicsControl(el, d);
+    renderCalcControl(el, d);
     furniture(el, d);
     scaler.appendChild(el);
   });
@@ -425,7 +608,7 @@ export function initDeck() {
   const fromHash = SLIDES.findIndex(s => s.id === location.hash.slice(1));
   show(fromHash >= 0 ? fromHash : 0);
 
-  const ok = SLIDES.length === 16 && MODAL_COUNT === 30;
+  const ok = SLIDES.length === 16 && MODAL_COUNT === 28;
   console.log(
     `%c Homebuyer's Playbook · Ridgeline %c ${SLIDES.length} slides · ${MODAL_COUNT} popouts · ` +
     `${Math.round(TARGET_RUNTIME_SECONDS / 60)} min ${ok ? '✓' : '✗ count check'}`,

@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" width="1600" height="1000" font-family="'Helvetica Neue', Arial, sans-serif">
+  <rect width="1600" height="1000" fill="#0C3335"/>
+
+  <!-- Header -->
+  <rect x="80" y="54" width="8" height="44" fill="#8CC63E"/>
+  <text x="112" y="78" font-size="40" font-weight="800" fill="#FFFFFF">Meet the players</text>
+  <text x="112" y="118" font-size="25" font-weight="500" fill="#AEC6C2">Eight people touch your file &#8212; and they don't all work for you. Tap any name.</text>
+
+  <!-- ================= EDGES ================= -->
+  <!-- direct-to-you (green, thick): lender, realtor, closer, insurance -->
+  <g stroke="#8CC63E" stroke-width="5">
+    <line x1="800" y1="560" x2="480" y2="470"/>
+    <line x1="800" y1="560" x2="1150" y2="470"/>
+    <line x1="800" y1="560" x2="700" y2="860"/>
+    <line x1="800" y1="560" x2="850" y2="300"/>
+  </g>
+  <!-- the lender coordinates the file (muted) -->
+  <g stroke="#4B6B6C" stroke-width="3">
+    <line x1="480" y1="470" x2="300" y2="300"/>
+    <line x1="480" y1="470" x2="165" y2="560"/>
+    <line x1="480" y1="470" x2="300" y2="800"/>
+    <line x1="480" y1="470" x2="700" y2="860"/>
+    <line x1="585" y1="470" x2="1045" y2="470"/>
+    <line x1="300" y1="300" x2="165" y2="560"/>
+    <line x1="300" y1="300" x2="300" y2="800"/>
+    <line x1="300" y1="800" x2="700" y2="860"/>
+    <line x1="480" y1="470" x2="850" y2="300"/>
+    <line x1="405" y1="300" x2="745" y2="300"/>
+  </g>
+  <!-- other side (red) -->
+  <line x1="1150" y1="470" x2="1340" y2="300" stroke="#C15A4E" stroke-width="4"/>
+
+  <!-- ================= CENTER HUB ================= -->
+  <circle cx="800" cy="560" r="82" fill="#8CC63E"/>
+  <text x="800" y="552" text-anchor="middle" font-size="34" font-weight="800" fill="#0C3335">YOU</text>
+  <text x="800" y="586" text-anchor="middle" font-size="19" font-weight="600" fill="#274617">the buyer</text>
+
+  <!-- ================= PILLS (clickable) ================= -->
+  <!-- works-for-you: green outline -->
+  <g class="pn" data-modal="role-lender">
+    <rect x="375" y="437" width="210" height="66" rx="33" fill="#12403F" stroke="#8CC63E" stroke-width="3"/>
+    <text x="480" y="471" text-anchor="middle" font-size="26" font-weight="700" fill="#FFFFFF">Lender</text>
+    <text x="480" y="493" text-anchor="middle" font-size="15" fill="#9BD25E">works for you</text>
+  </g>
+  <g class="pn" data-modal="role-realtor">
+    <rect x="1045" y="437" width="210" height="66" rx="33" fill="#12403F" stroke="#8CC63E" stroke-width="3"/>
+    <text x="1150" y="471" text-anchor="middle" font-size="26" font-weight="700" fill="#FFFFFF">Realtor</text>
+    <text x="1150" y="493" text-anchor="middle" font-size="15" fill="#9BD25E">works for you</text>
+  </g>
+
+  <!-- neutral third parties: slate outline -->
+  <g class="pn" data-modal="role-processor">
+    <rect x="195" y="267" width="210" height="66" rx="33" fill="#12403F" stroke="#6E8A8B" stroke-width="2.5"/>
+    <text x="300" y="308" text-anchor="middle" font-size="26" font-weight="700" fill="#FFFFFF">Processor</text>
+    <text x="300" y="328" text-anchor="middle" font-size="15" fill="#9FB4B4">neutral</text>
+  </g>
+  <g class="pn" data-modal="role-insurance">
+    <rect x="745" y="267" width="210" height="66" rx="33" fill="#12403F" stroke="#6E8A8B" stroke-width="2.5"/>
+    <text x="850" y="308" text-anchor="middle" font-size="26" font-weight="700" fill="#FFFFFF">Insurance</text>
+    <text x="850" y="328" text-anchor="middle" font-size="15" fill="#9FB4B4">neutral</text>
+  </g>
+  <g class="pn" data-modal="role-underwriter">
+    <rect x="60" y="527" width="210" height="66" rx="33" fill="#12403F" stroke="#6E8A8B" stroke-width="2.5"/>
+    <text x="165" y="568" text-anchor="middle" font-size="26" font-weight="700" fill="#FFFFFF">Underwriter</text>
+    <text x="165" y="588" text-anchor="middle" font-size="15" fill="#9FB4B4">neutral</text>
+  </g>
+  <g class="pn" data-modal="role-title">
+    <rect x="195" y="767" width="210" height="66" rx="33" fill="#12403F" stroke="#6E8A8B" stroke-width="2.5"/>
+    <text x="300" y="808" text-anchor="middle" font-size="26" font-weight="700" fill="#FFFFFF">Title</text>
+    <text x="300" y="828" text-anchor="middle" font-size="15" fill="#9FB4B4">neutral</text>
+  </g>
+  <g class="pn" data-modal="role-closer">
+    <rect x="595" y="847" width="210" height="66" rx="33" fill="#12403F" stroke="#6E8A8B" stroke-width="2.5"/>
+    <text x="700" y="888" text-anchor="middle" font-size="26" font-weight="700" fill="#FFFFFF">Closer</text>
+    <text x="700" y="908" text-anchor="middle" font-size="15" fill="#9FB4B4">neutral</text>
+  </g>
+
+  <!-- other side: red outline -->
+  <g class="pn" data-modal="role-seller">
+    <rect x="1235" y="267" width="210" height="66" rx="33" fill="#3A1F1B" stroke="#C15A4E" stroke-width="3"/>
+    <text x="1340" y="301" text-anchor="middle" font-size="26" font-weight="700" fill="#FFFFFF">Seller</text>
+    <text x="1340" y="323" text-anchor="middle" font-size="15" fill="#E39D93">the other side</text>
+  </g>
+
+  <!-- ================= LEGEND ================= -->
+  <g transform="translate(1090,640)">
+    <rect x="0" y="0" width="440" height="228" rx="16" fill="#0A2B2D" stroke="#1E4A4B" stroke-width="2"/>
+    <text x="28" y="46" font-size="22" font-weight="800" fill="#FFFFFF" letter-spacing="1">WHOSE SIDE ARE THEY ON?</text>
+    <line x1="28" y1="62" x2="412" y2="62" stroke="#1E4A4B" stroke-width="2"/>
+    <circle cx="42" cy="102" r="12" fill="#8CC63E"/>
+    <text x="72" y="110" font-size="22" fill="#DDE7E6">Works for you</text>
+    <circle cx="42" cy="150" r="12" fill="#12403F" stroke="#6E8A8B" stroke-width="3"/>
+    <text x="72" y="158" font-size="22" fill="#DDE7E6">Neutral third party</text>
+    <circle cx="42" cy="198" r="12" fill="#3A1F1B" stroke="#C15A4E" stroke-width="3"/>
+    <text x="72" y="206" font-size="22" fill="#DDE7E6">Represents the other side</text>
+  </g>
+
+  <!-- takeaway -->
+  <text x="60" y="960" font-size="24" font-weight="700" fill="#8CC63E">Ask everyone the same four words: &#8220;Who pays you, and how?&#8221;</text>
+</svg>

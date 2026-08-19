@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Do's &amp; Don'ts — The Homebuyer's Playbook</title>
+<style>
+  @page { size: 11in 8.5in; margin: 0; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 11in; height: 8.5in; }
+  body {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    color: #243033; background: #FFFFFF;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+    display: flex; flex-direction: column;
+  }
+  .head { background: #0C3335; padding: 26px 46px 24px; position: relative; }
+  .head::before { content:""; position:absolute; left:46px; top:32px; width:7px; height:52px; background:#8CC63E; }
+  .head h1 { color:#fff; font-size: 30px; font-weight: 800; margin-left: 22px; letter-spacing:.2px; }
+  .head p  { color:#AEC6C2; font-size: 15px; font-weight: 500; margin-left: 22px; margin-top: 6px; }
+
+  .cols { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 26px; padding: 26px 46px 12px; }
+  .panel { border: 1.5px solid #DCE4E1; border-radius: 12px; overflow: hidden; display:flex; flex-direction:column; }
+  .panel-head { display:flex; align-items:center; gap:14px; padding: 14px 22px; }
+  .panel-head .badge { width: 34px; height: 34px; border-radius: 50%; color:#fff; font-weight: 800; font-size: 20px; display:flex; align-items:center; justify-content:center; }
+  .panel-head .label { font-size: 24px; font-weight: 800; }
+  .dont .panel-head { background:#F6E4E1; } .dont .badge { background:#B23A2E; } .dont .label { color:#7C241B; }
+  .do   .panel-head { background:#EAF3DC; } .do .badge   { background:#5E9022; } .do .label   { color:#2E4A12; }
+
+  ul { list-style: none; padding: 14px 22px 8px; }
+  li { display: flex; gap: 12px; padding: 7px 0; font-size: 15.5px; line-height: 1.32; align-items: flex-start; }
+  li .m { flex: none; font-weight: 800; font-size: 16px; line-height: 1.32; }
+  .dont li .m { color:#B23A2E; } .do li .m { color:#5E9022; }
+  .do li { padding: 11px 0; }
+
+  .note { margin: 2px 22px 16px; font-size: 14px; color:#2E4A12; background:#F1F7E7; border-left:4px solid #8CC63E; padding: 12px 16px; border-radius: 4px; }
+
+  .foot { border-top: 1.5px solid #DCE4E1; margin: 0 46px; padding: 12px 0 16px; display:flex; justify-content:space-between; align-items:flex-end; }
+  .foot .co { font-size: 13.5px; font-weight: 700; color:#0C3335; }
+  .foot .co span { display:block; font-weight: 400; color:#5B6B6C; margin-top:3px; font-size: 12px; }
+  .foot .play { font-size: 14px; font-weight: 800; color:#5E9022; }
+</style>
+</head>
+<body>
+  <div class="head">
+    <h1>Do's &amp; Don'ts: From Application to Closing</h1>
+    <p>From application to keys, your financial life is a museum exhibit — look, don't touch. If something must change, call your loan officer first.</p>
+  </div>
+
+  <div class="cols">
+    <div class="panel dont">
+      <div class="panel-head"><span class="badge">&#10005;</span><span class="label">DON'T</span></div>
+      <ul>
+        <li><span class="m">&#10005;</span><span>Apply for or take out any new loans</span></li>
+        <li><span class="m">&#10005;</span><span>Pay off collections or debt unless your lender says to</span></li>
+        <li><span class="m">&#10005;</span><span>Consolidate debt or close credit cards</span></li>
+        <li><span class="m">&#10005;</span><span>Dispute items on your credit report</span></li>
+        <li><span class="m">&#10005;</span><span>Make large deposits other than payroll — no cash</span></li>
+        <li><span class="m">&#10005;</span><span>Make large purchases with credit or debit</span></li>
+        <li><span class="m">&#10005;</span><span>Move money between accounts</span></li>
+        <li><span class="m">&#10005;</span><span>Change jobs without talking to your loan officer</span></li>
+        <li><span class="m">&#10005;</span><span>Quit or give notice before your loan closes</span></li>
+        <li><span class="m">&#10005;</span><span>Use cash for earnest money — check or wire only</span></li>
+      </ul>
+    </div>
+
+    <div class="panel do">
+      <div class="panel-head"><span class="badge">&#10003;</span><span class="label">DO</span></div>
+      <ul>
+        <li><span class="m">&#10003;</span><span>Make all your payments on time</span></li>
+        <li><span class="m">&#10003;</span><span>Tell your lender if you haven't filed last year's taxes, or owe on them</span></li>
+        <li><span class="m">&#10003;</span><span>Tell your lender if anything about your job is changing</span></li>
+        <li><span class="m">&#10003;</span><span>Keep homeowners insurance at or under the Loan Estimate amount</span></li>
+        <li><span class="m">&#10003;</span><span>Return everything your lender asks for quickly</span></li>
+      </ul>
+      <div class="note"><strong>The one that does the most work:</strong> the biggest predictor of a smooth closing isn't your score or your down payment — it's how fast you send documents back. Same-day beats perfect.</div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <div class="co">Mountain State Financial Group, LLC · NMLS# 1314257 · msfg.us
+      <span>Licensed in CO, IN, MI, MN, ND, SD, TX. Educational only — not a commitment to lend.</span>
+    </div>
+    <div class="play">The Homebuyer's Playbook</div>
+  </div>
+</body>
+</html>

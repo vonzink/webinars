@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" width="1600" height="1000" font-family="'Helvetica Neue', Arial, sans-serif">
+  <rect width="1600" height="1000" fill="#F4F6F5"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1600" height="150" fill="#0C3335"/>
+  <rect x="80" y="52" width="8" height="46" fill="#8CC63E"/>
+  <text x="112" y="76" font-size="42" font-weight="800" fill="#FFFFFF">Moving Money During Your Loan</text>
+  <text x="112" y="118" font-size="26" font-weight="500" fill="#AEC6C2">Underwriters must source every dollar. Keep the paper trail clean from application to closing.</text>
+
+  <!-- ============ DO panel ============ -->
+  <rect x="80" y="196" width="700" height="700" rx="18" fill="#FFFFFF" stroke="#DCE4E1" stroke-width="2"/>
+  <rect x="80" y="196" width="700" height="88" rx="18" fill="#EAF3DC"/>
+  <rect x="80" y="248" width="700" height="36" fill="#EAF3DC"/>
+  <circle cx="140" cy="240" r="26" fill="#5E9022"/>
+  <path d="M128 240 l9 9 l16 -19" fill="none" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="184" y="252" font-size="36" font-weight="800" fill="#2E4A12">DO</text>
+
+  <g font-size="26" fill="#243033">
+    <!-- rows -->
+    <g transform="translate(120,330)">
+      <path d="M0 6 l10 10 l18 -22" fill="none" stroke="#5E9022" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="46" y="16" font-weight="700">Keep every bank statement</text>
+      <text x="46" y="52" font-size="22" fill="#5B6B6C">All pages, even the &#8220;intentionally blank&#8221; ones.</text>
+    </g>
+    <g transform="translate(120,430)">
+      <path d="M0 6 l10 10 l18 -22" fill="none" stroke="#5E9022" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="46" y="16" font-weight="700">Season your funds</text>
+      <text x="46" y="52" font-size="22" fill="#5B6B6C">Have money in place 60+ days before you apply.</text>
+    </g>
+    <g transform="translate(120,530)">
+      <path d="M0 6 l10 10 l18 -22" fill="none" stroke="#5E9022" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="46" y="16" font-weight="700">Source large or non-payroll deposits</text>
+      <text x="46" y="52" font-size="22" fill="#5B6B6C">A receipt or note for anything out of the ordinary.</text>
+    </g>
+    <g transform="translate(120,630)">
+      <path d="M0 6 l10 10 l18 -22" fill="none" stroke="#5E9022" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="46" y="16" font-weight="700">Get a signed gift letter</text>
+      <text x="46" y="52" font-size="22" fill="#5B6B6C">Required whenever someone gives you funds.</text>
+    </g>
+    <g transform="translate(120,730)">
+      <path d="M0 6 l10 10 l18 -22" fill="none" stroke="#5E9022" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="46" y="16" font-weight="700">Move money BEFORE you apply</text>
+      <text x="46" y="52" font-size="22" fill="#5B6B6C">Consolidate accounts before the file opens, not during.</text>
+    </g>
+  </g>
+
+  <!-- ============ DON'T panel ============ -->
+  <rect x="820" y="196" width="700" height="700" rx="18" fill="#FFFFFF" stroke="#DCE4E1" stroke-width="2"/>
+  <rect x="820" y="196" width="700" height="88" rx="18" fill="#F6E4E1"/>
+  <rect x="820" y="248" width="700" height="36" fill="#F6E4E1"/>
+  <circle cx="880" cy="240" r="26" fill="#B23A2E"/>
+  <path d="M870 230 l20 20 M890 230 l-20 20" fill="none" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round"/>
+  <text x="924" y="252" font-size="36" font-weight="800" fill="#7C241B">DON'T</text>
+
+  <g font-size="26" fill="#243033">
+    <g transform="translate(860,330)">
+      <path d="M0 -4 l24 24 M24 -4 l-24 24" fill="none" stroke="#B23A2E" stroke-width="5" stroke-linecap="round"/>
+      <text x="46" y="16" font-weight="700">Make undocumented cash deposits</text>
+      <text x="46" y="52" font-size="22" fill="#5B6B6C">Physical cash is nearly impossible to source.</text>
+    </g>
+    <g transform="translate(860,430)">
+      <path d="M0 -4 l24 24 M24 -4 l-24 24" fill="none" stroke="#B23A2E" stroke-width="5" stroke-linecap="round"/>
+      <text x="46" y="16" font-weight="700">Shuffle money between accounts</text>
+      <text x="46" y="52" font-size="22" fill="#5B6B6C">Every transfer creates new statements to chase.</text>
+    </g>
+    <g transform="translate(860,530)">
+      <path d="M0 -4 l24 24 M24 -4 l-24 24" fill="none" stroke="#B23A2E" stroke-width="5" stroke-linecap="round"/>
+      <text x="46" y="16" font-weight="700">Use unsourced funds to close</text>
+      <text x="46" y="52" font-size="22" fill="#5B6B6C">If it can't be documented, it can't be used.</text>
+    </g>
+    <g transform="translate(860,630)">
+      <path d="M0 -4 l24 24 M24 -4 l-24 24" fill="none" stroke="#B23A2E" stroke-width="5" stroke-linecap="round"/>
+      <text x="46" y="16" font-weight="700">Deposit a gift without a letter</text>
+      <text x="46" y="52" font-size="22" fill="#5B6B6C">No paper trail means the funds don't count.</text>
+    </g>
+    <g transform="translate(860,730)">
+      <path d="M0 -4 l24 24 M24 -4 l-24 24" fill="none" stroke="#B23A2E" stroke-width="5" stroke-linecap="round"/>
+      <text x="46" y="16" font-weight="700">Empty an account you disclosed</text>
+      <text x="46" y="52" font-size="22" fill="#5B6B6C">Assets you listed need to still be there.</text>
+    </g>
+  </g>
+
+  <!-- Footer rule -->
+  <text x="800" y="952" text-anchor="middle" font-size="25" font-weight="700" fill="#0C3335">One rule covers all of it: when in doubt, call your loan officer FIRST.</text>
+</svg>

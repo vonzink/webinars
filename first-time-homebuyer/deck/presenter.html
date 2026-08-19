@@ -68,6 +68,13 @@
     .p-utility-icon svg { width: 19px; height: 19px; fill: none; stroke: currentColor;
       stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
     .p-utility-icon.on { color: #0C3335; background: #8cc63E; border-color: #8cc63E; }
+    .p-presenter-pick { display: flex; flex-direction: column; gap: 3px; margin-left: 26px; }
+    .p-presenter-pick label { font: 700 10px/1 var(--font-display); letter-spacing: .12em;
+      text-transform: uppercase; color: rgba(255,255,255,.55); }
+    .p-presenter-pick select { min-width: 190px; padding: 7px 10px; border-radius: 8px;
+      border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.06); color: #fff;
+      font: 600 14px/1.2 var(--font-body); }
+    .p-presenter-pick select:focus { outline: none; border-color: #8cc63E; }
 
     /* notes */
     .p-note-add { display: flex; flex-direction: column; gap: 8px; }
@@ -106,6 +113,10 @@
       <div class="p-brand">Presenter View</div>
       <div class="p-sub"><span id="p-who"></span> · <span id="p-company"></span></div>
     </div>
+    <div class="p-presenter-pick">
+      <label for="p-presenter">Presenting as</label>
+      <select id="p-presenter" aria-label="Select the presenter"></select>
+    </div>
     <div class="p-spacer"></div>
     <div class="p-clocks">
       <div class="p-clock"><div class="p-clock-label">Slide</div><div class="p-clock-value" id="p-slide-elapsed" data-state="ok">00:00</div></div>
@@ -114,10 +125,18 @@
       <div class="p-clock"><div class="p-clock-label">Elapsed / <span id="p-total">00:00</span></div><div class="p-clock-value" id="p-elapsed">00:00</div></div>
     </div>
     <button class="p-utility-icon" id="p-calculator" type="button"
-      aria-label="Show calculator" title="Show calculator" aria-pressed="false">
+      aria-label="Show mortgage calculator" title="Show mortgage calculator" aria-pressed="false">
       <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
         <rect x="5" y="3" width="14" height="18" rx="2"></rect>
         <path d="M8 7h8M8 11h2M12 11h2M16 11h1M8 15h2M12 15h2M16 15h1M8 18h2M12 18h5"></path>
+      </svg>
+    </button>
+    <button class="p-utility-icon" id="p-buydown" type="button"
+      aria-label="Show buydown calculator" title="Show 2-1 buydown calculator" aria-pressed="false">
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="19" y1="5" x2="5" y2="19"></line>
+        <circle cx="7.5" cy="7.5" r="2.2"></circle>
+        <circle cx="16.5" cy="16.5" r="2.2"></circle>
       </svg>
     </button>
   </header>

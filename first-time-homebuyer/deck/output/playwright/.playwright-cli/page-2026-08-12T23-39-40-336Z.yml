@@ -1,0 +1,32 @@
+- generic [active] [ref=e1]:
+  - main "Presentation slides" [ref=e3]:
+    - 'group "1 of 16: Buying your first home, explained." [ref=e5]':
+      - generic [ref=e7]:
+        - generic [ref=e8]: The Homebuyer's Playbook
+        - heading "Buying your first home, explained." [level=1] [ref=e9]
+        - paragraph [ref=e11]: Seth Angell
+        - paragraph [ref=e12]: Executive VP · NMLS# 912881
+        - list [ref=e13]:
+          - listitem [ref=e14]:
+            - generic [ref=e15]: Call
+            - text: 303-883-8519
+          - listitem [ref=e16]:
+            - generic [ref=e17]: Email
+            - text: Seth.angell@msfg.us
+          - listitem [ref=e18]:
+            - generic [ref=e19]: Also
+            - text: info@msfgmortgage.com
+      - generic [ref=e22]:
+        - img "Mountain State Financial Group" [ref=e24]
+        - generic [ref=e25]:
+          - generic [ref=e26]:
+            - generic [ref=e27]: Mountain State Financial Group, LLC · NMLS# 1314257 · msfg.us
+            - generic [ref=e28]: Licensed in CO, IN, MI, MN, ND, SD, TX
+          - img "Equal Housing Lender" [ref=e29]
+  - navigation "Slide navigation" [ref=e30]:
+    - button "Previous slide" [ref=e31] [cursor=pointer]: ‹
+    - generic [ref=e32]: 1 / 16
+    - button "Next slide" [ref=e33] [cursor=pointer]: ›
+    - button "Toggle fullscreen" [ref=e34] [cursor=pointer]: ⛶
+    - button "Open presenter view" [ref=e35] [cursor=pointer]: ▤
+  - paragraph [ref=e36]: Arrow keys move between slides. P opens presenter view, F fullscreen, G layout guides.

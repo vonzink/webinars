@@ -42,7 +42,7 @@ export const SLIDES = [
     ]},
     right: { label: 'Buying', items: [
       'A fixed payment while home values generally appreciate',
-      'Equity compounds; you\'re paying yourself',
+      'Equity builds two ways — paying down principal and appreciation',
       'Most people step up — the first home isn\'t the last',
       'You can personalize the home to fit your style and needs.',
     ]},
@@ -53,16 +53,15 @@ export const SLIDES = [
 
   /* 5 — BUDGET: the payment (combined) */
   {
-    id: 'budget-payment', layout: 'payment', bg: 'white', footer: true,
+    id: 'budget-payment', layout: 'payment', bg: 'white', footer: true, calc: 'mortgage',
     eyebrow: 'Budget',
     headline: 'What\'s actually in the payment',
     subhead: 'On a fixed-rate loan — what\'s locked, and what can still move.',
     fixed:  ['Your interest rate', 'Your principal & interest', 'Your loan term'],
-    moves:  ['Property taxes', 'Insurance premiums', 'Mortgage insurance (it can come off)', 'HOA dues', 'A special assessment'],
+    moves:  ['Property taxes', 'Insurance premiums', 'Mortgage insurance (it can come off)', 'HOA dues'],
     points: [
       'Escrow collects a slice of taxes and insurance each month and pays them for you — not a fee, your money held early',
       'Amortization: early payments are mostly interest; it shifts to principal over years',
-      'Refinancing resets the clock — a new 30-year loan starts over at the interest-heavy beginning',
     ],
     time: 210,
     notes: 'The most misunderstood thing in the business: fixed rate does NOT mean fixed payment. Rate is fixed; taxes and insurance are not. A tax increase or special assessment raises your payment — that\'s not a fee, it surprises people every year. Refinancing lowers the rate but restarts amortization.',
@@ -85,60 +84,62 @@ export const SLIDES = [
 
   /* 7 — PROGRAMS grid */
   {
-    id: 'programs', layout: 'grid', bg: 'white', footer: true, cols: 3,
+    id: 'programs', layout: 'grid', bg: 'white', footer: true, cols: 2,
     headline: 'Most Common Loan Programs',
-    subhead: 'Five doors, different people. Tap any program for pros and cons.',
+    subhead: 'Four doors, different people. Tap any program for pros and cons.',
     compliance: 'generalGuidelines',
     cards: [
       { modal: 'prog-conventional', title: 'Conventional', meta: 'The default for most buyers', stat: '3% down' },
+      { modal: 'prog-usda',         title: 'USDA',         meta: 'Eligible areas, income limits', stat: '0% down' },
       { modal: 'prog-fha',          title: 'FHA',          meta: 'Built for credit flexibility', stat: '3.5% down' },
       { modal: 'prog-va',           title: 'VA',           meta: 'If you served, check this first', stat: '0% down' },
-      { modal: 'prog-usda',         title: 'USDA',         meta: 'Eligible areas, income limits', stat: '0% down' },
-      { modal: 'prog-jumbo',        title: 'Jumbo',        meta: 'Above conforming limits', stat: 'Varies' },
     ],
     time: 180,
-    notes: 'Don\'t walk all five. Ask which they\'ve heard of and open those. Always mention VA out loud — eligible people routinely don\'t know they qualify. Each card opens to pros/cons; those are the in-between slides in the PowerPoint.',
+    notes: 'Don\'t walk all four. Ask which they\'ve heard of and open those. Always mention VA out loud — eligible people routinely don\'t know they qualify. Each card opens to pros/cons; those are the in-between slides in the PowerPoint.',
+  },
+
+  /* NEW — BEFORE YOU CLOSE: closing costs vs. prepaid items */
+  {
+    id: 'prepaid', layout: 'prepaid', bg: 'white', footer: true,
+    eyebrow: 'Before you close',
+    headline: 'Closing costs vs. prepaid items',
+    defs: [
+      { head: 'Closing costs', body: 'One-time fees to set up the loan — appraisal, title, lender and third-party services. Paid once, at closing.' },
+      { head: 'Prepaid items', body: 'Your own money paid ahead — first-year homeowners insurance, prepaid interest, and escrow deposits for taxes & insurance. Not fees.' },
+    ],
+    upfront: ['Credit report', 'Appraisal', 'Inspection', 'Earnest money'],
+    note: 'At MSFG we don\'t charge for the credit report, and we defer the appraisal fee until closing — so before closing you\'re usually only out your inspection and earnest money.',
+    image: './assets/john-doe-worksheet.png',
+    imageCaption: 'Example — actual charges vary',
+    time: 150,
+    notes: 'Closing costs set up the loan; prepaids are your own money paid ahead — not fees. Walk what a buyer actually pays before closing, and that we defer the appraisal and don\'t charge for credit, so it\'s usually just inspection + earnest money up front. The worksheet is a generic example (John Doe) — actual charges vary.',
   },
 
   /* 8 — CASH TO CLOSE: sources */
   {
-    id: 'cash-sources', layout: 'grid', bg: 'dark', footer: true, cols: 3,
-    headline: 'Cash to close: where it comes from',
+    id: 'cash-sources', layout: 'grid', bg: 'dark', footer: true, cols: 3, calc: 'buydown',
+    headline: 'Cash to close: Where it can come from',
     subhead: 'It doesn\'t all have to be your savings. Tap any source for the rules.',
     cards: [
-      { modal: 'src-savings',    title: 'Savings' },
+      { modal: 'src-savings',    title: 'Checking & Savings' },
+      { modal: 'src-investment', title: 'Investment Accounts' },
+      { modal: 'src-retirement', title: 'Retirement Accounts' },
       { modal: 'src-gift',       title: 'Gift Funds' },
       { modal: 'src-seller',     title: 'Seller Credits' },
       { modal: 'src-buydown',    title: '2-1 Buydowns' },
-      { modal: 'src-agent',      title: 'Agent Credits' },
       { modal: 'src-assistance', title: 'Down Payment Assistance' },
     ],
     time: 210,
     notes: 'Most buyers assume every dollar is theirs. It isn\'t. Each source has real rules — seasoning, gift letters, concession caps. Assistance deserves a candid word: it helps some buyers, but it complicates the file and can weaken the offer.',
   },
 
-  /* 9 — CASH TO CLOSE: makeup */
+  /* PROCESS: meet the players (interactive web — the SVG IS the slide) */
   {
-    id: 'cash-makeup', layout: 'cashmakeup', bg: 'white', footer: true, hasNumbers: true,
-    eyebrow: 'Cash to close',
-    headline: 'Closing costs are not cash to close',
-    subhead: 'Closing costs get the loan. Cash to close is everything you bring — and it\'s bigger.',
-    canPay:    ['Allowable closing costs', 'Prepaid items', 'Escrow deposits', 'Points to lower the rate'],
-    cannotPay: ['Your down payment', 'More than your actual costs', 'Cash back to you'],
-    points: [
-      'You can use points to buy down the rate — or credits to cover closing costs',
-      'Prepaids (first insurance, some taxes) are your own money paid early, not a fee',
-      'Reserves are funds you keep after closing — some programs require them',
-    ],
-    time: 150,
-    notes: 'Two lines on the Loan Estimate get confused. Closing costs is what you pay to get the loan. Cash to close is everything — down payment, closing costs, prepaids, escrows, reserves — minus credits. It\'s the bigger number, it\'s on page one, and it decides whether you get to the table.',
-  },
-
-  /* 10 — PROCESS: meet the players */
-  {
-    id: 'process-players', layout: 'grid', bg: 'white', footer: true, cols: 4, dense: true,
+    id: 'process-players', layout: 'web', bg: 'dark', footer: true,
     headline: 'Meet the players',
-    subhead: 'Eight people — and they don\'t all work for you. Tap anyone.',
+    svg: './assets/presenter/slide-09/players-web.svg',
+    /* cards retained only so each role popout stays "referenced" (rendered by
+       the web nodes, not as a grid). */
     cards: [
       { modal: 'role-lender',     title: 'Lender' },
       { modal: 'role-realtor',    title: 'Realtor' },
@@ -150,7 +151,7 @@ export const SLIDES = [
       { modal: 'role-insurance',  title: 'Insurance' },
     ],
     time: 180,
-    notes: 'The most useful question in the process is four words: who pays you, and how? Ask everybody. Each card explains what that person actually does.',
+    notes: 'The most useful question in the process is four words: who pays you, and how? Ask everybody. Click any name to explain what that person actually does. Most are neutral third parties; the seller\'s agent is the other side.',
   },
 
   /* 11 — PROCESS: the steps */
@@ -187,7 +188,7 @@ export const SLIDES = [
       'Make large purchases with credit or debit',
       'Move money between accounts',
       'Change jobs without talking to your loan officer',
-      'Quit or give notice before your loan closes',
+      'Quit your job or give notice before your loan closes',
       'Use cash for earnest money — check or wire only',
     ],
     time: 120,
@@ -219,7 +220,7 @@ export const SLIDES = [
     points: [
       'Breakeven: a rate bought with points only pays off if you keep the loan long enough',
       'Points are a bet on how long you keep this exact loan — not this house',
-      'Refinancing ends the loan early and restarts amortization',
+      'Refinancing ends the loan early and could restart amortization',
       'Real wealth comes from building equity — payments and time',
     ],
     callout: 'Equity is built by payments and time — not the third decimal of your rate.',
@@ -229,16 +230,13 @@ export const SLIDES = [
 
   /* 15 — MISTAKES: small assumptions */
   {
-    id: 'mistakes-assumptions', layout: 'grid', bg: 'white', footer: true, cols: 3, cardVariant: 'quote',
+    id: 'mistakes-assumptions', layout: 'grid', bg: 'white', footer: true, cols: 2, cardVariant: 'quote',
     eyebrow: 'Mistakes to avoid',
     headline: 'The most expensive mistakes start as small assumptions',
-    subhead: 'Tap any one for what actually happens.',
     cards: [
       { modal: 'assume-preapproval',   title: '“I’ll get pre-approved once I find a house.”' },
-      { modal: 'assume-one-lender',    title: '“They’re all about the same — I’ll use one lender.”' },
+      { modal: 'assume-one-lender',    title: '“I’ll just use my bank.”' },
       { modal: 'assume-closing-costs', title: '“Closing costs are what I need at closing.”' },
-      { modal: 'assume-approved',      title: '“I’m approved, so I’m done.”' },
-      { modal: 'assume-wait-20',       title: '“I’ll wait until I have twenty percent.”' },
       { modal: 'assume-builder',       title: '“The builder’s incentive is free money.”' },
     ],
     time: 150,
@@ -254,7 +252,7 @@ export const SLIDES = [
       { q: 'How much money do I actually need?', a: 'Less than most think — 3% conventional, 3.5% FHA, 0% VA/USDA — plus closing costs and an emergency fund you don\'t touch.' },
       { q: 'What credit score do I need?', a: 'No single number. It depends on the program, and you\'re probably closer than you think. It\'s a five-minute question.' },
       { q: 'How long does it take?', a: 'Contract to keys is typically 30–45 days. The biggest variable is how fast you return documents.' },
-      { q: 'Should I lock my rate?', a: 'Generally once you\'re under contract. Ask about a float-down before you lock.' },
+      { q: 'Should I lock my rate?', a: 'Generally once you\'re under contract. A lock holds your rate while the loan is in process — ask how long it lasts and what happens if closing runs past it.' },
       { q: 'What happens after pre-approval?', a: 'You shop with a real budget, make an offer, and it becomes a formal application — Loan Estimate within three business days.' },
     ],
     time: 180,

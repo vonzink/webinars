@@ -1,0 +1,108 @@
+- generic [ref=e1]:
+  - main "Presentation slides" [ref=e3]:
+    - 'group "1 of 16: Buying your first home, explained." [ref=e5]':
+      - generic [ref=e7]:
+        - generic [ref=e8]: The Homebuyer's Playbook
+        - heading "Buying your first home, explained." [level=1] [ref=e9]
+        - paragraph [ref=e11]: Seth Angell
+        - paragraph [ref=e12]: Executive VP · NMLS# 912881
+        - list [ref=e13]:
+          - listitem [ref=e14]:
+            - generic [ref=e15]: Call
+            - text: 303-883-8519
+          - listitem [ref=e16]:
+            - generic [ref=e17]: Email
+            - text: Seth.angell@msfg.us
+          - listitem [ref=e18]:
+            - generic [ref=e19]: Also
+            - text: info@msfgmortgage.com
+      - generic [ref=e22]:
+        - img "Mountain State Financial Group" [ref=e24]
+        - generic [ref=e25]:
+          - generic [ref=e26]:
+            - generic [ref=e27]: Mountain State Financial Group, LLC · NMLS# 1314257 · msfg.us
+            - generic [ref=e28]: Licensed in CO, IN, MI, MN, ND, SD, TX
+          - img "Equal Housing Lender" [ref=e29]
+  - navigation "Slide navigation" [ref=e30]:
+    - button "Previous slide" [ref=e31] [cursor=pointer]: ‹
+    - generic [ref=e32]: 1 / 16
+    - button "Next slide" [ref=e33] [cursor=pointer]: ›
+    - button "Toggle fullscreen" [ref=e34] [cursor=pointer]: ⛶
+    - button "Open presenter view" [ref=e35] [cursor=pointer]: ▤
+  - paragraph [ref=e36]: Arrow keys move between slides. P opens presenter view, F fullscreen, G layout guides.
+  - dialog [ref=e38]:
+    - generic [ref=e39]:
+      - banner [ref=e40]:
+        - generic [ref=e45]: Mortgage payment calculator
+      - generic [ref=e46]:
+        - generic [ref=e47]:
+          - heading "Estimate your payment" [level=1] [ref=e48]
+          - paragraph [ref=e49]: Indicative only. Not a commitment to lend.
+          - generic [ref=e50]:
+            - generic [ref=e51]:
+              - generic [ref=e52]: Home price
+              - generic [ref=e53]:
+                - generic [ref=e54]: $
+                - textbox "Home price" [ref=e55]: "500000"
+            - generic [ref=e56]:
+              - generic [ref=e57]: Down payment
+              - generic [ref=e58]:
+                - textbox "Down payment" [ref=e59]: "10"
+                - generic [ref=e60]: "%"
+            - generic [ref=e61]:
+              - generic [ref=e62]: Interest rate
+              - generic [ref=e63]:
+                - textbox "Interest rate" [ref=e64]: "6.375"
+                - generic [ref=e65]: "%"
+            - generic [ref=e66]:
+              - generic [ref=e67]: Term
+              - group "Term" [ref=e68]:
+                - button "30 yr" [pressed] [ref=e69] [cursor=pointer]
+                - button "25 yr" [ref=e70] [cursor=pointer]
+                - button "20 yr" [ref=e71] [cursor=pointer]
+                - button "15 yr" [ref=e72] [cursor=pointer]
+            - paragraph [ref=e73]: $50,000 down · $450,000 estimated loan
+          - button "Taxes, insurance, HOA & MI" [expanded] [active] [ref=e74] [cursor=pointer]:
+            - generic [ref=e76]: ＋
+          - generic [ref=e110]:
+            - generic [ref=e111]:
+              - generic [ref=e112]: Property tax / yr
+              - generic [ref=e113]:
+                - generic [ref=e114]: $
+                - textbox "Property tax / yr" [ref=e115]: "4200"
+            - generic [ref=e116]:
+              - generic [ref=e117]: Homeowners insurance / yr
+              - generic [ref=e118]:
+                - generic [ref=e119]: $
+                - textbox "Homeowners insurance / yr" [ref=e120]: "1400"
+            - generic [ref=e121]:
+              - generic [ref=e122]: HOA / mo
+              - generic [ref=e123]:
+                - generic [ref=e124]: $
+                - textbox "HOA / mo" [ref=e125]: "0"
+            - generic [ref=e126]:
+              - generic [ref=e127]: Mortgage insurance / yr of loan
+              - generic [ref=e128]:
+                - textbox "Mortgage insurance / yr of loan" [ref=e129]: "0.5"
+                - generic [ref=e130]: "%"
+          - region "Estimated payment breakdown" [ref=e77]:
+            - paragraph [ref=e78]: Estimated monthly payment
+            - paragraph [ref=e79]: $3,462
+            - generic [ref=e80]:
+              - generic [ref=e98]:
+                - generic [ref=e99]: Principal & interest
+                - strong [ref=e100]: $2,807
+              - generic [ref=e101]:
+                - generic [ref=e102]: Property taxes
+                - strong [ref=e103]: $350
+              - generic [ref=e104]:
+                - generic [ref=e105]: Homeowners insurance
+                - strong [ref=e106]: $117
+              - generic [ref=e107]:
+                - generic [ref=e108]: Mortgage insurance
+                - strong [ref=e109]: $188
+        - contentinfo [ref=e93]:
+          - img "Equal Housing Lender" [ref=e94]
+          - paragraph [ref=e95]: Mountain State Financial Group, LLC · NMLS# 1314257Estimates are for illustration only and not a commitment to lend.
+    - button "Close calculator" [ref=e96] [cursor=pointer]: ×
+    - button "Resize calculator" [ref=e97]

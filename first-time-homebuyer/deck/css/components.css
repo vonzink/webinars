@@ -1,6 +1,7 @@
 /* ============================================================================
    COMPONENTS — the card and the modal, plus the layout atoms.
-   Squared geometry, no emoji, no soft shadows. Cards carry an 8px accent edge.
+   Softly rounded geometry, no emoji. Cards carry an 8px accent edge and a
+   quiet shadow for depth (matches the popout language).
    ========================================================================= */
 
 /* ---------------------------------------------------------------------------
@@ -15,12 +16,17 @@
   border: 1px solid var(--card-border-light);
   border-left: 8px solid var(--forest);
   color: var(--text-head-light);
-  border-radius: 0;
+  border-radius: 18px;
+  box-shadow: 0 4px 16px rgba(12,51,53,0.06);
   transition: transform var(--dur-fast) var(--ease-out),
+              box-shadow var(--dur-fast) var(--ease-out),
               border-color var(--dur-fast) var(--ease-out),
               background var(--dur-fast) var(--ease-out);
 }
-.card:hover, .card:focus-visible { transform: translateY(-3px); border-left-color: var(--green); }
+.card:hover, .card:focus-visible {
+  transform: translateY(-3px); border-left-color: var(--green);
+  box-shadow: 0 12px 30px rgba(12,51,53,0.12);
+}
 
 .card--accent-sage  { border-left-color: var(--sage); }
 .card--accent-green { border-left-color: var(--green); }
@@ -46,7 +52,7 @@
 /* "Open" affordance — a green corner tick, no icon font, no emoji */
 .card-open {
   position: absolute; top: 22px; right: 22px;
-  width: 34px; height: 34px; display: grid; place-items: center;
+  width: 34px; height: 34px; display: grid; place-items: center; border-radius: 50%;
   font-family: var(--font-display); font-weight: var(--fw-800); font-size: 22px;
   color: var(--forest); background: var(--mist);
 }
@@ -66,7 +72,7 @@
 /* Accordion row (questions) */
 .card--row { flex-direction: row; align-items: center; gap: 30px; padding: 30px 40px; }
 .card--row .card-index {
-  flex: none; width: 60px; height: 60px; display: grid; place-items: center;
+  flex: none; width: 60px; height: 60px; display: grid; place-items: center; border-radius: 50%;
   background: var(--green); color: var(--forest);
   font-family: var(--font-display); font-weight: var(--fw-900); font-size: 30px;
 }
@@ -108,41 +114,49 @@
 .modal {
   position: relative; width: 1200px; height: auto;
   display: flex; flex-direction: column;
-  background: var(--white); border-radius: 0;
+  background: var(--white); border-radius: 22px;
+  box-shadow: 0 44px 100px rgba(8,28,29,0.50), 0 4px 14px rgba(8,28,29,0.24);
   overflow: hidden; transform-origin: top left; transition: none;
 }
 
 /* drag handle = the header */
 .modal-head {
-  height: 52px; flex: none; display: flex; align-items: center;
-  padding: 8px 64px 8px 18px;
+  height: 60px; flex: none; display: flex; align-items: center;
+  padding: 8px 68px 8px 30px;
   background: var(--forest); color: var(--white);
+  box-shadow: inset 0 -3px 0 var(--green);
   cursor: grab; touch-action: none;
 }
 .modal-head:active { cursor: grabbing; }
 
-/* resize handle, bottom-right */
+/* resize handle, bottom-right — a soft, unobtrusive grip */
 .modal-resize {
-  position: absolute; right: 0; bottom: 0; width: 26px; height: 26px;
-  padding: 0; border: 0; cursor: nwse-resize; touch-action: none;
-  background: linear-gradient(135deg, transparent 50%, var(--green) 50%);
+  position: absolute; right: 8px; bottom: 8px; width: 20px; height: 20px;
+  padding: 0; border: 0; cursor: nwse-resize; touch-action: none; opacity: 0.5;
+  border-radius: 3px;
+  background:
+    radial-gradient(circle 2px at 14px 14px, var(--sage) 99%, transparent),
+    radial-gradient(circle 2px at 14px 7px, var(--sage) 99%, transparent),
+    radial-gradient(circle 2px at 7px 14px, var(--sage) 99%, transparent);
 }
+.modal-resize:hover { opacity: 0.9; }
 .modal-title {
   min-width: 0; overflow: hidden;
   font-family: var(--font-display); font-weight: var(--fw-800);
-  color: var(--white); font-size: 20px; line-height: 1;
+  color: var(--white); font-size: 22px; line-height: 1;
   text-overflow: ellipsis; white-space: nowrap;
 }
 
 .modal-close {
-  position: absolute; z-index: 1; top: 8px; right: 10px; width: 36px; height: 36px;
-  display: grid; place-items: center;
+  position: absolute; z-index: 1; top: 13px; right: 16px; width: 36px; height: 36px;
+  display: grid; place-items: center; border-radius: 50%;
   background: rgba(255,255,255,0.14); color: var(--white);
-  font-family: var(--font-display); font-size: 20px;
+  font-family: var(--font-display); font-size: 18px;
+  transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
 }
 .modal-close:hover { background: var(--green); color: var(--forest); }
 
-.modal-body { flex: none; overflow: visible; padding: 44px 56px;
+.modal-body { flex: none; overflow: visible; padding: 46px 56px 50px;
   font-family: var(--font-body); font-size: 28px; line-height: 1.5; color: var(--charcoal);
 }
 
@@ -163,25 +177,34 @@
   font-weight: var(--fw-700); color: var(--forest);
 }
 
-.modal-section + .modal-section { margin-top: 34px; }
+.modal-section + .modal-section { margin-top: 22px; }
+/* Toned pros/cons sections read as soft cards, not hard blocks. */
+.modal-section[data-tone] { padding: 26px 32px; border-radius: 16px; }
+.modal-section[data-tone="pros"] { background: #F3F8EC; }
+.modal-section[data-tone="cons"] { background: #FAF3F1; }
 .modal-section-head {
   font-family: var(--font-display); font-weight: var(--fw-800);
-  font-size: 22px; letter-spacing: 0.12em; text-transform: uppercase;
+  font-size: 22px; letter-spacing: 0.1em; text-transform: uppercase;
   color: var(--forest); margin-bottom: 16px;
-  display: flex; align-items: center; gap: 12px;
+  display: flex; align-items: center; gap: 14px;
 }
 .modal-section[data-tone="pros"] .modal-section-head { color: var(--sage); }
-.modal-section[data-tone="pros"] .modal-section-head::before { content: "+"; font-size: 28px; }
-.modal-section[data-tone="cons"] .modal-section-head::before { content: "\2013"; font-size: 28px; }
+.modal-section[data-tone="cons"] .modal-section-head { color: #B23A2E; }
+.modal-section[data-tone] .modal-section-head::before {
+  display: inline-grid; place-items: center; width: 32px; height: 32px;
+  border-radius: 50%; font-size: 22px; line-height: 1; flex: none;
+}
+.modal-section[data-tone="pros"] .modal-section-head::before { content: "+"; background: rgba(140,198,62,0.20); color: var(--sage); }
+.modal-section[data-tone="cons"] .modal-section-head::before { content: "\2013"; background: rgba(178,58,46,0.14); color: #B23A2E; }
 
-.modal-list > li { position: relative; padding-left: 34px; margin-bottom: 14px; }
-.modal-list > li::before { content: ""; position: absolute; left: 0; top: 14px;
-  width: 12px; height: 12px; background: var(--green); }
-.modal-section[data-tone="cons"] .modal-list > li::before { background: var(--charcoal); }
+.modal-list > li { position: relative; padding-left: 32px; margin-bottom: 14px; }
+.modal-list > li::before { content: ""; position: absolute; left: 0; top: 15px;
+  width: 10px; height: 10px; border-radius: 50%; background: var(--green); }
+.modal-section[data-tone="cons"] .modal-list > li::before { background: #B23A2E; }
 .modal-list > li strong { color: var(--forest); font-weight: var(--fw-800); }
 
-.modal-note { margin-top: 16px; padding: 20px 26px;
-  border-left: 8px solid var(--green); background: var(--mist); }
+.modal-note { margin-top: 18px; padding: 20px 26px; border-radius: 12px;
+  border-left: 6px solid var(--green); background: var(--mist); }
 
 .modal-foot { flex: none; padding: 22px 56px; border-top: 2px solid var(--card-border-light);
   font-family: var(--font-body); font-size: var(--fs-min); font-style: italic; color: var(--text-meta-light); }
@@ -189,7 +212,8 @@
 .modal-intro { font-size: 26px; color: var(--charcoal); margin-bottom: 24px; }
 
 /* Comparison table (loan compare popout) */
-.modal-table-wrap { overflow: visible; margin-bottom: 8px; }
+.modal-table-wrap { overflow: hidden; margin-bottom: 8px; border-radius: 14px;
+  border: 1px solid var(--card-border-light); }
 .modal-table { width: 100%; border-collapse: collapse; font-family: var(--font-body); }
 .modal-table th, .modal-table td { text-align: left; padding: 16px 20px; font-size: 23px;
   border-bottom: 1px solid var(--card-border-light); }
@@ -227,8 +251,8 @@
 .compare-panel[data-side="dark"] .panel-label { color: var(--white); }
 .panel-list > li { font-family: var(--font-body); font-size: 30px; line-height: 1.4;
   padding-left: 34px; position: relative; margin-bottom: 22px; }
-.panel-list > li::before { content: ""; position: absolute; left: 0; top: 14px;
-  width: 12px; height: 12px; background: var(--green); }
+.panel-list > li::before { content: ""; position: absolute; left: 0; top: 15px;
+  width: 11px; height: 11px; border-radius: 50%; background: var(--green); }
 
 /* Statement slide (§4.5) — centered giant line on Deep Forest */
 .statement { display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -242,8 +266,8 @@
 .points { display: flex; flex-direction: column; gap: 26px; }
 .points > li { position: relative; padding-left: 40px;
   font-family: var(--font-body); font-size: var(--fs-body); line-height: 1.4; }
-.points > li::before { content: ""; position: absolute; left: 0; top: 14px;
-  width: 14px; height: 14px; background: var(--green); }
+.points > li::before { content: ""; position: absolute; left: 0; top: 15px;
+  width: 12px; height: 12px; border-radius: 50%; background: var(--green); }
 .points > li strong { font-weight: var(--fw-800); color: inherit; }
 .slide[data-bg="white"] .points > li strong, .slide[data-bg="mist"] .points > li strong { color: var(--forest); }
 
@@ -251,14 +275,14 @@
 .marker-list { display: flex; flex-direction: column; gap: 20px; }
 .marker-list > li { display: flex; gap: 22px; align-items: flex-start;
   font-family: var(--font-body); font-size: var(--fs-body-s); line-height: 1.25; }
-.marker { flex: none; width: 40px; height: 40px; display: grid; place-items: center;
+.marker { flex: none; width: 40px; height: 40px; display: grid; place-items: center; border-radius: 50%;
   font-family: var(--font-display); font-weight: var(--fw-900); font-size: 24px; color: var(--white); }
 .marker[data-tone="do"]   { background: var(--sage); }
 .marker[data-tone="dont"] { background: var(--charcoal); }
 .marker-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 26px 64px; }
 
 /* Callout bar (§4 accent device) */
-.callout { background: var(--green); color: var(--forest); padding: 22px 40px;
+.callout { background: var(--green); color: var(--forest); padding: 22px 40px; border-radius: 14px;
   font-family: var(--font-display); font-weight: var(--fw-700); font-size: 32px; }
 
 /* Contact block (opening + wrap) */
@@ -273,9 +297,76 @@
 .btn-row { display: flex; gap: 22px; flex-wrap: wrap; }
 .btn { display: inline-flex; align-items: center; min-height: 64px; padding: 18px 40px;
   font-family: var(--font-display); font-weight: var(--fw-800); font-size: 26px;
-  letter-spacing: 0.04em; text-transform: uppercase; text-decoration: none; }
+  letter-spacing: 0.04em; text-transform: uppercase; text-decoration: none; border-radius: 12px; }
 .btn--primary { background: var(--green); color: var(--forest); }
 .btn--ghost { background: transparent; color: var(--white); box-shadow: inset 0 0 0 3px rgba(255,255,255,0.6); }
 .btn--ghost.on-light { color: var(--forest); box-shadow: inset 0 0 0 3px var(--forest); }
 .btn:hover { transform: translateY(-2px); }
 .btn small { display: block; font-size: 14px; opacity: 0.8; margin-left: 12px; }
+
+/* Slide-level actions bar (pull-up graphics + PDF downloads) */
+.slide-actions {
+  flex: none;
+  display: flex; gap: 18px; flex-wrap: wrap;
+  margin-top: 30px;
+}
+.btn--sm {
+  min-height: 54px; padding: 13px 30px;
+  font-size: 19px; letter-spacing: 0.05em;
+  border: none; cursor: pointer;
+}
+.btn--sm.btn--ghost { box-shadow: inset 0 0 0 3px rgba(255,255,255,0.55); }
+.btn--sm.btn--ghost.on-light { box-shadow: inset 0 0 0 3px rgba(12,51,53,0.6); }
+.btn-ico { display: inline-flex; margin-right: 12px; font-size: 20px; line-height: 1; }
+
+/* ---------------------------------------------------------------------------
+   PER-SLIDE GRAPHICS CONTROL — subtle top-right icon → menu of this slide's
+   graphics. Viewers can open them; the presenter drives.
+   ------------------------------------------------------------------------ */
+.slide-graphics { position: absolute; top: 38px; right: 46px; z-index: 6; }
+.sg-btn {
+  width: 46px; height: 46px; display: grid; place-items: center;
+  border: none; cursor: pointer; border-radius: 13px;
+  background: rgba(255,255,255,0.10); color: rgba(255,255,255,0.66);
+  transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+.sg-btn svg { fill: currentColor; }
+.sg-btn:hover, .slide-graphics.is-open .sg-btn { background: var(--green); color: var(--forest); }
+.slide[data-bg="white"] .sg-btn, .slide[data-bg="mist"] .sg-btn {
+  background: rgba(12,51,53,0.06); color: rgba(12,51,53,0.45);
+}
+.slide[data-bg="white"] .sg-btn:hover, .slide[data-bg="mist"] .sg-btn:hover,
+.slide[data-bg="white"] .slide-graphics.is-open .sg-btn,
+.slide[data-bg="mist"] .slide-graphics.is-open .sg-btn { background: var(--green); color: var(--forest); }
+
+.sg-menu {
+  position: absolute; top: 58px; right: 0; min-width: 340px; max-width: 480px;
+  background: #fff; border-radius: 16px; padding: 12px;
+  box-shadow: 0 26px 64px rgba(8,28,29,0.30);
+}
+.sg-menu-label {
+  font-family: var(--font-display); font-weight: var(--fw-800); font-size: 15px;
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--sage);
+  padding: 8px 14px 12px;
+}
+.sg-item {
+  display: block; width: 100%; text-align: left; border: none; cursor: pointer;
+  background: transparent; border-radius: 11px; padding: 15px 16px;
+  font-family: var(--font-body); font-size: 21px; line-height: 1.25; color: var(--forest);
+  transition: background var(--dur-fast) var(--ease-out);
+}
+.sg-item + .sg-item { margin-top: 2px; }
+.sg-item:hover { background: var(--mist); }
+
+/* On-slide calculator icon (mortgage / buydown) — same footprint as .sg-btn */
+.slide-calc { position: absolute; top: 38px; right: 46px; z-index: 6; }
+
+/* ---------------------------------------------------------------------------
+   INTERACTIVE DIAGRAM SLIDE (the SVG is the slide; nodes open popouts)
+   ------------------------------------------------------------------------ */
+.web-slot { flex: 1 1 auto; min-height: 0; display: flex; }
+.web-slot svg { width: 100%; height: 100%; display: block; }
+.web-slot .pn { cursor: pointer; }
+.web-slot .pn rect { transition: filter var(--dur-fast) var(--ease-out); }
+.web-slot .pn:hover rect { filter: brightness(1.4); }
+.web-fallback { color: #fff; margin: auto; font-size: 28px; }

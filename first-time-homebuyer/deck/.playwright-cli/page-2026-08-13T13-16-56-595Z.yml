@@ -1,0 +1,118 @@
+- generic [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e4]: Presenter View
+      - generic [ref=e5]: Seth Angell · Executive VP · NMLS# 912881 · Mountain State Financial Group, LLC · NMLS# 1314257
+    - generic [ref=e6]:
+      - generic [ref=e7]:
+        - generic [ref=e8]: Slide
+        - generic [ref=e9]: 00:00
+      - generic [ref=e10]:
+        - generic [ref=e11]: Target
+        - generic [ref=e12]: 02:00
+      - generic [ref=e13]:
+        - generic [ref=e14]: Pace
+        - generic [ref=e15]: +00:00
+      - generic [ref=e16]:
+        - generic [ref=e17]: Elapsed / 38:45
+        - generic [ref=e18]: 00:00
+    - button "Show calculator" [ref=e19] [cursor=pointer]
+  - main [ref=e23]:
+    - generic [ref=e24]:
+      - heading "Myths" [level=1] [ref=e25]
+      - generic [ref=e26]: Speaker notes
+      - paragraph [ref=e28]: Don't read the cards. Ask which one they believed and open the two the room reacts to. Each opens to a quick pros/cons. In the PowerPoint these are the slides that follow.
+      - generic [ref=e29]: My notes — this slide
+      - generic [ref=e30]:
+        - textbox "Add a note for this slide…" [ref=e31]
+        - button "Save note" [ref=e33] [cursor=pointer]
+      - generic [ref=e34]: No notes yet for this slide.
+    - complementary [ref=e36]:
+      - generic [ref=e37]: Position
+      - generic [ref=e38]: 2 / 16
+      - generic [ref=e39]: Up next
+      - generic [ref=e40]:
+        - iframe [ref=e42]:
+          - generic:
+            - main "Presentation slides":
+              - generic:
+                - 'group "3 of 16: Budget"':
+                  - generic:
+                    - generic:
+                      - generic: Budget
+                      - paragraph: Renting
+                      - list:
+                        - listitem: Rent in Denver has trended up, year after year
+                        - listitem: Flexible — but every payment builds someone else's equity
+                        - listitem: The longer you wait, the more expensive buying becomes.
+                    - generic:
+                      - paragraph: Buying
+                      - list:
+                        - listitem: A fixed payment while home values generally appreciate
+                        - listitem: Equity compounds; you're paying yourself
+                        - listitem: Most people step up — the first home isn't the last
+                        - listitem: You can personalize the home to fit your style and needs.
+                  - generic: Waiting isn't neutral. It usually costs something.
+            - paragraph: Arrow keys move between slides. P opens presenter view, F fullscreen, G layout guides.
+        - generic [ref=e43]: Budget
+      - generic [ref=e44]:
+        - 'button "⛶ Fullscreen slide: Off" [ref=e45] [cursor=pointer]'
+        - 'button "Slide navigation: Shown" [ref=e46] [cursor=pointer]'
+      - generic [ref=e47]: Annotate the live slide
+      - generic [ref=e48]:
+        - 'button "Draw: Off D" [ref=e49] [cursor=pointer]':
+          - generic [ref=e50]: "Draw: Off"
+          - generic [ref=e51]: D
+        - button "Pen" [ref=e52] [cursor=pointer]: ✎
+        - button "Highlighter" [ref=e53] [cursor=pointer]: ▤
+        - button "Box" [ref=e54] [cursor=pointer]: ▭
+        - button "Text" [ref=e55] [cursor=pointer]: T
+        - button "Laser" [ref=e56] [cursor=pointer]: ◉
+        - button "Undo" [ref=e58] [cursor=pointer]: ↶
+        - button "Redo" [ref=e59] [cursor=pointer]: ↷
+      - generic [ref=e60]:
+        - button "Green" [ref=e61] [cursor=pointer]
+        - button "Yellow" [ref=e62] [cursor=pointer]
+        - button "Blue" [ref=e63] [cursor=pointer]
+        - button "Red" [ref=e64] [cursor=pointer]
+        - button "Black" [ref=e65] [cursor=pointer]
+        - button "White" [ref=e66] [cursor=pointer]
+        - button "Clear" [ref=e67] [cursor=pointer]: ⌫
+      - generic [ref=e68]:
+        - 'button "Auto-off: Off" [ref=e69] [cursor=pointer]'
+        - 'button "On-slide tools: Off" [ref=e70] [cursor=pointer]'
+      - generic [ref=e71]:
+        - generic [ref=e72]:
+          - generic [ref=e73]: Popouts (5)
+          - list [ref=e74]:
+            - listitem [ref=e75]:
+              - button "You need 20% down" [active] [ref=e76] [cursor=pointer]
+            - listitem [ref=e77]:
+              - button "FHA is only for first-time buyers" [ref=e78] [cursor=pointer]
+            - listitem [ref=e79]:
+              - button "You need perfect credit" [ref=e80] [cursor=pointer]
+            - listitem [ref=e81]:
+              - button "Renting is cheaper" [ref=e82] [cursor=pointer]
+            - listitem [ref=e83]:
+              - button "The lowest rate is the best deal" [ref=e84] [cursor=pointer]
+        - generic [ref=e85]:
+          - generic [ref=e86]: Graphics (5)
+          - list [ref=e87]:
+            - listitem [ref=e88]:
+              - button "FHA Buyers" [ref=e89] [cursor=pointer]
+            - listitem [ref=e90]:
+              - button "Down Payment Ranges" [ref=e91] [cursor=pointer]
+            - listitem [ref=e92]:
+              - button "Credit Scores" [ref=e93] [cursor=pointer]
+            - listitem [ref=e94]:
+              - button "Rent vs. Buy" [ref=e95] [cursor=pointer]
+            - listitem [ref=e96]:
+              - button "The Lowest Rate" [ref=e97] [cursor=pointer]
+      - generic [ref=e98]:
+        - button "‹ Back" [ref=e99] [cursor=pointer]
+        - button "Next ›" [ref=e100] [cursor=pointer]
+        - button "Start timer" [ref=e101] [cursor=pointer]
+      - generic [ref=e102]:
+        - text: Share the
+        - strong [ref=e103]: main window
+        - text: ", keep this one on your own screen. Arrow keys and popout buttons work from either window. Draw controls the shared slide."

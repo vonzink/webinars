@@ -40,6 +40,16 @@ const items = [
     alt: '2024 HMDA purchase-loan shares for the Denver metro area: Conventional 71.6%, FHA 18.6%, VA 8.9%, USDA 0.9%.',
   },
   {
+    id: 'moving-money', slideId: 'cash-sources', title: 'Moving Money During Your Loan',
+    src: './assets/presenter/slide-07/moving-money-dos-donts.svg',
+    alt: 'Do and Don\'t guide for moving money during a mortgage: keep every statement, season funds 60+ days, source large deposits, get a gift letter, and move money before applying; never make undocumented cash deposits, shuffle money between accounts, use unsourced funds, deposit a gift without a letter, or empty a disclosed account.',
+  },
+  {
+    id: 'process-calendar', slideId: 'process-steps', title: 'A Sample 30–45 Day Timeline',
+    src: './assets/presenter/slide-10/process-calendar.svg',
+    alt: 'A sample purchase timeline: Day 0 apply and sign disclosures, Days 1-3 Loan Estimate, Week 1 documents to processor and appraisal ordered, Week 2 appraisal received, Week 3 underwriting and conditions, Week 4 Closing Disclosure issued, then closing day sign and fund. The Closing Disclosure must be acknowledged at least three business days before signing.',
+  },
+  {
     id: 'budget-smart', slideId: 'budget-comfort', title: 'Budget Smart',
     src: './assets/presenter/slide-05/budget-smart.png',
     alt: 'Budget comparison between a comfortable housing payment and maximum mortgage qualification.',

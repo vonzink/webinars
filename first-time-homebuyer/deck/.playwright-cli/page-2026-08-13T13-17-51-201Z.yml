@@ -1,0 +1,104 @@
+- generic [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e4]: Presenter View
+      - generic [ref=e5]: Seth Angell · Executive VP · NMLS# 912881 · Mountain State Financial Group, LLC · NMLS# 1314257
+    - generic [ref=e6]:
+      - generic [ref=e7]:
+        - generic [ref=e8]: Slide
+        - generic [ref=e9]: 00:00
+      - generic [ref=e10]:
+        - generic [ref=e11]: Target
+        - generic [ref=e12]: 00:45
+      - generic [ref=e13]:
+        - generic [ref=e14]: Pace
+        - generic [ref=e15]: +00:00
+      - generic [ref=e16]:
+        - generic [ref=e17]: Elapsed / 38:45
+        - generic [ref=e18]: 00:00
+    - button "Show calculator" [ref=e107] [cursor=pointer]
+  - main [ref=e23]:
+    - generic [ref=e24]:
+      - generic [ref=e108]: The Homebuyer's Playbook
+      - heading "Buying your first home, explained." [level=1] [ref=e109]
+      - generic [ref=e26]: Speaker notes
+      - paragraph [ref=e110]: "Introduce yourself in under 20 seconds. The next 40 minutes are education, not a pitch. Two promises: I won't quote you a rate, and I won't tell you where rates are going — nobody knows."
+      - generic [ref=e29]: My notes — this slide
+      - generic [ref=e30]:
+        - textbox "Add a note for this slide…" [ref=e31]
+        - button "Save note" [ref=e33] [cursor=pointer]
+      - generic [ref=e34]: No notes yet for this slide.
+    - complementary [ref=e36]:
+      - generic [ref=e37]: Position
+      - generic [ref=e38]: 1 / 16
+      - generic [ref=e39]: Up next
+      - generic [ref=e40]:
+        - iframe [ref=e42]:
+          - generic:
+            - main "Presentation slides":
+              - generic:
+                - 'group "2 of 16: Myths"':
+                  - generic:
+                    - heading "Myths" [level=2]
+                    - paragraph: The stories that keep good buyers renting. Tap any one.
+                  - generic:
+                    - generic:
+                      - generic:
+                        - button "You need 20% down — open details":
+                          - generic: You need 20% down
+                        - button "FHA is only for first-time buyers — open details":
+                          - generic: FHA is only for first-time buyers
+                        - button "You need perfect credit — open details":
+                          - generic: You need perfect credit
+                        - button "Renting is cheaper — open details":
+                          - generic: Renting is cheaper
+                        - button "The lowest rate is the best deal — open details":
+                          - generic: The lowest rate is the best deal
+                  - generic:
+                    - generic:
+                      - img "Mountain State Financial Group"
+                    - generic:
+                      - generic:
+                        - generic: Mountain State Financial Group, LLC · NMLS# 1314257 · msfg.us
+                        - generic: Licensed in CO, IN, MI, MN, ND, SD, TX
+                      - img "Equal Housing Lender"
+            - paragraph: Arrow keys move between slides. P opens presenter view, F fullscreen, G layout guides.
+        - generic [ref=e43]: Myths
+      - generic [ref=e44]:
+        - 'button "⛶ Fullscreen slide: Off" [ref=e45] [cursor=pointer]'
+        - 'button "Slide navigation: Shown" [ref=e46] [cursor=pointer]'
+      - generic [ref=e47]: Annotate the live slide
+      - generic [ref=e48]:
+        - 'button "Draw: Off D" [ref=e49] [cursor=pointer]':
+          - generic [ref=e50]: "Draw: Off"
+          - generic [ref=e51]: D
+        - button "Pen" [ref=e52] [cursor=pointer]: ✎
+        - button "Highlighter" [ref=e53] [cursor=pointer]: ▤
+        - button "Box" [ref=e54] [cursor=pointer]: ▭
+        - button "Text" [ref=e55] [cursor=pointer]: T
+        - button "Laser" [ref=e56] [cursor=pointer]: ◉
+        - button "Undo" [ref=e58] [cursor=pointer]: ↶
+        - button "Redo" [ref=e59] [cursor=pointer]: ↷
+      - generic [ref=e60]:
+        - button "Green" [ref=e61] [cursor=pointer]
+        - button "Yellow" [ref=e62] [cursor=pointer]
+        - button "Blue" [ref=e63] [cursor=pointer]
+        - button "Red" [ref=e64] [cursor=pointer]
+        - button "Black" [ref=e65] [cursor=pointer]
+        - button "White" [ref=e66] [cursor=pointer]
+        - button "Clear" [ref=e67] [cursor=pointer]: ⌫
+      - generic [ref=e68]:
+        - 'button "Auto-off: Off" [ref=e69] [cursor=pointer]'
+        - 'button "On-slide tools: Off" [ref=e70] [cursor=pointer]'
+      - generic [ref=e72]:
+        - generic [ref=e73]: Popouts (0)
+        - list [ref=e74]:
+          - listitem [ref=e112]: No popouts on this slide
+      - generic [ref=e98]:
+        - button "‹ Back" [active] [ref=e99] [cursor=pointer]
+        - button "Next ›" [ref=e100] [cursor=pointer]
+        - button "Start timer" [ref=e101] [cursor=pointer]
+      - generic [ref=e102]:
+        - text: Share the
+        - strong [ref=e103]: main window
+        - text: ", keep this one on your own screen. Arrow keys and popout buttons work from either window. Draw controls the shared slide."

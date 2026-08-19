@@ -34,10 +34,11 @@ export function activePresenter() { return PRESENTERS[ACTIVE_PRESENTER]; }
 /* Links / assets — fill before delivery. null renders a visible placeholder. */
 export const LINKS = {
   applyUrl: 'https://www.blink.mortgage/app/signup/p/mountainstatefinancialgroupllc/sethangell',
-  bookingUrl: null,    // Schedule a consultation — pending from client
+  // Placeholder until Seth provides a real booking URL — emails him for now.
+  bookingUrl: 'mailto:seth.angell@msfg.us?subject=Homebuyer%20Webinar%20%E2%80%94%20Schedule%20a%20Consultation',
   website: 'msfg.us',
-  qrAsset: './assets/brand/qr-seth.png',
-  qrTargetUrl: null,
+  qrAsset: './assets/brand/webinar-qr.png',
+  qrTargetUrl: 'https://msfgmortgage.com/webinars/homebuyers-webinar/',
 };
 
 /* Compliance strings — rendered from data so no slide can omit them. */

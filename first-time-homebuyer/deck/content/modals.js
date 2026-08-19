@@ -130,23 +130,31 @@ export const MODALS = {
       { head: 'Cons', tone: 'cons', items: ['Geography decides — check the map', 'Income limits count everyone in the home'] },
     ],
   },
-  'prog-jumbo': {
-    eyebrow: 'Loan program', title: 'Jumbo', compliance: ['generalGuidelines'],
-    sections: [
-      { head: 'Who it fits', items: ['Loan amount above the conforming limit for the county'] },
-      { head: 'Pros', tone: 'pros', items: ['Finances higher-priced homes', 'Flexible structures available'] },
-      { head: 'Cons', tone: 'cons', items: ['Strongest credit and reserves expected', 'Rules vary a lot by investor — shop it'] },
-    ],
-  },
 
   /* ---- CASH TO CLOSE — SOURCES (Fannie rules, simplified) -------------- */
   'src-savings': {
-    eyebrow: 'Where it comes from', title: 'Savings',
+    eyebrow: 'Where it comes from', title: 'Checking & Savings',
     sections: [{ head: 'The rules', items: [
       'Must be seasoned — sitting in your account, documented',
       'No undocumented cash. Cash deposits without a trail can\'t be used',
       'Large non-payroll deposits must be sourced and explained',
     ], note: 'Move money <strong>before</strong> you apply, not during.' }],
+  },
+  'src-investment': {
+    eyebrow: 'Where it comes from', title: 'Investment Accounts',
+    sections: [{ head: 'The rules', items: [
+      'Brokerage, stocks, and mutual funds count — a recent statement documents them',
+      'To use the money you sell the assets, then show the sale and the deposit',
+      'For reserves, underwriting may count only part of the balance, not the full amount',
+    ], note: 'You don\'t have to sell to <strong>prove</strong> reserves — only to <strong>spend</strong> them.' }],
+  },
+  'src-retirement': {
+    eyebrow: 'Where it comes from', title: 'Retirement Accounts',
+    sections: [{ head: 'The rules', items: [
+      'Vested 401(k) and IRA balances count — a statement documents them',
+      'To use the funds, document the withdrawal or loan and the money landing in your account',
+      'A 401(k) loan payment can count in your DTI; a withdrawal may bring taxes or penalties',
+    ], note: 'Weigh the tax hit with your advisor <strong>before</strong> you pull from retirement.' }],
   },
   'src-gift': {
     eyebrow: 'Where it comes from', title: 'Gift Funds',
@@ -176,14 +184,6 @@ export const MODALS = {
         'A plan to refinance first depends on rates nobody controls',
       ]},
     ],
-  },
-  'src-agent': {
-    eyebrow: 'Where it comes from', title: 'Agent Credits',
-    sections: [{ head: 'The rules', items: [
-      'An agent may contribute part of their commission',
-      'Must be disclosed and appear on closing documents',
-      'Counts toward overall contribution limits',
-    ], note: 'Ask early — it can\'t be added at the closing table.' }],
   },
   'src-assistance': {
     eyebrow: 'Where it comes from', title: 'Down Payment Assistance',
@@ -261,10 +261,17 @@ export const MODALS = {
     ],
   },
   'assume-one-lender': {
-    eyebrow: 'Small assumption', title: '"They\'re all about the same, I\'ll use one lender"',
+    eyebrow: 'Small assumption', title: '"I\'ll just use my bank"',
     sections: [
-      { head: 'What actually happens', items: ['Lender fees vary by thousands at the identical rate'] },
-      { head: 'Do instead', tone: 'pros', items: ['Get more than one Loan Estimate the same day and compare fees', 'Shopping inside the window counts as one credit pull'] },
+      { head: 'What actually happens', items: [
+        'Behind the scenes, banks are often slower, more expensive, and lack mortgage expertise',
+        'A bank offers its own products; fees and pricing can run thousands higher at the same rate',
+        'Many agents won\'t take a pre-approval from a bank',
+      ]},
+      { head: 'Do instead', tone: 'pros', items: [
+        'A broker shops many lenders for you — and it counts as one credit pull',
+        'Get more than one Loan Estimate the same day and compare fees',
+      ]},
     ],
   },
   'assume-closing-costs': {
@@ -272,20 +279,6 @@ export const MODALS = {
     sections: [
       { head: 'What actually happens', items: ['You arrive short — cash to close also has the down payment, prepaids, escrows, reserves'] },
       { head: 'Do instead', tone: 'pros', items: ['Plan around Cash to Close on page one, not closing costs'] },
-    ],
-  },
-  'assume-approved': {
-    eyebrow: 'Small assumption', title: '"I\'m approved, so I\'m done"',
-    sections: [
-      { head: 'What actually happens', items: ['Lenders re-pull credit before closing — new debt can break the file'] },
-      { head: 'Do instead', tone: 'pros', items: ['Change nothing until you have keys. If something must change, call first'] },
-    ],
-  },
-  'assume-wait-20': {
-    eyebrow: 'Small assumption', title: '"I\'ll wait until I have twenty percent"',
-    sections: [
-      { head: 'What actually happens', items: ['The target rises while you save — and you pay rent the whole time'] },
-      { head: 'Do instead', tone: 'pros', items: ['Run the comparison. Waiting should be a decision, not a default'] },
     ],
   },
   'assume-builder': {

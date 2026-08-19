@@ -7,12 +7,18 @@
 import { SLIDES, TARGET_RUNTIME_SECONDS } from '../content/slides.js';
 import { MODALS } from '../content/modals.js';
 import { mediaForSlide } from '../content/presenter-media.js';
-import { activePresenter, COMPANY } from '../content/presenters.js';
+import { COMPANY } from '../content/presenters.js';
+import { fetchPresenters, findPresenter, DEFAULT_PRESENTER } from './roster.js';
+import { listNotes, addNote as apiAddNote, editNote as apiEditNote, deleteNote as apiDeleteNote } from './notes-store.js';
 
 const channel = new BroadcastChannel('msfg-deck');
-const P = activePresenter();
+const ACTIVE_LO_KEY = 'msfg-active-lo';
+let presenters = [DEFAULT_PRESENTER];
+let activeLo = DEFAULT_PRESENTER;
+let notesCache = [];        // [{ id, slide_id, body, updated_at }] for the active presenter
+let notesOffline = false;
 let index = 0, startedAt = null, slideAt = null, tick = null;
-let annOn = false, barOn = false, navHidden = false, calculatorVisible = false;
+let annOn = false, barOn = false, navHidden = false, calculatorVisible = false, buydownVisible = false;
 const $ = s => document.querySelector(s);
 const fmt = sec => { const s = Math.max(0, Math.round(sec));
   return `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`; };
@@ -85,30 +91,94 @@ function startClock() {
   if (tick) clearInterval(tick); tick = setInterval(updateClock, 500); updateClock();
 }
 
-/* ---- my notes (persisted per slide) ---- */
-const notesKey = id => `msfg-notes:${id}`;
-function loadNotes(id) { try { return JSON.parse(localStorage.getItem(notesKey(id))) || []; } catch { return []; } }
-function saveNotes(id, arr) { localStorage.setItem(notesKey(id), JSON.stringify(arr)); }
+/* ---- my notes — persisted per presenter (loan officer) via the webinar API ---- */
+async function reloadNotes() {
+  const { notes, offline } = await listNotes(activeLo.id);
+  notesCache = notes; notesOffline = offline;
+  renderNotes();
+}
+const notesForSlide = slideId => notesCache.filter(n => n.slide_id === slideId);
+
 function renderNotes() {
-  const id = SLIDES[index].id, arr = loadNotes(id), wrap = $('#p-note-list');
-  wrap.innerHTML = arr.length ? '' : '<div class="p-note-none">No notes yet for this slide.</div>';
-  arr.forEach((n, i) => {
+  const slideId = SLIDES[index].id;
+  const rows = notesForSlide(slideId);
+  const wrap = $('#p-note-list');
+  wrap.innerHTML = '';
+  if (notesOffline) {
+    const w = document.createElement('div'); w.className = 'p-note-none';
+    w.textContent = 'Offline — showing cached notes. Reconnect to save changes.';
+    wrap.appendChild(w);
+  }
+  if (!rows.length) {
+    const none = document.createElement('div'); none.className = 'p-note-none';
+    none.textContent = 'No notes yet for this slide.';
+    wrap.appendChild(none);
+    return;
+  }
+  rows.forEach(n => {
     const d = document.createElement('div'); d.className = 'p-note';
-    const t = document.createElement('div'); t.textContent = n;
+    const t = document.createElement('div'); t.textContent = n.body;
     const row = document.createElement('div'); row.className = 'row';
     const edit = document.createElement('button'); edit.textContent = 'Edit';
     const del = document.createElement('button'); del.textContent = 'Delete';
-    edit.addEventListener('click', () => {
-      const v = prompt('Edit note', n); if (v !== null) { arr[i] = v.trim(); if (!arr[i]) arr.splice(i,1); saveNotes(id, arr); renderNotes(); }
+    edit.addEventListener('click', async () => {
+      const v = prompt('Edit note', n.body); if (v === null) return;
+      const body = v.trim();
+      try {
+        if (!body) { await apiDeleteNote(n.id); notesCache = notesCache.filter(x => x.id !== n.id); }
+        else {
+          const updated = await apiEditNote(n.id, body);
+          const i = notesCache.findIndex(x => x.id === n.id); if (i >= 0) notesCache[i] = updated;
+        }
+        renderNotes();
+      } catch { alert('Could not save the edit — check your connection.'); }
     });
-    del.addEventListener('click', () => { arr.splice(i, 1); saveNotes(id, arr); renderNotes(); });
+    del.addEventListener('click', async () => {
+      try { await apiDeleteNote(n.id); notesCache = notesCache.filter(x => x.id !== n.id); renderNotes(); }
+      catch { alert('Could not delete the note — check your connection.'); }
+    });
     row.append(edit, del); d.append(t, row); wrap.appendChild(d);
   });
 }
-function addNote() {
+
+async function addNote() {
   const inp = $('#p-note-input'), v = inp.value.trim(); if (!v) return;
-  const id = SLIDES[index].id, arr = loadNotes(id); arr.push(v); saveNotes(id, arr);
-  inp.value = ''; renderNotes();
+  const slideId = SLIDES[index].id, save = $('#p-note-save');
+  save.disabled = true;
+  try {
+    const note = await apiAddNote(activeLo.id, slideId, v);
+    notesCache.push(note); inp.value = ''; renderNotes();
+  } catch { alert('Could not save the note — check your connection.'); }
+  finally { save.disabled = false; }
+}
+
+/* ---- presenter picker (roster: Seth default + presentation-ready LOs) ---- */
+function presenterToPlain(p) {
+  return { id: p.id, name: p.name, title: p.title, nmls: p.nmls, phone: p.phone,
+    email: p.email, email2: p.email2, portrait: p.portrait, scheduleUrl: p.scheduleUrl,
+    city: p.city, state: p.state };
+}
+function renderWho() {
+  $('#p-who').textContent = [activeLo.name, activeLo.title, activeLo.nmls].filter(Boolean).join(' · ');
+}
+function selectPresenter(id, { broadcast = true } = {}) {
+  activeLo = findPresenter(presenters, id);
+  try { localStorage.setItem(ACTIVE_LO_KEY, activeLo.id); } catch { /* ignore */ }
+  const sel = $('#p-presenter'); if (sel) sel.value = activeLo.id;
+  renderWho();
+  if (broadcast) channel.postMessage({ type: 'set-presenter', presenter: presenterToPlain(activeLo) });
+  reloadNotes();
+}
+async function initPresenterPicker() {
+  presenters = await fetchPresenters();
+  const sel = $('#p-presenter');
+  if (sel) {
+    sel.innerHTML = presenters
+      .map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+  }
+  let saved = DEFAULT_PRESENTER.id;
+  try { saved = localStorage.getItem(ACTIVE_LO_KEY) || saved; } catch { /* ignore */ }
+  selectPresenter(saved);
 }
 
 /* ---- annotation controls (drive the shared slide) ---- */
@@ -144,11 +214,21 @@ function renderNavState(hidden) {
 function renderCalculatorState(nextVisible) {
   calculatorVisible = Boolean(nextVisible);
   const button = $('#p-calculator');
-  const label = calculatorVisible ? 'Hide calculator' : 'Show calculator';
+  const label = calculatorVisible ? 'Hide mortgage calculator' : 'Show mortgage calculator';
   button.classList.toggle('on', calculatorVisible);
   button.setAttribute('aria-label', label);
   button.setAttribute('title', label);
   button.setAttribute('aria-pressed', String(calculatorVisible));
+}
+
+function renderBuydownState(nextVisible) {
+  buydownVisible = Boolean(nextVisible);
+  const button = $('#p-buydown');
+  const label = buydownVisible ? 'Hide buydown calculator' : 'Show 2-1 buydown calculator';
+  button.classList.toggle('on', buydownVisible);
+  button.setAttribute('aria-label', label);
+  button.setAttribute('title', label);
+  button.setAttribute('aria-pressed', String(buydownVisible));
 }
 
 function restoreNavigation() {
@@ -176,9 +256,11 @@ function isDrawShortcut(event) {
 }
 
 export function initPresenter() {
-  $('#p-who').textContent = `${P.name} · ${P.title} · ${P.nmls}`;
+  renderWho();
   $('#p-company').textContent = `${COMPANY.name} · ${COMPANY.nmls}`;
   $('#p-total').textContent = fmt(TARGET_RUNTIME_SECONDS);
+  const presenterSelect = $('#p-presenter');
+  if (presenterSelect) presenterSelect.addEventListener('change', e => selectPresenter(e.target.value));
 
   let fsOn = false;
   channel.onmessage = e => {
@@ -191,6 +273,7 @@ export function initPresenter() {
     }
     if (e.data.type === 'navstate') renderNavState(e.data.hidden);
     if (e.data.type === 'calculator-state') renderCalculatorState(e.data.visible);
+    if (e.data.type === 'buydown-state') renderBuydownState(e.data.visible);
   };
   channel.postMessage({ type: 'hello' });
 
@@ -209,6 +292,9 @@ export function initPresenter() {
   });
   $('#p-calculator').addEventListener('click', () => {
     channel.postMessage({ type: 'calculator-visibility', visible: !calculatorVisible });
+  });
+  $('#p-buydown').addEventListener('click', () => {
+    channel.postMessage({ type: 'buydown-visibility', visible: !buydownVisible });
   });
 
   $('#p-prev').addEventListener('click', () => channel.postMessage({ type: 'prev' }));
@@ -263,4 +349,5 @@ export function initPresenter() {
   window.addEventListener('beforeunload', restoreNavigation);
 
   render();
+  initPresenterPicker();   // loads roster, restores selection, syncs the deck + notes
 }
