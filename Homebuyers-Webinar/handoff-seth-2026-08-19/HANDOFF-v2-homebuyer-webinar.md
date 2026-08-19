@@ -39,8 +39,10 @@ few changes insert/remove slides.
   - `303-883-8519` → `<a href="tel:+13038838519">303-883-8519</a>`
   - `Seth.angell@msfg.us` → `<a href="mailto:Seth.angell@msfg.us">Seth.angell@msfg.us</a>`
   - `info@msfgmortgage.com` → `<a href="mailto:info@msfgmortgage.com">info@msfgmortgage.com</a>`
-- **Photo:** replace Seth's picture with a better one — **pending from Seth.** Leave current as
-  placeholder; swap when provided.
+- **Photo:** replace Seth's picture with his **new headshot** (Seth provided it — bald, light beard,
+  gray suit, light‑blue shirt, light background). Save it into the deck's assets
+  (e.g. `assets/portraits/seth-angell.jpg`), point slide 1 at it, and match the current portrait's
+  crop/aspect (face centered). It's high‑res — resize to ~800px on the long side for web.
 
 ## SLIDE 3 (Rent vs Buy → "Buying")
 Replace the equity bullet with: **"Equity builds two ways — paying down principal and appreciation."**
@@ -157,5 +159,5 @@ the loan is in process — ask how long it lasts and what happens if closing run
    uncommitted in a repo with no backup.
 
 ## Still pending from Seth
-- A better **photo** for slide 1.
 - A real **booking URL** (until then the Schedule button emails Seth).
+  (Seth's new slide‑1 headshot has been provided — use the file Seth sent.)
