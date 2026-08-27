@@ -39,3 +39,20 @@ test('runtime filtering skips an invalid hotspot and keeps valid content', () =>
   const renderable = getRenderableHotspots({ DOCUMENTS, EXPLANATIONS, HOTSPOTS: [HOTSPOTS[0], invalid] });
   assert.deepEqual(renderable.map(item => item.id), ['le.p1.interest-rate']);
 });
+
+test('malformed hotspot records are reported and skipped without hiding valid content', () => {
+  const malformed = [null, undefined, 'not-a-hotspot'];
+  const errors = validateContent({ DOCUMENTS, EXPLANATIONS, HOTSPOTS: malformed });
+  assert.deepEqual(errors, [
+    'malformed hotspot record: null',
+    'malformed hotspot record: undefined',
+    'malformed hotspot record: not-a-hotspot',
+  ]);
+
+  const renderable = getRenderableHotspots({
+    DOCUMENTS,
+    EXPLANATIONS,
+    HOTSPOTS: [HOTSPOTS[0], ...malformed],
+  });
+  assert.deepEqual(renderable.map(item => item.id), ['le.p1.interest-rate']);
+});

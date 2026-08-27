@@ -1,4 +1,5 @@
 const insideUnitInterval = value => Number.isFinite(value) && value >= 0 && value <= 1;
+const isHotspotRecord = hotspot => hotspot !== null && typeof hotspot === 'object' && !Array.isArray(hotspot);
 
 export function validateContent({ DOCUMENTS, EXPLANATIONS, HOTSPOTS, release = false }) {
   const errors = [];
@@ -7,6 +8,10 @@ export function validateContent({ DOCUMENTS, EXPLANATIONS, HOTSPOTS, release = f
   const readingKeys = new Set();
 
   for (const hotspot of HOTSPOTS) {
+    if (!isHotspotRecord(hotspot)) {
+      errors.push(`malformed hotspot record: ${String(hotspot)}`);
+      continue;
+    }
     if (hotspotIds.has(hotspot.id)) errors.push(`duplicate hotspot id: ${hotspot.id}`);
     hotspotIds.add(hotspot.id);
     const readingKey = `${hotspot.pageId}:${hotspot.readingOrder}`;
@@ -32,6 +37,7 @@ export function getRenderableHotspots({ DOCUMENTS, EXPLANATIONS, HOTSPOTS }) {
   const ids = new Set();
   const readingKeys = new Set();
   return HOTSPOTS.filter(hotspot => {
+    if (!isHotspotRecord(hotspot)) return false;
     const { x, y, width, height } = hotspot.bounds ?? {};
     const readingKey = `${hotspot.pageId}:${hotspot.readingOrder}`;
     const valid = !ids.has(hotspot.id)
