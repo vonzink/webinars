@@ -1,7 +1,7 @@
 # Decoding Loan Estimates and Closing Disclosures Webinar
 
 Date: 2026-08-12
-Status: Approved for implementation planning
+Status: Superseded for the first release by `2026-08-27-interactive-le-cd-free-exploration-design.md`
 
 ## Objective
 
