@@ -1,0 +1,21 @@
+{
+  "renderDpi": 180,
+  "documents": [
+    {
+      "id": "le",
+      "file": "loan-estimate-H24B.pdf",
+      "sha256": "243551dbce6362e616328924eaf5b1818b734883d43ec91a73c160e5da52b385",
+      "pdfPages": 4,
+      "formPages": 3,
+      "pageMap": { "1": 2, "2": 3, "3": 4 }
+    },
+    {
+      "id": "cd",
+      "file": "closing-disclosure-H25B.pdf",
+      "sha256": "606a93c8baaca815439822df5cf8c78cbb2dcf6cc4af5aa291a459c7917e4173",
+      "pdfPages": 6,
+      "formPages": 5,
+      "pageMap": { "1": 2, "2": 3, "3": 4, "4": 5, "5": 6 }
+    }
+  ]
+}
