@@ -97,9 +97,16 @@
     left: 0;
     z-index: 10;
     max-height: min(56vh, 520px);
+    max-height: min(56dvh, 520px);
     overflow: auto;
+    padding-bottom: calc(20px + env(safe-area-inset-bottom));
     border-top: 4px solid var(--msfg-green);
     background: var(--white);
+  }
+
+  .explanation-panel:has([data-selected-explanation]) .explanation-close {
+    position: sticky;
+    top: 0;
   }
 }
 

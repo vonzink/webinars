@@ -194,6 +194,34 @@ body {
   background: var(--white);
 }
 
+.page-canvas-heading {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  clip-path: inset(50%);
+}
+
+.page-canvas-heading:focus-visible {
+  top: 8px;
+  left: 8px;
+  z-index: 3;
+  width: auto;
+  height: auto;
+  margin: 0;
+  overflow: visible;
+  padding: 6px 9px;
+  clip: auto;
+  clip-path: none;
+  border: 3px solid var(--focus);
+  background: var(--white);
+  color: var(--forest-deep);
+  font-size: 0.8rem;
+  line-height: 1.3;
+}
+
 .page-image,
 .hotspot-layer {
   position: absolute;
@@ -211,6 +239,36 @@ body {
   pointer-events: none;
 }
 
+.hotspot {
+  position: absolute;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  outline: 0;
+  background: transparent;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.hotspot:hover,
+.hotspot:focus-visible,
+.hotspot[aria-pressed="true"] {
+  outline: 3px solid rgba(88, 139, 22, 0.82);
+  outline-offset: -2px;
+  background: rgba(140, 198, 62, 0.1);
+}
+
+.hotspot[aria-pressed="true"]::after {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 12px;
+  height: 12px;
+  background: var(--forest-deep);
+  clip-path: polygon(0 0, 100% 0, 100% 100%);
+  content: "";
+}
+
 .explanation-panel {
   min-width: 0;
   overflow: auto;
@@ -225,6 +283,63 @@ body {
   color: var(--forest-mid);
   font-size: 0.95rem;
   line-height: 1.65;
+}
+
+.explanation-content {
+  position: relative;
+  max-width: 36rem;
+}
+
+.explanation-close {
+  float: right;
+  min-height: 36px;
+  margin: -4px 0 14px 18px;
+  padding: 5px 10px;
+  border: 1px solid var(--forest-mid);
+  border-radius: 0;
+  background: var(--white);
+  color: var(--forest-deep);
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.explanation-close:hover {
+  border-color: var(--msfg-green);
+  background: var(--mist);
+}
+
+.explanation-kicker {
+  margin: 0 0 8px;
+  color: var(--forest-mid);
+  font-size: 0.7rem;
+  font-weight: 750;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.explanation-content h2 {
+  margin: 0 0 16px;
+  color: var(--forest-deep);
+  font-size: 1.35rem;
+  line-height: 1.2;
+}
+
+.explanation-body,
+.explanation-question {
+  margin: 0;
+  color: var(--charcoal);
+  font-size: 0.95rem;
+  line-height: 1.65;
+}
+
+.explanation-question {
+  margin-top: 18px;
+  padding: 12px 14px;
+  border-left: 4px solid var(--msfg-green);
+  background: var(--mist);
+  color: var(--forest-deep);
+  font-weight: 650;
 }
 
 .educational-disclaimer {

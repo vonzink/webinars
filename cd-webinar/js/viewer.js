@@ -1,4 +1,4 @@
-import { fitPage } from './page-geometry.js';
+import { fitPage, hotspotPercentStyle } from './page-geometry.js';
 import { DEFAULT_STATE, reduceViewerState } from './viewer-state.js';
 
 const createElement = (tagName, className, text) => {
@@ -7,6 +7,20 @@ const createElement = (tagName, className, text) => {
   if (text) element.textContent = text;
   return element;
 };
+
+export function createHotspotViewModel(hotspot, explanation) {
+  if (!explanation) throw new TypeError(`missing explanation for hotspot: ${hotspot.id}`);
+
+  const model = {
+    id: hotspot.id,
+    ariaLabel: hotspot.accessibleLabel,
+    title: explanation.title,
+    body: explanation.body,
+    style: hotspotPercentStyle(hotspot.bounds),
+  };
+  if (explanation.learnerQuestion) model.learnerQuestion = explanation.learnerQuestion;
+  return model;
+}
 
 export function initViewer({ root, documents, explanations, hotspots }) {
   if (!root) throw new TypeError('viewer root is required');
@@ -17,8 +31,8 @@ export function initViewer({ root, documents, explanations, hotspots }) {
   const viewerTools = root.querySelector('[data-viewer-tools]');
   const documentStage = root.querySelector('[data-document-stage]');
   const explanationPanel = root.querySelector('[data-explanation-panel]');
+  const viewerDocument = root.ownerDocument;
   let state = { ...DEFAULT_STATE };
-  let lastSelectedId = null;
   let animationFrame = 0;
 
   const renderNavigation = () => {
@@ -119,10 +133,25 @@ export function initViewer({ root, documents, explanations, hotspots }) {
     const page = pages.find(candidate => candidate.id === state.pageId);
     if (!page) return;
 
+    const currentCanvas = documentStage.querySelector('[data-page-canvas]');
+    if (currentCanvas?.dataset.pageId === page.id) {
+      for (const button of currentCanvas.querySelectorAll('[data-hotspot-id]')) {
+        button.setAttribute('aria-pressed', String(button.dataset.hotspotId === state.selectedHotspotId));
+      }
+      renderPageGeometry();
+      return;
+    }
+
     const canvas = createElement('div', 'page-canvas');
     canvas.dataset.pageCanvas = '';
+    canvas.dataset.pageId = page.id;
     canvas.setAttribute('role', 'group');
-    canvas.setAttribute('aria-label', `${page.document.title}, page ${page.number}`);
+
+    const pageHeading = createElement('h2', 'page-canvas-heading', `${page.document.title}, page ${page.number}`);
+    pageHeading.dataset.pageHeading = '';
+    pageHeading.id = `${page.id}-heading`;
+    pageHeading.tabIndex = -1;
+    canvas.setAttribute('aria-labelledby', pageHeading.id);
 
     const image = createElement('img', 'page-image');
     image.dataset.pageImage = '';
@@ -134,13 +163,53 @@ export function initViewer({ root, documents, explanations, hotspots }) {
 
     const hotspotLayer = createElement('div', 'hotspot-layer');
     hotspotLayer.dataset.hotspotLayer = '';
-    hotspotLayer.setAttribute('aria-hidden', 'true');
-    canvas.append(image, hotspotLayer);
+    hotspotLayer.setAttribute('aria-label', 'Interactive disclosure fields');
+
+    const pageHotspots = hotspots
+      .filter(hotspot => hotspot.pageId === page.id)
+      .sort((a, b) => a.readingOrder - b.readingOrder);
+    for (const hotspot of pageHotspots) {
+      const model = createHotspotViewModel(hotspot, explanations[hotspot.explanationId]);
+      const button = createElement('button', 'hotspot');
+      button.type = 'button';
+      button.dataset.hotspotId = model.id;
+      button.setAttribute('aria-label', model.ariaLabel);
+      button.setAttribute('aria-pressed', String(model.id === state.selectedHotspotId));
+      Object.assign(button.style, model.style);
+      button.addEventListener('click', () => dispatch({ type: 'select-hotspot', hotspotId: model.id }));
+      hotspotLayer.append(button);
+    }
+
+    canvas.append(pageHeading, image, hotspotLayer);
     documentStage.replaceChildren(canvas);
     renderPageGeometry();
   };
 
   const renderExplanation = () => {
+    const hotspot = hotspots.find(candidate => candidate.id === state.selectedHotspotId);
+    if (hotspot) {
+      const model = createHotspotViewModel(hotspot, explanations[hotspot.explanationId]);
+      const content = createElement('div', 'explanation-content');
+      content.dataset.selectedExplanation = '';
+
+      const close = createElement('button', 'explanation-close', 'Close');
+      close.type = 'button';
+      close.setAttribute('aria-label', 'Close explanation');
+      close.addEventListener('click', () => dispatch({ type: 'clear-selection' }));
+
+      const kicker = createElement('p', 'explanation-kicker', 'Selected item');
+      const title = createElement('h2', '', model.title);
+      const body = createElement('p', 'explanation-body', model.body);
+      content.append(close, kicker, title, body);
+
+      if (model.learnerQuestion) {
+        content.append(createElement('p', 'explanation-question', model.learnerQuestion));
+      }
+
+      explanationPanel.replaceChildren(content);
+      return;
+    }
+
     const instruction = createElement(
       'p',
       'explanation-instruction',
@@ -157,9 +226,26 @@ export function initViewer({ root, documents, explanations, hotspots }) {
   };
 
   const dispatch = action => {
-    if (state.selectedHotspotId) lastSelectedId = state.selectedHotspotId;
+    const selectedBefore = state.selectedHotspotId;
+    const pageChanged = action.type === 'select-page'
+      && action.pageId !== state.pageId
+      && pageIds.has(action.pageId);
     state = reduceViewerState(state, action, pageIds);
     render();
+
+    if (action.type === 'clear-selection' && selectedBefore) {
+      const selectedButton = [...root.querySelectorAll('[data-hotspot-id]')]
+        .find(button => button.dataset.hotspotId === selectedBefore);
+      selectedButton?.focus();
+    } else if (pageChanged) {
+      documentStage.querySelector('[data-page-heading]')?.focus();
+    }
+  };
+
+  const handleKeydown = event => {
+    if (event.key !== 'Escape' || !state.selectedHotspotId) return;
+    event.preventDefault();
+    dispatch({ type: 'clear-selection' });
   };
 
   const resize = () => {
@@ -169,6 +255,7 @@ export function initViewer({ root, documents, explanations, hotspots }) {
 
   const observer = new ResizeObserver(resize);
   observer.observe(documentStage);
+  viewerDocument.addEventListener('keydown', handleKeydown);
   render();
 
   return {
@@ -176,6 +263,7 @@ export function initViewer({ root, documents, explanations, hotspots }) {
     destroy: () => {
       observer.disconnect();
       cancelAnimationFrame(animationFrame);
+      viewerDocument.removeEventListener('keydown', handleKeydown);
     },
   };
 }
