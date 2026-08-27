@@ -1,5 +1,7 @@
 # Decoding Loan Estimates and Closing Disclosures Webinar Implementation Plan
 
+> **Status:** Superseded for the first release by `2026-08-27-interactive-le-cd-free-exploration.md`.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Build and publish a separate MSFG webinar that lets a presenter switch among matching LE/CD, Purchase/Rate-and-term Refinance, Lender-paid/Borrower-paid, and Conventional/FHA/VA scenarios, then explain every populated fee directly on the reconstructed disclosure.
