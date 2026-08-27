@@ -1,0 +1,143 @@
+@media (max-width: 899px) {
+  body {
+    display: block;
+  }
+
+  .webinar-header {
+    min-height: var(--header-height);
+    padding-inline: 16px;
+  }
+
+  .webinar-header img {
+    width: 150px;
+  }
+
+  .webinar-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .page-nav {
+    display: flex;
+    align-items: stretch;
+    gap: 18px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 12px 16px;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+    scrollbar-width: thin;
+  }
+
+  .page-nav-heading {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    clip-path: inset(50%);
+  }
+
+  .page-nav-group,
+  .page-nav-group + .page-nav-group {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+  }
+
+  .page-nav-label {
+    margin: 0;
+    white-space: nowrap;
+  }
+
+  .page-nav-buttons {
+    display: flex;
+    gap: 3px;
+  }
+
+  .page-button {
+    width: auto;
+    min-width: 76px;
+    border-bottom: 3px solid transparent;
+    border-left: 0;
+    white-space: nowrap;
+  }
+
+  .page-button[aria-current="page"] {
+    border-bottom-color: var(--msfg-green);
+    border-left-color: transparent;
+  }
+
+  .page-button-document {
+    display: none;
+  }
+
+  .document-region {
+    min-height: min(760px, 74vh);
+  }
+
+  .document-stage {
+    min-height: min(700px, 68vh);
+    padding: 16px;
+  }
+
+  .explanation-panel {
+    padding: 20px 18px;
+    border-top: 1px solid var(--line);
+    border-left: 0;
+  }
+
+  .explanation-panel:has([data-selected-explanation]) {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 10;
+    max-height: min(56vh, 520px);
+    overflow: auto;
+    border-top: 4px solid var(--msfg-green);
+    background: var(--white);
+  }
+}
+
+@media (max-width: 520px) {
+  .webinar-header {
+    gap: 12px;
+  }
+
+  .webinar-header img {
+    width: 118px;
+  }
+
+  .webinar-header h1 {
+    font-size: 1rem;
+  }
+
+  .eyebrow {
+    font-size: 0.58rem;
+  }
+
+  .viewer-tools {
+    padding-inline: 12px;
+  }
+
+  .viewer-tools-label {
+    display: none;
+  }
+
+  .viewer-tool {
+    flex: 1 1 auto;
+    padding-inline: 7px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+  }
+}

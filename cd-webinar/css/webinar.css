@@ -1,0 +1,238 @@
+body {
+  display: grid;
+  grid-template-rows: var(--header-height) minmax(0, 1fr) auto;
+  background: var(--mist);
+}
+
+.webinar-header {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  min-width: 0;
+  padding: 10px 24px;
+  border-bottom: 1px solid var(--line);
+  background: var(--white);
+}
+
+.webinar-header img {
+  width: 196px;
+  height: auto;
+  flex: 0 0 auto;
+}
+
+.webinar-header h1 {
+  margin: 0;
+  color: var(--forest-deep);
+  font-size: clamp(1.15rem, 1.8vw, 1.55rem);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.12;
+}
+
+.eyebrow {
+  margin: 0 0 2px;
+  color: var(--forest-mid);
+  font-size: 0.68rem;
+  font-weight: 750;
+  letter-spacing: 0.15em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.webinar-layout {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr) 340px;
+  min-height: 0;
+}
+
+.page-nav {
+  min-width: 0;
+  overflow: auto;
+  padding: 24px 16px 30px;
+  border-right: 1px solid var(--line);
+  background: var(--white);
+}
+
+.page-nav-heading {
+  margin: 0 8px 22px;
+  color: var(--forest-deep);
+  font-size: 0.82rem;
+  font-weight: 750;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.page-nav-group + .page-nav-group {
+  margin-top: 28px;
+}
+
+.page-nav-label {
+  margin: 0 8px 8px;
+  color: var(--forest-mid);
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.page-nav-buttons {
+  display: grid;
+  gap: 3px;
+}
+
+.page-button {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-height: 42px;
+  padding: 9px 10px 9px 12px;
+  border: 0;
+  border-left: 4px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+}
+
+.page-button:hover {
+  background: var(--mist);
+  color: var(--forest-deep);
+}
+
+.page-button[aria-current="page"] {
+  border-left-color: var(--msfg-green);
+  background: var(--mist);
+  color: var(--forest-deep);
+  font-weight: 750;
+}
+
+.page-button-document {
+  color: var(--forest-mid);
+  font-size: 0.68rem;
+  font-weight: 750;
+  letter-spacing: 0.1em;
+}
+
+.document-region {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  min-width: 0;
+  min-height: 0;
+  background: var(--mist);
+}
+
+.viewer-tools {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  min-height: 48px;
+  padding: 6px 18px;
+  border-bottom: 1px solid var(--line);
+  background: var(--white);
+}
+
+.viewer-tools-label {
+  margin-right: auto;
+  color: var(--forest-mid);
+  font-size: 0.7rem;
+  font-weight: 750;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.viewer-tool {
+  min-height: 34px;
+  padding: 5px 10px;
+  border: 1px solid var(--line);
+  border-radius: 0;
+  background: var(--white);
+  color: var(--forest-deep);
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 650;
+}
+
+.viewer-tool:hover:not(:disabled),
+.viewer-tool[aria-pressed="true"] {
+  border-color: var(--msfg-green);
+  background: var(--mist);
+}
+
+.viewer-tool:disabled {
+  cursor: not-allowed;
+  opacity: 0.42;
+}
+
+.viewer-zoom {
+  min-width: 3.5rem;
+  color: var(--forest-mid);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.document-stage {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  min-width: 0;
+  min-height: 480px;
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 24px;
+  background: var(--mist);
+}
+
+.page-canvas {
+  position: relative;
+  flex: 0 0 auto;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: var(--white);
+}
+
+.page-image,
+.hotspot-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.page-image {
+  object-fit: fill;
+  user-select: none;
+}
+
+.hotspot-layer {
+  pointer-events: none;
+}
+
+.explanation-panel {
+  min-width: 0;
+  overflow: auto;
+  padding: 30px 28px;
+  border-left: 1px solid var(--line);
+  background: var(--white);
+}
+
+.explanation-instruction {
+  max-width: 28ch;
+  margin: 0;
+  color: var(--forest-mid);
+  font-size: 0.95rem;
+  line-height: 1.65;
+}
+
+.educational-disclaimer {
+  margin: 0;
+  padding: 9px 24px 10px;
+  border-top: 1px solid var(--line);
+  background: var(--forest-deep);
+  color: var(--white);
+  font-size: 0.72rem;
+  line-height: 1.35;
+  text-align: center;
+}
