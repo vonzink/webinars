@@ -22,59 +22,76 @@ export function initViewer({ root, documents, explanations, hotspots }) {
   let animationFrame = 0;
 
   const renderNavigation = () => {
-    const heading = createElement('h2', 'page-nav-heading', 'Disclosure pages');
-    pageNav.replaceChildren(heading);
+    if (!pageNav.querySelector('[data-page-button]')) {
+      const heading = createElement('h2', 'page-nav-heading', 'Disclosure pages');
+      pageNav.append(heading);
 
-    for (const document of documents) {
-      const group = createElement('section', 'page-nav-group');
-      group.setAttribute('aria-labelledby', `${document.id}-page-group`);
+      for (const document of documents) {
+        const group = createElement('section', 'page-nav-group');
+        group.setAttribute('aria-labelledby', `${document.id}-page-group`);
 
-      const label = createElement('h3', 'page-nav-label', document.title);
-      label.id = `${document.id}-page-group`;
-      group.append(label);
+        const label = createElement('h3', 'page-nav-label', document.title);
+        label.id = `${document.id}-page-group`;
+        group.append(label);
 
-      const buttons = createElement('div', 'page-nav-buttons');
-      for (const page of document.pages) {
-        const button = createElement('button', 'page-button');
-        button.type = 'button';
-        button.dataset.pageButton = '';
-        button.dataset.pageId = page.id;
-        button.setAttribute('aria-label', `${document.title}, page ${page.number} of ${document.pages.length}`);
+        const buttons = createElement('div', 'page-nav-buttons');
+        for (const page of document.pages) {
+          const button = createElement('button', 'page-button');
+          button.type = 'button';
+          button.dataset.pageButton = '';
+          button.dataset.pageId = page.id;
+          button.setAttribute('aria-label', `${document.title}, page ${page.number} of ${document.pages.length}`);
 
-        const pageLabel = createElement('span', 'page-button-label', `Page ${page.number}`);
-        const shortLabel = createElement('span', 'page-button-document', document.shortLabel);
-        shortLabel.setAttribute('aria-hidden', 'true');
-        button.append(pageLabel, shortLabel);
-
-        if (page.id === state.pageId) button.setAttribute('aria-current', 'page');
-        button.addEventListener('click', () => dispatch({ type: 'select-page', pageId: page.id }));
-        buttons.append(button);
+          const pageLabel = createElement('span', 'page-button-label', `Page ${page.number}`);
+          const shortLabel = createElement('span', 'page-button-document', document.shortLabel);
+          shortLabel.setAttribute('aria-hidden', 'true');
+          button.append(pageLabel, shortLabel);
+          button.addEventListener('click', () => dispatch({ type: 'select-page', pageId: page.id }));
+          buttons.append(button);
+        }
+        group.append(buttons);
+        pageNav.append(group);
       }
-      group.append(buttons);
-      pageNav.append(group);
+    }
+
+    for (const button of pageNav.querySelectorAll('[data-page-button]')) {
+      if (button.dataset.pageId === state.pageId) button.setAttribute('aria-current', 'page');
+      else button.removeAttribute('aria-current');
     }
   };
 
   const renderTools = () => {
-    const label = createElement('span', 'viewer-tools-label', 'View');
     const actions = [
       ['fit', 'Fit'],
       ['zoom-out', 'Zoom out'],
       ['zoom-in', 'Zoom in'],
     ];
-    const controls = actions.map(([action, text]) => {
-      const button = createElement('button', 'viewer-tool', text);
-      button.type = 'button';
-      button.dataset.action = action;
+    if (!viewerTools.querySelector('[data-action]')) {
+      const label = createElement('span', 'viewer-tools-label', 'View');
+      const controls = actions.map(([action, text]) => {
+        const button = createElement('button', 'viewer-tool', text);
+        button.type = 'button';
+        button.dataset.action = action;
+        button.addEventListener('click', () => {
+          if (button.getAttribute('aria-disabled') === 'true') return;
+          dispatch({ type: action });
+        });
+        return button;
+      });
+      const zoom = createElement('output', 'viewer-zoom');
+      zoom.setAttribute('aria-label', 'Current zoom');
+      viewerTools.append(label, ...controls, zoom);
+    }
+
+    for (const [action] of actions) {
+      const button = viewerTools.querySelector(`[data-action="${action}"]`);
       button.setAttribute('aria-pressed', String(action === 'fit' && state.zoom === 1));
-      if (action === 'zoom-out') button.disabled = state.zoom === 1;
-      if (action === 'zoom-in') button.disabled = state.zoom === 2;
-      button.addEventListener('click', () => dispatch({ type: action }));
-      return button;
-    });
-    const zoom = createElement('output', 'viewer-zoom', `${Math.round(state.zoom * 100)}%`);
-    zoom.setAttribute('aria-label', 'Current zoom');
-    viewerTools.replaceChildren(label, ...controls, zoom);
+      button.setAttribute('aria-disabled', String(
+        (action === 'zoom-out' && state.zoom === 1)
+        || (action === 'zoom-in' && state.zoom === 2),
+      ));
+    }
+    viewerTools.querySelector('.viewer-zoom').textContent = `${Math.round(state.zoom * 100)}%`;
   };
 
   const renderPageGeometry = () => {

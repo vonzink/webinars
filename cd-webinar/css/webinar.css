@@ -154,13 +154,13 @@ body {
   font-weight: 650;
 }
 
-.viewer-tool:hover:not(:disabled),
+.viewer-tool:hover:not([aria-disabled="true"]),
 .viewer-tool[aria-pressed="true"] {
   border-color: var(--msfg-green);
   background: var(--mist);
 }
 
-.viewer-tool:disabled {
+.viewer-tool[aria-disabled="true"] {
   cursor: not-allowed;
   opacity: 0.42;
 }
@@ -176,7 +176,7 @@ body {
 .document-stage {
   display: flex;
   align-items: flex-start;
-  justify-content: center;
+  justify-content: flex-start;
   min-width: 0;
   min-height: 480px;
   overflow: auto;
@@ -188,6 +188,7 @@ body {
 .page-canvas {
   position: relative;
   flex: 0 0 auto;
+  margin-inline: auto;
   overflow: hidden;
   border: 1px solid var(--line);
   background: var(--white);
