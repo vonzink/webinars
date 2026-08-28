@@ -1,6 +1,24 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { EXPLANATIONS, HOTSPOTS } from '../content/index.js';
+import { DOCUMENTS, EXPLANATIONS, HOTSPOTS } from '../content/index.js';
+import { validateContent } from '../js/content-validation.js';
+
+const assertReviewLifecycle = explanations => {
+  for (const [id, explanation] of Object.entries(explanations)) {
+    const review = explanation.review ?? {};
+    if (review.status === 'pending-msfg') {
+      assert.equal(review.reviewer, '', `${id}: pending reviewer`);
+      assert.equal(review.reviewedOn, '', `${id}: pending review date`);
+      continue;
+    }
+    if (review.status === 'approved') {
+      assert.match(review.reviewer, /\S+\s+\S+/, `${id}: approved reviewer`);
+      assert.match(review.reviewedOn, /^\d{4}-\d{2}-\d{2}$/, `${id}: approved review date`);
+      continue;
+    }
+    assert.fail(`${id}: unsupported review status: ${String(review.status)}`);
+  }
+};
 
 const EXPECTED_TARGETS = {
   'le-1': [
@@ -76,7 +94,32 @@ test('every learner paragraph is concise and sourced', () => {
     const wordCount = explanation.body.trim().split(/\s+/).length;
     assert.ok(wordCount >= 45 && wordCount <= 110, `${explanation.id}: ${wordCount} words`);
     assert.ok(explanation.source?.reference);
-    assert.equal(explanation.review?.status, 'pending-msfg');
+  }
+  assertReviewLifecycle(EXPLANATIONS);
+});
+
+test('review lifecycle allows fully approved content while release still rejects the pending corpus', () => {
+  const approved = Object.fromEntries(Object.entries(EXPLANATIONS).map(([id, explanation]) => [id, {
+    ...explanation,
+    review: { status: 'approved', reviewer: 'Morgan Lee', reviewedOn: '2026-08-27' },
+  }]));
+
+  assertReviewLifecycle(approved);
+  assert.deepEqual(validateContent({ DOCUMENTS, EXPLANATIONS: approved, HOTSPOTS, release: true }), []);
+  assert.ok(validateContent({ DOCUMENTS, EXPLANATIONS, HOTSPOTS, release: true })
+    .some(error => error.includes('review status must be approved')));
+
+  for (const [label, review] of [
+    ['unsupported status', { status: 'reviewed', reviewer: '', reviewedOn: '' }],
+    ['pending reviewer', { status: 'pending-msfg', reviewer: 'Morgan Lee', reviewedOn: '' }],
+    ['pending date', { status: 'pending-msfg', reviewer: '', reviewedOn: '2026-08-27' }],
+    ['approved reviewer', { status: 'approved', reviewer: 'Morgan', reviewedOn: '2026-08-27' }],
+    ['approved date', { status: 'approved', reviewer: 'Morgan Lee', reviewedOn: 'August 27, 2026' }],
+  ]) {
+    assert.throws(() => assertReviewLifecycle({
+      ...approved,
+      'date-issued': { ...approved['date-issued'], review },
+    }), assert.AssertionError, label);
   }
 });
 
