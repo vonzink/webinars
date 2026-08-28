@@ -35,12 +35,16 @@ test('release validation requires recorded compliance approval', () => {
 });
 
 test('runtime filtering skips an invalid hotspot and keeps valid content', () => {
-  const invalid = { ...HOTSPOTS[0], id: 'invalid', bounds: { x: -1, y: 0, width: 1, height: 1 } };
-  const renderable = getRenderableHotspots({ DOCUMENTS, EXPLANATIONS, HOTSPOTS: [HOTSPOTS[0], invalid] });
+  const interestRate = HOTSPOTS.find(item => item.id === 'le.p1.interest-rate');
+  assert.ok(interestRate);
+  const invalid = { ...interestRate, id: 'invalid', bounds: { x: -1, y: 0, width: 1, height: 1 } };
+  const renderable = getRenderableHotspots({ DOCUMENTS, EXPLANATIONS, HOTSPOTS: [interestRate, invalid] });
   assert.deepEqual(renderable.map(item => item.id), ['le.p1.interest-rate']);
 });
 
 test('malformed hotspot records are reported and skipped without hiding valid content', () => {
+  const interestRate = HOTSPOTS.find(item => item.id === 'le.p1.interest-rate');
+  assert.ok(interestRate);
   const malformed = [null, undefined, 'not-a-hotspot'];
   const errors = validateContent({ DOCUMENTS, EXPLANATIONS, HOTSPOTS: malformed });
   assert.deepEqual(errors, [
@@ -52,7 +56,7 @@ test('malformed hotspot records are reported and skipped without hiding valid co
   const renderable = getRenderableHotspots({
     DOCUMENTS,
     EXPLANATIONS,
-    HOTSPOTS: [HOTSPOTS[0], ...malformed],
+    HOTSPOTS: [interestRate, ...malformed],
   });
   assert.deepEqual(renderable.map(item => item.id), ['le.p1.interest-rate']);
 });
