@@ -28,13 +28,21 @@ Re-render the eight image assets only when the pinned source PDFs are intentiona
 cd-webinar/scripts/render-disclosures.sh
 ```
 
-The release-only human-review check is intentionally not a routine development command. After every explanation has an actual recorded approval, run `LE_CD_RELEASE=1 node --test cd-webinar/tests/release-readiness.test.mjs`. Until then it must fail with `review status must be approved`; that failure is the compliance checkpoint, not a defect to bypass.
+Print the deterministic digest for the exact review corpus with:
+
+```bash
+node cd-webinar/scripts/reviewed-corpus.mjs --print-digest
+```
+
+The digest covers the document catalog, every explanation’s reviewed content, every hotspot’s semantics and normalized geometry, the complete source manifest, SHA-256 hashes of both source PDFs, the shell logo, and all eight rendered images. It deliberately excludes approval metadata so a reviewer can approve the digest and then record that evidence without changing the reviewed bytes.
+
+The release-only human-review check is intentionally not a routine development command. After every explanation has an actual recorded approval and `CONTENT-APPROVAL.json` contains the same exact digest with the genuine reviewer and review date, run `LE_CD_RELEASE=1 node --test cd-webinar/tests/release-readiness.test.mjs`. Until then it must fail only on missing real approval and digest evidence; that failure is the compliance checkpoint, not a defect to bypass.
 
 ## Viewer behavior
 
 The viewer begins on LE page 1, but pages are independently selectable; no lesson order, previous/next sequence, or progress is implied. Choose an LE or CD page, then click or tap a highlighted field to open its explanation. The Fit, Zoom out, and Zoom in controls use 100%, 125%, 150%, and 200% views.
 
-Each hotspot is a native button: Tab reaches it, Enter or Space activates it, and Escape closes an open explanation and restores focus to the selected field. Changing the page clears the selection and moves focus to the selected page heading. Hotspot outlines are not always visible; they appear for hover, keyboard focus, or selection. On narrow screens, a selected explanation is a bottom sheet with a Close control. If a page image cannot load, the viewer hides every hotspot on that page, announces that the page is temporarily unavailable, and leaves page navigation usable.
+Each hotspot is a native button: Tab reaches it, Enter or Space activates it, and Escape closes an open explanation and restores focus to the selected field. Changing the page clears the selection and moves focus to the selected page heading. Hotspot outlines are not always visible; they appear for hover, keyboard focus, or selection. On narrow screens, a non-overlapping horizontal field list exposes the same semantic IDs as touch targets at least 44 × 44 CSS pixels; choosing one selects its aligned image hotspot and opens the viewport-safe bottom sheet. If a page image cannot load, the viewer hides every hotspot on that page, announces that the page is temporarily unavailable, and leaves page navigation usable.
 
 ## Source and image contract
 
@@ -53,7 +61,7 @@ Hotspot `bounds` are normalized fractions of the rendered image: `{ x, y, width,
 
 `content/explanations.js` is the explanation authority. Each learner `body` must be 45–110 words, explain the printed field in educational language, cite its source reference, identify the fictional-sample context where relevant, and avoid borrower-specific recommendations. Keep the page label, field label, displayed value, source reference, and hotspot location consistent with the rendered image.
 
-New or changed explanations must keep `review` at `pending-msfg` with empty reviewer and date until an MSFG mortgage/compliance reviewer actually approves them. Do not use a placeholder name or date. After a real decision, change only the approved records to `status: 'approved'` with the reviewer’s real full name and ISO `YYYY-MM-DD` review date, update [CONTENT-REVIEW.md](./CONTENT-REVIEW.md), rerun the development and browser checks, and resubmit any changed records for review.
+New or changed explanations must keep `review` at `pending-msfg` with empty reviewer and date until an MSFG mortgage/compliance reviewer actually approves them. Do not use a placeholder name or date. After a real decision, change only the approved records to `status: 'approved'` with the reviewer’s real full name and real ISO `YYYY-MM-DD` calendar date. Then rerun all gates, print the resulting digest, and record that same digest plus the genuine reviewer/date in both [CONTENT-APPROVAL.json](./CONTENT-APPROVAL.json) and [CONTENT-REVIEW.md](./CONTENT-REVIEW.md). Any later copy, hotspot, manifest, catalog, or image change invalidates the recorded digest and requires renewed review.
 
 The complete handoff checklist and the only signoff table are in [CONTENT-REVIEW.md](./CONTENT-REVIEW.md). Provide it, the local URL, and the eight-page inventory below to the reviewer.
 
@@ -82,6 +90,7 @@ The automated completeness suite contains the identifier-level inventory (232 ho
 | `content/documents.js` | The two document records, eight page records, image dimensions, and PDF-page mappings. |
 | `content/hotspots/le.js`, `content/hotspots/cd.js` | Page-specific teaching fields, normalized bounds, reading order, displayed values, accessible labels, and explanation links. |
 | `content/explanations.js` | Explanation copy, citations, and per-record human-review status. |
+| `CONTENT-APPROVAL.json` | Pending or genuine reviewer/date evidence bound to one exact reviewed-corpus SHA-256 digest. |
 | `content/index.js` | Public composition of documents, explanations, and both hotspot sets. |
 | `js/content-validation.js` | Validates page, hotspot, copy-link, accessibility, bounds, and release-review contracts; filters invalid runtime hotspots. |
 | `js/viewer-state.js` | Page selection, selection clearing, and fixed zoom-state transitions. |
@@ -90,6 +99,7 @@ The automated completeness suite contains the identifier-level inventory (232 ho
 | `js/app.js` | Validates preview content and initializes the viewer only when it is renderable. |
 | `css/` | Tokens, base styling, desktop layout, responsive bottom sheet, and reduced-motion behavior. |
 | `references/` and `scripts/render-disclosures.sh` | Hash-pinned PDF sources, manifest, and reproducible image rendering. |
-| `tests/` | Node contracts, browser matrix, and the explicitly opt-in release-readiness gate. |
+| `scripts/reviewed-corpus.mjs` | Canonical reviewed-corpus serialization, digest generation, real-date validation, and release evidence checks. |
+| `tests/` | Node contracts, independent 232-row fidelity fixture, byte-identical render check, 160-case browser matrix, and explicitly opt-in release-readiness gate. |
 
 Before a handoff, run the ordinary Node suite, browser audit, and `git diff --check -- cd-webinar`; confirm the ordinary suite passes while the explicit release test remains intentionally failing until a real MSFG signoff exists.
