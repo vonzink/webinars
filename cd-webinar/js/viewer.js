@@ -101,7 +101,7 @@ export function initViewer({ root, documents, explanations, hotspots }) {
       const button = viewerTools.querySelector(`[data-action="${action}"]`);
       button.setAttribute('aria-pressed', String(action === 'fit' && state.zoom === 1));
       button.setAttribute('aria-disabled', String(
-        (action === 'zoom-out' && state.zoom === 1)
+        ((action === 'fit' || action === 'zoom-out') && state.zoom === 1)
         || (action === 'zoom-in' && state.zoom === 2),
       ));
     }
@@ -155,7 +155,6 @@ export function initViewer({ root, documents, explanations, hotspots }) {
 
     const image = createElement('img', 'page-image');
     image.dataset.pageImage = '';
-    image.src = page.image;
     image.alt = page.alt;
     image.width = page.width;
     image.height = page.height;
@@ -180,9 +179,24 @@ export function initViewer({ root, documents, explanations, hotspots }) {
       hotspotLayer.append(button);
     }
 
+    image.addEventListener('error', () => {
+      hotspotLayer.hidden = true;
+      if (!canvas.isConnected || documentStage.querySelector('[data-page-canvas]') !== canvas) return;
+
+      const unavailable = createElement(
+        'p',
+        'page-unavailable',
+        'This disclosure page is temporarily unavailable.',
+      );
+      unavailable.dataset.pageUnavailable = '';
+      unavailable.setAttribute('role', 'status');
+      documentStage.replaceChildren(unavailable);
+    }, { once: true });
+
     canvas.append(pageHeading, image, hotspotLayer);
     documentStage.replaceChildren(canvas);
     renderPageGeometry();
+    image.src = page.image;
   };
 
   const renderExplanation = () => {
@@ -249,8 +263,11 @@ export function initViewer({ root, documents, explanations, hotspots }) {
   };
 
   const resize = () => {
-    cancelAnimationFrame(animationFrame);
-    animationFrame = requestAnimationFrame(renderPageGeometry);
+    if (animationFrame) return;
+    animationFrame = requestAnimationFrame(() => {
+      animationFrame = 0;
+      renderPageGeometry();
+    });
   };
 
   const observer = new ResizeObserver(resize);
