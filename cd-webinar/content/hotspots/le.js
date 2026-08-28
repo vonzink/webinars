@@ -23,7 +23,7 @@ const LE_PAGE_1 = pageHotspots(1, [
   ['purpose', [0.4902, 0.1187, 0.4412, 0.0177], 'Purpose', 'Purchase'],
   ['product', [0.4902, 0.1326, 0.4412, 0.0177], 'Product', 'Fixed Rate'],
   ['loan-type', [0.4902, 0.1477, 0.4412, 0.0177], 'Loan Type', 'Conventional'],
-  ['loan-id', [0.4902, 0.1629, 0.4412, 0.0177], 'Loan ID', '1234567891330172608'],
+  ['loan-id', [0.4902, 0.1629, 0.4412, 0.0177], 'Loan ID', '123456789'],
   ['rate-lock', [0.4902, 0.1780, 0.4412, 0.0189], 'Rate Lock', 'Yes, until 4/16/2013 at 5:00 p.m. EDT'],
   ['loan-amount', [0.0784, 0.2816, 0.4412, 0.0253], 'Loan Amount', '$162,000'],
   ['interest-rate', [0.0784, 0.3131, 0.4412, 0.0253], 'Interest Rate', '3.875%'],

@@ -1,11 +1,23 @@
 const GROUPS = Object.freeze({
-  'le-general': Object.freeze({
-    why: 'It appears in the Loan Estimate’s identifying information so the disclosure can be matched to the application, people, property, and proposed transaction.',
-    reference: 'H24B pages 1–3; CFPB Guide to Forms v2.1 §§ 2.2.1 and 2.4.1; 12 CFR 1026.37(a), (k)',
+  'form-general-information': Object.freeze({
+    why: 'It appears in General Information near the top of both forms so the disclosure can be matched to the property and proposed or final transaction.',
+    reference: 'H24B page 1; H25B page 1; CFPB Guide to Forms v2.1 §§ 2.2.1 and 3.2.1; 12 CFR 1026.37(a)(4), (6)–(7), 1026.38(a)(3)(i), (vi)–(vii)',
   }),
-  'cd-general': Object.freeze({
-    why: 'It appears in the Closing Disclosure’s identifying information so the final form can be matched to the loan, property, parties, and closing transaction.',
-    reference: 'H25B pages 1–5; CFPB Guide to Forms v2.1 §§ 3.2.1 and 3.6.3; 12 CFR 1026.38(a), (r)',
+  'le-general-information': Object.freeze({
+    why: 'It appears in the Loan Estimate’s General Information so the disclosure can be matched to the people applying for the proposed mortgage.',
+    reference: 'H24B page 1; CFPB Guide to Forms v2.1 § 2.2.1; 12 CFR 1026.37(a)(5)',
+  }),
+  'cd-general-information': Object.freeze({
+    why: 'It appears in the Closing Disclosure’s General Information so the final form can be matched to the parties, closing file, and transaction.',
+    reference: 'H25B page 1; CFPB Guide to Forms v2.1 § 3.2.1; 12 CFR 1026.38(a)(3)(ii)–(v), (4), (5)(vi)',
+  }),
+  'loan-information': Object.freeze({
+    why: 'It appears in General Information at the top of the form so the borrower can identify the mortgage being estimated or finalized before reviewing its detailed terms.',
+    reference: 'H24B page 1; H25B page 1; CFPB Guide to Forms v2.1 §§ 2.2.1 and 3.2.1; 12 CFR 1026.37(a)(8)–(12), 1026.38(a)(5)(i)–(v)',
+  }),
+  'le-rate-lock': Object.freeze({
+    why: 'It appears in the Loan Estimate’s General Information to state whether the quoted rate is locked and when the lock and estimated-cost availability expire.',
+    reference: 'H24B page 1; CFPB Guide to Forms v2.1 § 2.2.1; 12 CFR 1026.37(a)(13)',
   }),
   'loan-terms': Object.freeze({
     why: 'It appears in the Loan Terms section so a borrower can identify a key feature of the proposed or final legal obligation and compare the two forms.',
@@ -15,9 +27,17 @@ const GROUPS = Object.freeze({
     why: 'It appears in the Projected Payments table to show how scheduled payment components and selected property costs contribute to the monthly housing amount over time.',
     reference: 'H24B page 1; H25B page 1; CFPB Guide to Forms v2.1 §§ 2.2.3 and 3.2.3; 12 CFR 1026.37(c), 1026.38(c)',
   }),
+  'le-costs-at-closing': Object.freeze({
+    why: 'It appears in the Loan Estimate’s Costs at Closing summary so the borrower can see the estimated total and follow the reference to detailed costs on page 2.',
+    reference: 'H24B page 1; CFPB Guide to Forms v2.1 § 2.2.4; 12 CFR 1026.37(d)',
+  }),
+  'cd-costs-at-closing': Object.freeze({
+    why: 'It appears in the Closing Disclosure’s Costs at Closing summary so the borrower can see the final total and follow the reference to detailed costs on page 2.',
+    reference: 'H25B page 1; CFPB Guide to Forms v2.1 § 3.2.4; 12 CFR 1026.38(d)',
+  }),
   'cost-item': Object.freeze({
     why: 'It appears in Closing Cost Details to identify a charge, credit, service, or government amount that contributes to the estimated or final cost of the transaction.',
-    reference: 'H24B page 2; H25B page 2; CFPB Guide to Forms v2.1 §§ 2.3.1–2.3.2 and 3.3.1–3.3.2; 12 CFR 1026.37(f)–(g), 1026.38(f)–(g)',
+    reference: 'H24B page 2; H25B page 2; CFPB Guide to Forms v2.1 §§ 2.3.1–2.3.2 and 3.3.1–3.3.2; 12 CFR 1026.37(f)–(g), 1026.38(f)–(h)',
   }),
   'le-cost-total': Object.freeze({
     why: 'It appears as a Loan Estimate subtotal so the borrower can see how estimated charges are grouped before they flow into total closing costs and estimated cash to close.',
@@ -39,17 +59,49 @@ const GROUPS = Object.freeze({
     why: 'It appears in the Closing Disclosure’s Calculating Cash to Close table to compare the latest estimate with final figures and show how the closing amount is derived.',
     reference: 'H25B page 3; CFPB Guide to Forms v2.1 § 3.4.1; 12 CFR 1026.38(i)',
   }),
-  comparison: Object.freeze({
-    why: 'It appears as a comparison measure so a borrower can evaluate the loan’s cost over time and distinguish this measure from the note rate or monthly payment.',
+  'le-cash-total': Object.freeze({
+    why: 'It appears in the Loan Estimate’s Costs at Closing summary and again as the total in Calculating Cash to Close so the borrower can trace the estimated amount to its calculation.',
+    reference: 'H24B pages 1–2; CFPB Guide to Forms v2.1 §§ 2.2.4 and 2.3.3; 12 CFR 1026.37(d), 1026.37(h)',
+  }),
+  'cd-cash-total': Object.freeze({
+    why: 'It appears in the Closing Disclosure’s Costs at Closing summary and again as the total in Calculating Cash to Close so the borrower can trace the final amount to its calculation.',
+    reference: 'H25B pages 1 and 3; CFPB Guide to Forms v2.1 §§ 3.2.4 and 3.4.1; 12 CFR 1026.38(d), 1026.38(i)',
+  }),
+  'le-comparison': Object.freeze({
+    why: 'It appears in the Loan Estimate’s Comparisons section so a borrower can evaluate scheduled cost and principal reduction over the first five years.',
+    reference: 'H24B page 3; CFPB Guide to Forms v2.1 § 2.4.2; 12 CFR 1026.37(l)',
+  }),
+  'shared-cost-measure': Object.freeze({
+    why: 'It appears in Loan Estimate Comparisons and Closing Disclosure Loan Calculations so a borrower can compare a defined cost measure with the note rate, payment, and other loan information.',
     reference: 'H24B page 3; H25B page 5; CFPB Guide to Forms v2.1 §§ 2.4.2 and 3.6.1; 12 CFR 1026.37(l), 1026.38(o)',
   }),
-  consideration: Object.freeze({
-    why: 'It appears among the additional loan considerations or disclosures because it describes a right, policy, condition, or risk that may matter during or after the mortgage process.',
-    reference: 'H24B page 3; H25B pages 4–5; CFPB Guide to Forms v2.1 §§ 2.4.3–2.4.4 and 3.5.1–3.6.2; 12 CFR 1026.37(m), 1026.38(m), (p)',
+  'shared-loan-disclosure': Object.freeze({
+    why: 'It appears in Loan Estimate Other Considerations and Closing Disclosure Loan Disclosures because it describes a contractual policy or consequence that may matter after closing.',
+    reference: 'H24B page 3; H25B page 4; CFPB Guide to Forms v2.1 §§ 2.4.3 and 3.5.1; 12 CFR 1026.37(m), 1026.38(m)',
   }),
-  contact: Object.freeze({
-    why: 'It appears in Contact Information so the borrower can identify and reach the organization or individual connected with the loan or real estate closing.',
+  'shared-other-disclosure': Object.freeze({
+    why: 'It appears in Loan Estimate Other Considerations and Closing Disclosure Other Disclosures because it describes a borrower right or future option tied to the mortgage process.',
+    reference: 'H24B page 3; H25B page 5; CFPB Guide to Forms v2.1 §§ 2.4.3 and 3.6.2; 12 CFR 1026.37(m), 1026.38(p)',
+  }),
+  'le-other-consideration': Object.freeze({
+    why: 'It appears in the Loan Estimate’s Other Considerations because it describes an estimated policy or requirement the borrower should understand before proceeding.',
+    reference: 'H24B page 3; CFPB Guide to Forms v2.1 § 2.4.3; 12 CFR 1026.37(m)',
+  }),
+  'cd-loan-disclosure': Object.freeze({
+    why: 'It appears in the Closing Disclosure’s Loan Disclosures because it describes a final contractual feature, payment policy, or security consequence of the mortgage.',
+    reference: 'H25B page 4; CFPB Guide to Forms v2.1 § 3.5.1; 12 CFR 1026.38(m)',
+  }),
+  'le-contact': Object.freeze({
+    why: 'It appears in Loan Estimate Contact Information so the borrower can identify and reach the individual handling the application.',
+    reference: 'H24B page 3; CFPB Guide to Forms v2.1 § 2.4.1; 12 CFR 1026.37(k)',
+  }),
+  'shared-lender-contact': Object.freeze({
+    why: 'It appears in Contact Information on both forms so the borrower can identify and reach the creditor connected with the proposed and final loan.',
     reference: 'H24B page 3; H25B page 5; CFPB Guide to Forms v2.1 §§ 2.4.1 and 3.6.3; 12 CFR 1026.37(k), 1026.38(r)',
+  }),
+  'cd-contact': Object.freeze({
+    why: 'It appears in Closing Disclosure Contact Information so the borrower can identify a participating closing professional or recognize when a role is not provided in the sample.',
+    reference: 'H25B page 5; CFPB Guide to Forms v2.1 § 3.6.3; 12 CFR 1026.38(r)',
   }),
   receipt: Object.freeze({
     why: 'It appears at the end of the form to document receipt of the disclosure without converting the signature into acceptance of the loan terms.',
@@ -84,14 +136,15 @@ const GROUPS = Object.freeze({
 const BORROWER_GUIDANCE = 'Borrowers should read the label and displayed value with the surrounding section, ask the lender or settlement professional about anything unexpected, and remember that this sample illustrates one transaction rather than a rule that every mortgage uses the same amount, provider, feature, or treatment.';
 
 const groupedItems = [
-  ['le-general', [
+  ['form-general-information', [
     ['date-issued', 'Date Issued', 'The date issued is the day the creditor delivers or places the Loan Estimate or Closing Disclosure in the mail.'],
-    ['applicants', 'Applicants', 'Applicants identifies the consumers applying for the mortgage and gives the mailing address associated with the Loan Estimate.'],
     ['property', 'Property', 'Property identifies the real estate expected to secure the mortgage, using its address or another location description when needed.'],
     ['sale-price', 'Sale Price', 'Sale price is the contract price for the real property in this purchase transaction, separate from any separately priced personal property.'],
-    ['loan-officer-contact', 'Loan Officer Contact', 'Loan officer contact identifies the individual handling the application and provides available licensing, email, and telephone information.'],
   ]],
-  ['cd-general', [
+  ['le-general-information', [
+    ['applicants', 'Applicants', 'Applicants identifies the consumers applying for the mortgage and gives the mailing address associated with the Loan Estimate.'],
+  ]],
+  ['cd-general-information', [
     ['closing-date', 'Closing Date', 'Closing date is the date the borrower becomes contractually obligated on the credit transaction, commonly called consummation.'],
     ['disbursement-date', 'Disbursement Date', 'Disbursement date is when the disclosed loan or closing funds are expected to be paid to the borrower, seller, or another party.'],
     ['settlement-agent', 'Settlement Agent', 'Settlement agent identifies the company conducting the closing and coordinating the settlement information shown on the form.'],
@@ -101,13 +154,17 @@ const groupedItems = [
     ['lender', 'Lender', 'Lender identifies the creditor extending the mortgage credit shown on the Closing Disclosure.'],
     ['mic-number', 'Mortgage Insurance Case Number', 'The mortgage insurance case number is the identifier assigned by a mortgage insurer or government insurance program when one applies.'],
   ]],
-  ['loan-terms', [
+  ['loan-information', [
     ['loan-term', 'Loan Term', 'Loan term states the scheduled length of the mortgage, such as the 30-year period printed on this fixed-rate sample.'],
     ['purpose', 'Loan Purpose', 'Purpose classifies why the mortgage credit is being obtained, such as a purchase, refinance, construction, or home-equity transaction.'],
     ['product', 'Loan Product', 'Product describes the loan’s rate structure and any feature that changes how principal or interest is paid.'],
     ['loan-type', 'Loan Type', 'Loan type identifies whether the mortgage is conventional or connected to a listed government loan program.'],
     ['loan-id', 'Loan ID', 'Loan ID is the creditor’s identifier for this mortgage application or account and helps match the disclosure to other loan records.'],
+  ]],
+  ['le-rate-lock', [
     ['rate-lock', 'Rate Lock', 'Rate lock shows whether the interest rate is locked and, when it is, the date and time the protection expires.'],
+  ]],
+  ['loan-terms', [
     ['loan-amount', 'Loan Amount', 'Loan amount is the principal the borrower is scheduled to repay, before interest and other costs of obtaining the mortgage.'],
     ['interest-rate', 'Interest Rate', 'The interest rate is the percentage used to calculate interest on the unpaid principal balance and is not the same as the annual percentage rate.'],
     ['monthly-principal-interest', 'Monthly Principal and Interest', 'Monthly principal and interest is the scheduled payment portion that reduces principal and pays interest, excluding other monthly housing costs.'],
@@ -123,7 +180,11 @@ const groupedItems = [
     ['property-taxes-property-cost', 'Property Taxes', 'Property taxes are charges imposed by a state or local taxing authority on the property and may be collected through escrow or paid directly.'],
     ['homeowners-insurance-property-cost', 'Homeowner’s Insurance Property Cost', 'Homeowner’s insurance is a property cost for coverage on the home and may be collected through escrow or paid directly.'],
     ['hoa-dues', 'Homeowner’s Association Dues', 'Homeowner’s association dues are recurring charges owed to an association and may be listed even when they are not included in escrow.'],
+  ]],
+  ['le-costs-at-closing', [
     ['estimated-closing-costs', 'Estimated Closing Costs', 'Estimated closing costs combine the Loan Estimate’s projected loan costs and other costs after subtracting any lender credits.'],
+  ]],
+  ['cd-costs-at-closing', [
     ['closing-costs', 'Closing Costs', 'Closing costs state the final disclosed loan costs and other costs after subtracting lender credits, with detailed amounts on page 2.'],
   ]],
   ['payer-column', [
@@ -165,8 +226,8 @@ const groupedItems = [
     ['hoa-processing-fee', 'HOA Processing Fee', 'An HOA processing fee is a charge for association administrative work connected with the ownership transfer or closing.'],
     ['home-inspection-fee', 'Home Inspection Fee', 'A home inspection fee pays for a property-condition inspection obtained in connection with the purchase.'],
     ['home-warranty-fee', 'Home Warranty Fee', 'A home warranty fee pays for a service contract covering specified home systems or appliances under its terms.'],
-    ['buyer-broker-commission', 'Buyer’s Broker Commission', 'The buyer’s broker commission is compensation shown for the real estate broker associated with the buyer’s side of the transaction.'],
     ['seller-broker-commission', 'Seller’s Broker Commission', 'The seller’s broker commission is compensation shown for the real estate broker associated with the seller’s side of the transaction.'],
+    ['buyer-broker-commission', 'Buyer’s Broker Commission', 'The buyer’s broker commission is compensation shown for the real estate broker associated with the buyer’s side of the transaction.'],
   ]],
   ['le-cost-total', [
     ['le-a-total', 'Estimated Origination Charges', 'Section A totals the estimated points and other charges paid to the creditor or mortgage broker for originating the loan.'],
@@ -204,6 +265,8 @@ const groupedItems = [
     ['funds-for-borrower', 'Estimated Funds for Borrower', 'This row shows estimated loan or transaction funds expected to be disbursed to the borrower.'],
     ['seller-credits', 'Estimated Seller Credits', 'This row subtracts estimated seller contributions applied toward the borrower’s costs or other disclosed amounts.'],
     ['adjustments-other-credits', 'Estimated Adjustments and Other Credits', 'This row captures other estimated additions or credits affecting the borrower’s cash requirement.'],
+  ]],
+  ['le-cash-total', [
     ['estimated-cash-to-close', 'Estimated Cash to Close', 'Estimated cash to close is the projected amount the borrower will need to bring to or receive from closing after the listed components are combined.'],
   ]],
   ['cd-cash', [
@@ -215,29 +278,44 @@ const groupedItems = [
     ['cd-funds-for-borrower', 'Final Funds for Borrower', 'This row compares estimated and final funds expected to be disbursed to the borrower.'],
     ['cd-seller-credits', 'Final Seller Credits', 'This row compares estimated and final seller contributions and points to the transaction summary when the amount changed.'],
     ['cd-adjustments-other-credits', 'Final Adjustments and Other Credits', 'This row compares other estimated and final additions or credits affecting the borrower’s closing amount.'],
+  ]],
+  ['cd-cash-total', [
     ['cash-to-close', 'Final Cash to Close', 'Final cash to close is the amount the borrower must bring to or receive from closing after the final listed components are combined.'],
   ]],
-  ['comparison', [
+  ['le-comparison', [
     ['five-year-total-paid', 'Total Paid in Five Years', 'The five-year total is the amount scheduled to be paid in principal, interest, mortgage insurance, and loan costs during the first five years.'],
     ['five-year-principal-paid', 'Principal Paid in Five Years', 'The five-year principal figure is the portion of scheduled payments expected to reduce the loan balance during the first five years.'],
+  ]],
+  ['shared-cost-measure', [
     ['apr', 'Annual Percentage Rate', 'Annual percentage rate expresses the loan’s cost as a rate using the interest rate and certain charges, so it can differ from the note rate.'],
     ['tip', 'Total Interest Percentage', 'Total interest percentage is the total scheduled interest over the loan term expressed as a percentage of the loan amount.'],
   ]],
-  ['consideration', [
+  ['shared-other-disclosure', [
     ['appraisal', 'Appraisal', 'An appraisal is an independent opinion of property value, and the disclosure explains when the lender may order one and the borrower’s right to a copy.'],
-    ['assumption', 'Assumption', 'Assumption describes whether a later buyer may take over the loan on its original terms if the property is sold or transferred.'],
-    ['homeowners-insurance-requirement', 'Homeowner’s Insurance Requirement', 'This disclosure states whether property insurance is required and explains that the borrower may obtain coverage from an acceptable insurer.'],
-    ['late-payment', 'Late Payment', 'The late-payment disclosure states the timing and formula for a late charge under the loan terms.'],
     ['refinance', 'Refinance', 'The refinance disclosure explains that future refinancing depends on the borrower’s circumstances, property value, and market conditions and is not guaranteed.'],
+  ]],
+  ['shared-loan-disclosure', [
+    ['assumption', 'Assumption', 'Assumption describes whether a later buyer may take over the loan on its original terms if the property is sold or transferred.'],
+    ['late-payment', 'Late Payment', 'The late-payment disclosure states the timing and formula for a late charge under the loan terms.'],
+  ]],
+  ['le-other-consideration', [
+    ['homeowners-insurance-requirement', 'Homeowner’s Insurance Requirement', 'This disclosure states whether property insurance is required and explains that the borrower may obtain coverage from an acceptable insurer.'],
     ['servicing', 'Servicing', 'Servicing identifies whether the creditor expects to collect payments itself or transfer that responsibility to another servicer.'],
+  ]],
+  ['cd-loan-disclosure', [
     ['demand-feature', 'Demand Feature', 'A demand feature would permit the lender to require early repayment under the conditions in the loan documents.'],
     ['negative-amortization', 'Negative Amortization', 'Negative amortization occurs when scheduled payments do not cover all interest due and the unpaid interest increases the loan balance.'],
     ['partial-payments', 'Partial Payments', 'Partial payments describes whether the lender may apply, hold, or decline payments that are less than the full amount due.'],
     ['security-interest', 'Security Interest', 'The security-interest disclosure identifies the property securing repayment and warns that failure to meet loan obligations may put the property at risk.'],
   ]],
-  ['contact', [
+  ['le-contact', [
+    ['loan-officer-contact', 'Loan Officer Contact', 'Loan officer contact identifies the individual handling the application and provides available licensing, email, and telephone information.'],
+  ]],
+  ['shared-lender-contact', [
     ['lender-contact', 'Lender Contact', 'Lender contact provides the creditor’s name and the available address, licensing, representative, email, and telephone details.'],
-    ['mortgage-broker-contact', 'Mortgage Broker Contact', 'Mortgage broker contact provides the broker’s business and representative information when a broker participated in the transaction.'],
+  ]],
+  ['cd-contact', [
+    ['mortgage-broker-contact', 'Mortgage Broker Contact', 'The Mortgage Broker column remains visible, but its detail cells are blank in this rendered sample, so no broker company or representative is provided.'],
     ['buyer-broker-contact', 'Buyer’s Real Estate Broker Contact', 'Buyer’s broker contact provides the business and representative information for the real estate broker associated with the buyer.'],
     ['seller-broker-contact', 'Seller’s Real Estate Broker Contact', 'Seller’s broker contact provides the business and representative information for the real estate broker associated with the seller.'],
     ['settlement-agent-contact', 'Settlement Agent Contact', 'Settlement agent contact provides the closing company’s business and representative information for settlement questions.'],
