@@ -94,18 +94,46 @@ export function initViewer({ root, documents, explanations, hotspots }) {
       });
       const zoom = createElement('output', 'viewer-zoom');
       zoom.setAttribute('aria-label', 'Current zoom');
-      viewerTools.append(label, ...controls, zoom);
+      const fieldSelector = createElement('section', 'mobile-field-selector');
+      fieldSelector.dataset.mobileFieldSelector = '';
+      fieldSelector.setAttribute('aria-label', 'Fields on this page');
+      const fieldLabel = createElement('p', 'mobile-field-label', 'Fields on this page');
+      const fieldList = createElement('div', 'mobile-field-list');
+      fieldList.dataset.mobileFieldList = '';
+      fieldSelector.append(fieldLabel, fieldList);
+      viewerTools.append(label, ...controls, zoom, fieldSelector);
     }
 
     for (const [action] of actions) {
       const button = viewerTools.querySelector(`[data-action="${action}"]`);
-      button.setAttribute('aria-pressed', String(action === 'fit' && state.zoom === 1));
+      if (action === 'fit') button.setAttribute('aria-pressed', String(state.zoom === 1));
+      else button.removeAttribute('aria-pressed');
       button.setAttribute('aria-disabled', String(
         ((action === 'fit' || action === 'zoom-out') && state.zoom === 1)
         || (action === 'zoom-in' && state.zoom === 2),
       ));
     }
     viewerTools.querySelector('.viewer-zoom').textContent = `${Math.round(state.zoom * 100)}%`;
+
+    const fieldList = viewerTools.querySelector('[data-mobile-field-list]');
+    const pageHotspots = hotspots
+      .filter(hotspot => hotspot.pageId === state.pageId)
+      .sort((a, b) => a.readingOrder - b.readingOrder);
+    if (fieldList.dataset.pageId !== state.pageId) {
+      const buttons = pageHotspots.map(hotspot => {
+        const button = createElement('button', 'mobile-field-button', hotspot.fieldLabel);
+        button.type = 'button';
+        button.dataset.mobileFieldId = hotspot.id;
+        button.setAttribute('aria-label', hotspot.accessibleLabel);
+        button.addEventListener('click', () => dispatch({ type: 'select-hotspot', hotspotId: hotspot.id }));
+        return button;
+      });
+      fieldList.replaceChildren(...buttons);
+      fieldList.dataset.pageId = state.pageId;
+    }
+    for (const button of fieldList.querySelectorAll('[data-mobile-field-id]')) {
+      button.setAttribute('aria-pressed', String(button.dataset.mobileFieldId === state.selectedHotspotId));
+    }
   };
 
   const renderPageGeometry = () => {

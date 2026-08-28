@@ -1,4 +1,4 @@
-const pages = (prefix, count, sourcePdf) => Array.from({ length: count }, (_, index) => ({
+const pages = (prefix, count, sourcePdf) => Array.from({ length: count }, (_, index) => Object.freeze({
   id: `${prefix}-${index + 1}`,
   number: index + 1,
   pdfPage: index + 2,

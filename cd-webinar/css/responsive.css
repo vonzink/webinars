@@ -79,6 +79,60 @@
     min-height: min(760px, 74vh);
   }
 
+  .viewer-tools {
+    flex-wrap: wrap;
+  }
+
+  .mobile-field-selector {
+    display: grid;
+    width: 100%;
+    min-width: 0;
+    gap: 5px;
+    padding-top: 4px;
+    border-top: 1px solid var(--line);
+  }
+
+  .mobile-field-label {
+    margin: 0;
+    color: var(--forest-mid);
+    font-size: 0.7rem;
+    font-weight: 750;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .mobile-field-list {
+    display: flex;
+    gap: 8px;
+    min-width: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 2px 2px 8px;
+    scroll-padding-inline: 2px;
+    scrollbar-width: thin;
+  }
+
+  .mobile-field-button {
+    flex: 0 0 auto;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 8px 12px;
+    border: 1px solid var(--line);
+    border-radius: 0;
+    background: var(--white);
+    color: var(--forest-deep);
+    cursor: pointer;
+    font-size: 0.78rem;
+    font-weight: 650;
+    line-height: 1.25;
+  }
+
+  .mobile-field-button:hover,
+  .mobile-field-button[aria-pressed="true"] {
+    border-color: var(--msfg-green);
+    background: var(--mist);
+  }
+
   .document-stage {
     min-height: min(700px, 68vh);
     padding: 16px;
@@ -137,6 +191,7 @@
 
   .viewer-tool {
     flex: 1 1 auto;
+    min-height: 44px;
     padding-inline: 7px;
   }
 }

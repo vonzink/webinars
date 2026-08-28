@@ -1,12 +1,32 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { DOCUMENTS, EXPLANATIONS, HOTSPOTS } from '../content/index.js';
-import { getRenderableHotspots, validateContent } from '../js/content-validation.js';
+import {
+  getRenderableHotspots,
+  validateContent,
+  validateDocumentCatalog,
+} from '../js/content-validation.js';
 
 test('catalog contains the exact eight disclosure pages', () => {
   assert.deepEqual(DOCUMENTS.map(item => [item.id, item.pages.length]), [['le', 3], ['cd', 5]]);
   assert.deepEqual(DOCUMENTS.flatMap(item => item.pages.map(page => page.id)),
     ['le-1', 'le-2', 'le-3', 'cd-1', 'cd-2', 'cd-3', 'cd-4', 'cd-5']);
+});
+
+test('every page record is deeply frozen', () => {
+  for (const document of DOCUMENTS) {
+    assert.equal(Object.isFrozen(document.pages), true, `${document.id}: pages array`);
+    for (const page of document.pages) {
+      assert.equal(Object.isFrozen(page), true, page.id);
+    }
+  }
+});
+
+test('an empty or structurally incomplete document catalog is unusable', () => {
+  assert.deepEqual(validateDocumentCatalog([]), ['document catalog must contain at least one document']);
+  assert.deepEqual(validateDocumentCatalog([{ id: 'le', pages: [] }]), [
+    'document pages must contain at least one page: le',
+  ]);
 });
 
 test('the vertical-slice content is valid for local preview', () => {

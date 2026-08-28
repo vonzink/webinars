@@ -173,6 +173,10 @@ body {
   text-align: right;
 }
 
+.mobile-field-selector {
+  display: none;
+}
+
 .document-stage {
   display: flex;
   align-items: flex-start;

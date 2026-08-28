@@ -1,5 +1,45 @@
 const insideUnitInterval = value => Number.isFinite(value) && value >= 0 && value <= 1;
 const isHotspotRecord = hotspot => hotspot !== null && typeof hotspot === 'object' && !Array.isArray(hotspot);
+const isRecord = value => value !== null && typeof value === 'object' && !Array.isArray(value);
+
+export function validateDocumentCatalog(DOCUMENTS) {
+  if (!Array.isArray(DOCUMENTS) || DOCUMENTS.length === 0) {
+    return ['document catalog must contain at least one document'];
+  }
+
+  const errors = [];
+  const documentIds = new Set();
+  const pageIds = new Set();
+  for (const document of DOCUMENTS) {
+    if (!isRecord(document)) {
+      errors.push(`malformed document record: ${String(document)}`);
+      continue;
+    }
+    if (!document.id?.trim()) errors.push('document is missing an id');
+    else if (documentIds.has(document.id)) errors.push(`duplicate document id: ${document.id}`);
+    else documentIds.add(document.id);
+
+    if (!Array.isArray(document.pages) || document.pages.length === 0) {
+      errors.push(`document pages must contain at least one page: ${document.id || '(missing id)'}`);
+      continue;
+    }
+
+    for (const page of document.pages) {
+      if (!isRecord(page)) {
+        errors.push(`malformed page record in document: ${document.id || '(missing id)'}`);
+        continue;
+      }
+      if (!page.id?.trim()) errors.push(`page is missing an id in document: ${document.id || '(missing id)'}`);
+      else if (pageIds.has(page.id)) errors.push(`duplicate page id: ${page.id}`);
+      else pageIds.add(page.id);
+      if (!page.image?.trim()) errors.push(`page is missing an image: ${page.id || '(missing id)'}`);
+      if (!Number.isFinite(page.width) || page.width <= 0 || !Number.isFinite(page.height) || page.height <= 0) {
+        errors.push(`page has invalid dimensions: ${page.id || '(missing id)'}`);
+      }
+    }
+  }
+  return [...new Set(errors)];
+}
 
 export function validateContent({ DOCUMENTS, EXPLANATIONS, HOTSPOTS, release = false }) {
   const errors = [];
