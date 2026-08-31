@@ -222,7 +222,9 @@ if [[ -z $failure_step ]]; then
       }
       END { print count + 0, expected + 0, bad + 0 }
     ' <<<"$requests_output")
-    if (( request_count == 0 || expected_failure_count != 5 || bad_response_count != 0 )); then
+    # At least one deliberate cd-page-5.png abort per viewport; the page-nav
+    # thumbnails can add more during the abort window, so the count is a floor.
+    if (( request_count == 0 || expected_failure_count < 5 || bad_response_count != 0 )); then
       mark_failure 'network' 1
     fi
   fi

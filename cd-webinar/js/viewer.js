@@ -35,6 +35,12 @@ export function initViewer({ root, documents, explanations, hotspots }) {
   let state = { ...DEFAULT_STATE };
   let animationFrame = 0;
 
+  const bubbleLayer = createElement('div', 'bubble-layer');
+  bubbleLayer.dataset.bubbleLayer = '';
+  documentStage.parentElement.append(bubbleLayer);
+  const bubblePositions = new Map();
+  let bubbleSpawnCount = 0;
+
   const renderNavigation = () => {
     if (!pageNav.querySelector('[data-page-button]')) {
       const heading = createElement('h2', 'page-nav-heading', 'Disclosure pages');
@@ -56,10 +62,19 @@ export function initViewer({ root, documents, explanations, hotspots }) {
           button.dataset.pageId = page.id;
           button.setAttribute('aria-label', `${document.title}, page ${page.number} of ${document.pages.length}`);
 
+          const thumb = createElement('img', 'page-thumb');
+          thumb.src = page.image;
+          thumb.alt = '';
+          thumb.loading = 'lazy';
+          thumb.draggable = false;
+          thumb.setAttribute('aria-hidden', 'true');
+
+          const caption = createElement('span', 'page-button-caption');
           const pageLabel = createElement('span', 'page-button-label', `Page ${page.number}`);
           const shortLabel = createElement('span', 'page-button-document', document.shortLabel);
           shortLabel.setAttribute('aria-hidden', 'true');
-          button.append(pageLabel, shortLabel);
+          caption.append(pageLabel, shortLabel);
+          button.append(thumb, caption);
           button.addEventListener('click', () => dispatch({ type: 'select-page', pageId: page.id }));
           buttons.append(button);
         }
@@ -94,6 +109,11 @@ export function initViewer({ root, documents, explanations, hotspots }) {
       });
       const zoom = createElement('output', 'viewer-zoom');
       zoom.setAttribute('aria-label', 'Current zoom');
+      const magnifier = createElement('button', 'viewer-tool viewer-tool-magnifier', 'Magnifier');
+      magnifier.type = 'button';
+      magnifier.dataset.magnifierToggle = '';
+      magnifier.setAttribute('title', 'Follow the pointer with a magnifying lens');
+      magnifier.addEventListener('click', () => dispatch({ type: 'toggle-magnifier' }));
       const fieldSelector = createElement('section', 'mobile-field-selector');
       fieldSelector.dataset.mobileFieldSelector = '';
       fieldSelector.setAttribute('aria-label', 'Fields on this page');
@@ -101,8 +121,11 @@ export function initViewer({ root, documents, explanations, hotspots }) {
       const fieldList = createElement('div', 'mobile-field-list');
       fieldList.dataset.mobileFieldList = '';
       fieldSelector.append(fieldLabel, fieldList);
-      viewerTools.append(label, ...controls, zoom, fieldSelector);
+      viewerTools.append(label, ...controls, zoom, magnifier, fieldSelector);
     }
+
+    viewerTools.querySelector('[data-magnifier-toggle]')
+      .setAttribute('aria-pressed', String(state.magnifier));
 
     for (const [action] of actions) {
       const button = viewerTools.querySelector(`[data-action="${action}"]`);
@@ -164,7 +187,12 @@ export function initViewer({ root, documents, explanations, hotspots }) {
     const currentCanvas = documentStage.querySelector('[data-page-canvas]');
     if (currentCanvas?.dataset.pageId === page.id) {
       for (const button of currentCanvas.querySelectorAll('[data-hotspot-id]')) {
-        button.setAttribute('aria-pressed', String(button.dataset.hotspotId === state.selectedHotspotId));
+        button.setAttribute('aria-pressed', String(state.openBubbleIds.includes(button.dataset.hotspotId)));
+      }
+      currentCanvas.classList.toggle('magnifier-on', state.magnifier);
+      if (!state.magnifier) {
+        const lens = currentCanvas.querySelector('[data-magnifier-lens]');
+        if (lens) lens.hidden = true;
       }
       renderPageGeometry();
       return;
@@ -201,7 +229,7 @@ export function initViewer({ root, documents, explanations, hotspots }) {
       button.type = 'button';
       button.dataset.hotspotId = model.id;
       button.setAttribute('aria-label', model.ariaLabel);
-      button.setAttribute('aria-pressed', String(model.id === state.selectedHotspotId));
+      button.setAttribute('aria-pressed', String(state.openBubbleIds.includes(model.id)));
       Object.assign(button.style, model.style);
       button.addEventListener('click', () => dispatch({ type: 'select-hotspot', hotspotId: model.id }));
       hotspotLayer.append(button);
@@ -221,10 +249,128 @@ export function initViewer({ root, documents, explanations, hotspots }) {
       documentStage.replaceChildren(unavailable);
     }, { once: true });
 
-    canvas.append(pageHeading, image, hotspotLayer);
+    const lens = createElement('div', 'magnifier-lens');
+    lens.dataset.magnifierLens = '';
+    lens.setAttribute('aria-hidden', 'true');
+    lens.hidden = true;
+    lens.style.backgroundImage = `url("${page.image}")`;
+
+    const MAGNIFICATION = 2.4;
+    const positionLens = event => {
+      const rect = canvas.getBoundingClientRect();
+      if (rect.width === 0 || rect.height === 0) return;
+      const x = event.clientX - rect.left;
+      const y = event.clientY - rect.top;
+      const lensSize = lens.offsetWidth || 200;
+      lens.style.left = `${x - lensSize / 2}px`;
+      lens.style.top = `${y - lensSize / 2}px`;
+      lens.style.backgroundSize = `${rect.width * MAGNIFICATION}px ${rect.height * MAGNIFICATION}px`;
+      lens.style.backgroundPosition = `${lensSize / 2 - x * MAGNIFICATION}px ${lensSize / 2 - y * MAGNIFICATION}px`;
+    };
+    canvas.addEventListener('pointermove', event => {
+      if (!state.magnifier) return;
+      lens.hidden = false;
+      positionLens(event);
+    });
+    canvas.addEventListener('pointerleave', () => { lens.hidden = true; });
+    canvas.classList.toggle('magnifier-on', state.magnifier);
+
+    canvas.append(pageHeading, image, hotspotLayer, lens);
     documentStage.replaceChildren(canvas);
     renderPageGeometry();
     image.src = page.image;
+  };
+
+  const renderBubbles = () => {
+    const region = bubbleLayer.parentElement;
+    for (const bubble of bubbleLayer.querySelectorAll('[data-bubble-id]')) {
+      if (!state.openBubbleIds.includes(bubble.dataset.bubbleId)) {
+        bubblePositions.delete(bubble.dataset.bubbleId);
+        bubble.remove();
+      }
+    }
+
+    state.openBubbleIds.forEach((hotspotId, index) => {
+      let bubble = bubbleLayer.querySelector(`[data-bubble-id="${CSS.escape(hotspotId)}"]`);
+      if (!bubble) {
+        const hotspot = hotspots.find(candidate => candidate.id === hotspotId);
+        if (!hotspot) return;
+        const model = createHotspotViewModel(hotspot, explanations[hotspot.explanationId]);
+
+        bubble = createElement('article', 'explanation-bubble');
+        bubble.dataset.bubbleId = hotspotId;
+        bubble.setAttribute('role', 'note');
+        bubble.setAttribute('aria-label', model.title);
+
+        const header = createElement('div', 'bubble-header');
+        const kicker = createElement('p', 'explanation-kicker', 'Selected item');
+        const close = createElement('button', 'bubble-close', '×');
+        close.type = 'button';
+        close.setAttribute('aria-label', `Close ${model.title}`);
+        close.addEventListener('click', () => dispatch({ type: 'close-bubble', hotspotId }));
+        header.append(kicker, close);
+
+        const title = createElement('h2', 'bubble-title', model.title);
+        const body = createElement('p', 'explanation-body bubble-body', model.body);
+        bubble.append(header, title, body);
+        if (model.learnerQuestion) {
+          bubble.append(createElement('p', 'explanation-question', model.learnerQuestion));
+        }
+
+        if (!bubblePositions.has(hotspotId)) {
+          const cascade = bubbleSpawnCount % 6;
+          bubbleSpawnCount += 1;
+          const regionWidth = region.clientWidth || 900;
+          bubblePositions.set(hotspotId, {
+            x: Math.max(16, regionWidth - 396 - cascade * 30),
+            y: 76 + cascade * 34,
+          });
+        }
+
+        header.addEventListener('pointerdown', event => {
+          if (event.target === close) return;
+          event.preventDefault();
+          const start = bubblePositions.get(hotspotId);
+          const originX = event.clientX;
+          const originY = event.clientY;
+          let lastX = originX;
+          bubble.classList.add('is-dragging');
+          dispatch({ type: 'select-hotspot', hotspotId });
+          const move = moveEvent => {
+            const tilt = Math.max(-4, Math.min(4, (moveEvent.clientX - lastX) * 0.6));
+            lastX = moveEvent.clientX;
+            const next = {
+              x: Math.max(8, Math.min(region.clientWidth - 96, start.x + moveEvent.clientX - originX)),
+              y: Math.max(8, Math.min(region.clientHeight - 56, start.y + moveEvent.clientY - originY)),
+            };
+            bubblePositions.set(hotspotId, next);
+            bubble.style.left = `${next.x}px`;
+            bubble.style.top = `${next.y}px`;
+            bubble.style.setProperty('--bubble-tilt', `${tilt}deg`);
+          };
+          const stop = () => {
+            bubble.classList.remove('is-dragging');
+            bubble.style.setProperty('--bubble-tilt', '0deg');
+            viewerDocument.removeEventListener('pointermove', move);
+            viewerDocument.removeEventListener('pointerup', stop);
+          };
+          viewerDocument.addEventListener('pointermove', move);
+          viewerDocument.addEventListener('pointerup', stop);
+        });
+
+        bubble.addEventListener('pointerdown', () => {
+          if (state.selectedHotspotId !== hotspotId) dispatch({ type: 'select-hotspot', hotspotId });
+        });
+
+        bubbleLayer.append(bubble);
+      }
+
+      const position = bubblePositions.get(hotspotId);
+      bubble.style.left = `${position.x}px`;
+      bubble.style.top = `${position.y}px`;
+      bubble.style.zIndex = String(20 + index);
+      bubble.classList.toggle('is-front', index === state.openBubbleIds.length - 1);
+    });
   };
 
   const renderExplanation = () => {
@@ -264,6 +410,7 @@ export function initViewer({ root, documents, explanations, hotspots }) {
     renderNavigation();
     renderTools();
     renderPage();
+    renderBubbles();
     renderExplanation();
   };
 
@@ -275,9 +422,11 @@ export function initViewer({ root, documents, explanations, hotspots }) {
     state = reduceViewerState(state, action, pageIds);
     render();
 
-    if (action.type === 'clear-selection' && selectedBefore) {
+    if ((action.type === 'clear-selection' && selectedBefore)
+      || (action.type === 'close-bubble' && action.hotspotId)) {
+      const closedId = action.type === 'close-bubble' ? action.hotspotId : selectedBefore;
       const selectedButton = [...root.querySelectorAll('[data-hotspot-id]')]
-        .find(button => button.dataset.hotspotId === selectedBefore);
+        .find(button => button.dataset.hotspotId === closedId);
       selectedButton?.focus();
     } else if (pageChanged) {
       documentStage.querySelector('[data-page-heading]')?.focus();
@@ -309,6 +458,7 @@ export function initViewer({ root, documents, explanations, hotspots }) {
       observer.disconnect();
       cancelAnimationFrame(animationFrame);
       viewerDocument.removeEventListener('keydown', handleKeydown);
+      bubbleLayer.remove();
     },
   };
 }

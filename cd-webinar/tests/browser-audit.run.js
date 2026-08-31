@@ -172,12 +172,43 @@ async (page) => {
     await apr.click();
     const explanation = page.locator('[data-selected-explanation]');
     check(await explanation.locator('h2').textContent() === 'Annual Percentage Rate',
-      `${label}: APR explanation title is not visible`);
-    check(await explanation.locator('.explanation-body').isVisible(), `${label}: APR paragraph is not visible`);
+      `${label}: APR explanation title is not rendered`);
     check((await explanation.locator('.explanation-body').textContent())?.trim().length > 0,
       `${label}: APR paragraph is empty`);
     check(await page.locator('[data-hotspot-id][aria-pressed="true"]').count() === 1,
       `${label}: expected exactly one selected hotspot`, 'accessibility');
+
+    if (viewport.width >= 900) {
+      const bubble = page.locator('[data-bubble-id="cd.p5.apr"]');
+      check(await bubble.isVisible(), `${label}: APR bubble is not visible`);
+      check(await bubble.locator('.bubble-title').textContent() === 'Annual Percentage Rate',
+        `${label}: APR bubble title is wrong`);
+      check(await bubble.locator('.explanation-body').isVisible(), `${label}: APR bubble paragraph is not visible`);
+
+      const beforeDrag = await bubble.boundingBox();
+      await page.mouse.move(beforeDrag.x + 60, beforeDrag.y + 26);
+      await page.mouse.down();
+      await page.mouse.move(beforeDrag.x - 90, beforeDrag.y + 140, { steps: 5 });
+      await page.mouse.up();
+      const afterDrag = await bubble.boundingBox();
+      check(Math.abs(afterDrag.x - beforeDrag.x) > 40 || Math.abs(afterDrag.y - beforeDrag.y) > 40,
+        `${label}: APR bubble did not move when dragged by its header`);
+
+      const magnifierToggle = page.locator('[data-magnifier-toggle]');
+      check(await magnifierToggle.getAttribute('aria-pressed') === 'false',
+        `${label}: magnifier starts pressed`, 'accessibility');
+      await magnifierToggle.click();
+      const canvasBox = await page.locator('[data-page-canvas]').boundingBox();
+      await page.mouse.move(canvasBox.x + canvasBox.width / 2, canvasBox.y + canvasBox.height / 2);
+      await waitFrames();
+      check(await page.locator('[data-magnifier-lens]').isVisible(),
+        `${label}: magnifier lens does not follow the pointer`);
+      await magnifierToggle.click();
+      check(await page.locator('[data-magnifier-lens]').isHidden(),
+        `${label}: magnifier lens remains after toggling off`);
+    } else {
+      check(await explanation.locator('.explanation-body').isVisible(), `${label}: APR paragraph is not visible`);
+    }
 
     await page.keyboard.press('Escape');
     check(await page.locator('[data-selected-explanation]').count() === 0,
@@ -333,7 +364,11 @@ async (page) => {
         touchActivations += 1;
       }
     }
-    if (await page.locator('.explanation-close').count()) await page.locator('.explanation-close').click();
+    for (let cleanup = 0; cleanup < 8 && await page.locator('[data-selected-explanation]').count(); cleanup += 1) {
+      await page.keyboard.press('Escape');
+    }
+    check(await page.locator('[data-selected-explanation]').count() === 0,
+      `${label}: Escape cleanup left a selection open`);
 
     const motion = await page.evaluate(() => {
       const query = matchMedia('(prefers-reduced-motion: reduce)').matches;

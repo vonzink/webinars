@@ -1,6 +1,7 @@
 @media (max-width: 899px) {
   body {
     display: block;
+    height: auto;
   }
 
   .webinar-header {
@@ -60,10 +61,21 @@
 
   .page-button {
     width: auto;
-    min-width: 76px;
+    min-width: 62px;
+    padding: 4px;
     border-bottom: 3px solid transparent;
     border-left: 0;
     white-space: nowrap;
+  }
+
+  .page-thumb {
+    width: 54px;
+    margin-inline: auto;
+  }
+
+  .page-button-caption {
+    justify-content: center;
+    font-size: 0.7rem;
   }
 
   .page-button[aria-current="page"] {
@@ -71,7 +83,19 @@
     border-left-color: transparent;
   }
 
+  .page-button[aria-current="page"] .page-thumb {
+    box-shadow: none;
+  }
+
   .page-button-document {
+    display: none;
+  }
+
+  .bubble-layer {
+    display: none;
+  }
+
+  .viewer-tool-magnifier {
     display: none;
   }
 
