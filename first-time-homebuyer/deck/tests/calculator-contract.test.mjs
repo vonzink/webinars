@@ -69,8 +69,8 @@ test('presenter has a persistent calculator control with synchronized labels', a
 
   assert.match(html, /rel="icon" href="data:,"/);
   assert.match(html, /id="p-calculator"/);
-  assert.match(source, /Show calculator/);
-  assert.match(source, /Hide calculator/);
+  assert.match(source, /Show mortgage calculator/);
+  assert.match(source, /Hide mortgage calculator/);
   assert.match(source, /type:\s*'calculator-visibility'/);
   assert.match(source, /type === 'calculator-state'/);
 });

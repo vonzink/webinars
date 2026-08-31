@@ -9,13 +9,14 @@ function assertCalculatorIsLastTopBarControl(bar) {
   const clocksIndex = bar.indexOf('class="p-clocks"');
   const calculatorIndex = bar.indexOf('id="p-calculator"');
   const interactiveControls = [...bar.matchAll(/<(?:button|a|input|select|textarea)\b[^>]*>/g)];
-  const calculatorControlIndex = interactiveControls.find(control => control[0].includes('id="p-calculator"'))?.index ?? -1;
-  const lastControlIndex = interactiveControls.at(-1)?.index ?? -1;
+  const calculatorControlIndex = interactiveControls.findIndex(control => control[0].includes('id="p-calculator"'));
+  const buydownControlIndex = interactiveControls.findIndex(control => control[0].includes('id="p-buydown"'));
 
   assert.notEqual(clocksIndex, -1, 'top presenter bar must include the clocks');
   assert.notEqual(calculatorIndex, -1, 'top presenter bar must include the calculator');
   assert.ok(clocksIndex < calculatorIndex, 'calculator must follow the clocks');
-  assert.equal(calculatorControlIndex, lastControlIndex, 'calculator must be the last interactive top-bar control');
+  assert.equal(buydownControlIndex, calculatorControlIndex + 1, 'buydown must immediately follow the calculator');
+  assert.equal(buydownControlIndex, interactiveControls.length - 1, 'calculator utilities must be the last interactive top-bar control block');
 }
 
 test('calculator is an icon-only utility at the end of the top presenter bar', async () => {
@@ -26,7 +27,7 @@ test('calculator is an icon-only utility at the end of the top presenter bar', a
   assertCalculatorIsLastTopBarControl(bar);
   assert.match(button, /<svg/);
   assert.doesNotMatch(button, /Show calculator|Hide calculator/);
-  assert.match(source, /const label = calculatorVisible \? 'Hide calculator' : 'Show calculator'/);
+  assert.match(source, /const label = calculatorVisible \? 'Hide mortgage calculator' : 'Show mortgage calculator'/);
   assert.match(source, /button\.setAttribute\('aria-label', label\)/);
   assert.match(source, /button\.setAttribute\('title', label\)/);
   assert.match(source, /button\.setAttribute\('aria-pressed', String\(calculatorVisible\)\)/);
@@ -34,7 +35,7 @@ test('calculator is an icon-only utility at the end of the top presenter bar', a
 });
 
 test('calculator top-bar order rejects missing clocks and later controls', () => {
-  const orderedBar = '<div class="p-clocks"></div><button id="p-calculator"></button>';
+  const orderedBar = '<div class="p-clocks"></div><button id="p-calculator"></button><button id="p-buydown"></button>';
 
   assert.throws(
     () => assertCalculatorIsLastTopBarControl(orderedBar.replace('class="p-clocks"', 'class="p-timers"')),

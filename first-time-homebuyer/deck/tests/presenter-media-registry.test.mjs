@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
+import { SLIDES } from '../content/slides.js';
 
 const expectedSlide2 = [
   ['fha-buyers', 'FHA Buyers', './assets/presenter/slide-02/fha-buyers.png'],
@@ -51,7 +52,7 @@ test('every registered graph resolves to a copied local PNG', async () => {
   const registry = await import('../content/presenter-media.js').catch(() => null);
   assert.ok(registry, 'presenter media registry must exist');
   for (const item of registry.PRESENTER_MEDIA) {
-    assert.ok(['myths', 'budget-rent-buy', 'budget-comfort'].includes(item.slideId), `${item.id} has an unknown slide`);
+    assert.ok(SLIDES.some(slide => slide.id === item.slideId), `${item.id} has an unknown slide '${item.slideId}'`);
     assert.ok(item.alt.length >= 20, `${item.id} needs descriptive alt text`);
     const assetUrl = new URL(`../${item.src.replace('./', '')}`, import.meta.url);
     assert.ok(existsSync(fileURLToPath(assetUrl)), `${item.src} must exist`);
