@@ -1,6 +1,5 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
 import { DOCUMENTS, EXPLANATIONS, HOTSPOTS } from '../content/index.js';
 import {
   buildReviewedCorpus,
@@ -10,7 +9,10 @@ import {
   isValidIsoCalendarDate,
 } from '../scripts/reviewed-corpus.mjs';
 
-const approvalUrl = new URL('../CONTENT-APPROVAL.json', import.meta.url);
+const pendingExplanations = () => Object.fromEntries(Object.entries(EXPLANATIONS).map(([id, explanation]) => [id, {
+  ...explanation,
+  review: { status: 'pending-msfg', reviewer: '', reviewedOn: '' },
+}]));
 
 test('canonical serialization and digest use stable recursively sorted keys', () => {
   const corpus = { b: 2, a: [3, { d: 4, c: 5 }] };
@@ -66,10 +68,10 @@ test('the canonical corpus covers copy, hotspot semantics and geometry, manifest
 });
 
 test('pending review fails only on missing genuine approval and digest evidence', async () => {
-  const approval = JSON.parse(await readFile(approvalUrl, 'utf8'));
+  const approval = { status: 'pending-msfg', reviewer: '', reviewedOn: '', reviewedCorpusSha256: '' };
   assert.deepEqual(await getReleaseReadinessErrors({
     documents: DOCUMENTS,
-    explanations: EXPLANATIONS,
+    explanations: pendingExplanations(),
     hotspots: HOTSPOTS,
     approval,
   }), [
@@ -121,7 +123,7 @@ test('release readiness requires the approved evidence digest to match the exact
 test('release validation reports malformed content without trying to hash an unusable corpus', async () => {
   const errors = await getReleaseReadinessErrors({
     documents: DOCUMENTS,
-    explanations: EXPLANATIONS,
+    explanations: pendingExplanations(),
     hotspots: [null, undefined],
     approval: {
       status: 'approved',

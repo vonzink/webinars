@@ -1,6 +1,6 @@
 {
-  "status": "pending-msfg",
-  "reviewer": "",
-  "reviewedOn": "",
-  "reviewedCorpusSha256": ""
+  "status": "approved",
+  "reviewer": "Zachary Zink",
+  "reviewedOn": "2026-08-31",
+  "reviewedCorpusSha256": "a56162a9f123affb55624fc4baf9e460fe0a5002746e4cd14e15252cfe002a09"
 }

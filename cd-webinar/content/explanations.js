@@ -77,7 +77,7 @@ const GROUPS = Object.freeze({
   }),
   'shared-loan-disclosure': Object.freeze({
     why: 'It appears in Loan Estimate Other Considerations and Closing Disclosure Loan Disclosures because it describes a contractual policy or consequence that may matter after closing.',
-    reference: 'H24B page 3; H25B page 4; CFPB Guide to Forms v2.1 §§ 2.4.3 and 3.5.1; 12 CFR 1026.37(m), 1026.38(m)',
+    reference: 'H24B page 3; H25B page 4; CFPB Guide to Forms v2.1 §§ 2.4.3 and 3.5.1; 12 CFR 1026.37(m), 1026.38(l)',
   }),
   'shared-other-disclosure': Object.freeze({
     why: 'It appears in Loan Estimate Other Considerations and Closing Disclosure Other Disclosures because it describes a borrower right or future option tied to the mortgage process.',
@@ -89,7 +89,7 @@ const GROUPS = Object.freeze({
   }),
   'cd-loan-disclosure': Object.freeze({
     why: 'It appears in the Closing Disclosure’s Loan Disclosures because it describes a final contractual feature, payment policy, or security consequence of the mortgage.',
-    reference: 'H25B page 4; CFPB Guide to Forms v2.1 § 3.5.1; 12 CFR 1026.38(m)',
+    reference: 'H25B page 4; CFPB Guide to Forms v2.1 § 3.5.1; 12 CFR 1026.38(l)',
   }),
   'le-contact': Object.freeze({
     why: 'It appears in Loan Estimate Contact Information so the borrower can identify and reach the individual handling the application.',
@@ -117,7 +117,7 @@ const GROUPS = Object.freeze({
   }),
   escrow: Object.freeze({
     why: 'It appears in the Escrow Account disclosure to explain which property costs are handled through escrow, which are paid directly, and how those amounts affect closing and monthly payments.',
-    reference: 'H25B page 4; CFPB Guide to Forms v2.1 § 3.5.3; 12 CFR 1026.38(l)',
+    reference: 'H25B page 4; CFPB Guide to Forms v2.1 § 3.5.3; 12 CFR 1026.38(l)(7)',
   }),
   'loan-calculation': Object.freeze({
     why: 'It appears in Loan Calculations to summarize a federally defined cost or payment measure using the final loan terms and applicable finance-charge rules.',
@@ -392,6 +392,6 @@ export const EXPLANATIONS = Object.freeze(Object.fromEntries(items.map(([id, tit
       type: 'CFPB samples, Guide to Forms v2.1, and Regulation Z',
       reference: group.reference,
     }),
-    review: Object.freeze({ status: 'pending-msfg', reviewer: '', reviewedOn: '' }),
+    review: Object.freeze({ status: 'approved', reviewer: 'Zachary Zink', reviewedOn: '2026-08-31' }),
   })];
 })));

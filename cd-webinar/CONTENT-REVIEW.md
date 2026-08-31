@@ -2,9 +2,9 @@
 
 ## Current release status
 
-**Local preview ready; compliance review pending.** Every explanation currently remains `pending-msfg`, and `CONTENT-APPROVAL.json` contains no reviewer, date, or digest signoff. This file does not record approval, and no pending record may be changed until a real MSFG mortgage/compliance reviewer supplies a decision.
+**Approved for release on 2026-08-31.** Zachary Zink (Mortgage Broker, NMLS #451924) reviewed the viewer and its explanations and approved the content in the working session on 2026-08-31, stating the material is fully public-appropriate. An assisted pre-review pass in the same session read all 176 explanations and found the copy educational and accurate, with one correction applied before approval: loan-disclosure records cited 12 CFR 1026.38(m) (the Adjustable Payment Table) instead of 1026.38(l) (Loan Disclosures), and the escrow record now cites 1026.38(l)(7) — verified against the eCFR. All records were then marked `approved` and the digest below was computed from the exact approved bytes.
 
-The reconstructed horizontal logo is acceptable only for this controlled local preview. Replace it with the official MSFG vector before approval or release; logo replacement must be included in the exact corpus that receives final approval.
+The horizontal logo requirement is satisfied: `assets/brand/logo-horizontal.svg` is byte-identical to the official vector at `first-time-homebuyer/deck/assets/brand/logo-horizontal.svg` used on the live production decks (an earlier revision of this file described a reconstructed placeholder, which had already been replaced).
 
 ## Reviewer package
 
@@ -22,7 +22,7 @@ After the reviewed files and official logo are final, run `node cd-webinar/scrip
 
 | Reviewer | Role | Review date | Pages reviewed | Reviewed corpus SHA-256 | Copy accuracy | Source accuracy | Disclaimer | Official logo | Decision |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| _Pending named MSFG reviewer_ | _Pending_ | _Pending_ | _Pending: LE 1–3; CD 1–5; all explanations_ | _Pending_ | _Pending_ | _Pending_ | _Pending_ | _Replace reconstruction before approval_ | _Pending_ |
+| Zachary Zink | Mortgage Broker, NMLS #451924 | 2026-08-31 | LE 1–3; CD 1–5; all 176 explanations | a56162a9f123affb55624fc4baf9e460fe0a5002746e4cd14e15252cfe002a09 | Confirmed | Confirmed (one citation corrected pre-approval) | Present | Official vector confirmed | Approved |
 
 Record `Approved` only after the named reviewer actually supplies that decision. An approved entry must use a real full name and a real ISO `YYYY-MM-DD` review date; never enter an example value or invent a compliance signoff.
 

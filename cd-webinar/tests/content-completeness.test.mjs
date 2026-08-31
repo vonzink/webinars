@@ -98,15 +98,20 @@ test('every learner paragraph is concise and sourced', () => {
   assertReviewLifecycle(EXPLANATIONS);
 });
 
-test('review lifecycle allows fully approved content while release still rejects the pending corpus', () => {
+test('review lifecycle allows fully approved content while release rejects a pending corpus', () => {
   const approved = Object.fromEntries(Object.entries(EXPLANATIONS).map(([id, explanation]) => [id, {
     ...explanation,
     review: { status: 'approved', reviewer: 'Morgan Lee', reviewedOn: '2026-08-27' },
   }]));
+  const pending = Object.fromEntries(Object.entries(EXPLANATIONS).map(([id, explanation]) => [id, {
+    ...explanation,
+    review: { status: 'pending-msfg', reviewer: '', reviewedOn: '' },
+  }]));
 
   assertReviewLifecycle(approved);
   assert.deepEqual(validateContent({ DOCUMENTS, EXPLANATIONS: approved, HOTSPOTS, release: true }), []);
-  assert.ok(validateContent({ DOCUMENTS, EXPLANATIONS, HOTSPOTS, release: true })
+  assert.deepEqual(validateContent({ DOCUMENTS, EXPLANATIONS, HOTSPOTS, release: true }), []);
+  assert.ok(validateContent({ DOCUMENTS, EXPLANATIONS: pending, HOTSPOTS, release: true })
     .some(error => error.includes('review status must be approved')));
 
   for (const [label, review] of [
@@ -236,10 +241,10 @@ test('form-specific contact and additional-disclosure records avoid unrelated so
   assert.match(EXPLANATIONS.servicing.source.reference, /H24B page 3.*1026\.37\(m\)/);
   assert.doesNotMatch(EXPLANATIONS.servicing.source.reference, /H25B|1026\.38/);
 
-  assert.match(EXPLANATIONS['demand-feature'].source.reference, /H25B page 4.*1026\.38\(m\)/);
+  assert.match(EXPLANATIONS['demand-feature'].source.reference, /H25B page 4.*1026\.38\(l\)/);
   assert.doesNotMatch(EXPLANATIONS['demand-feature'].source.reference, /H24B|1026\.37/);
 
-  assert.match(EXPLANATIONS.assumption.source.reference, /1026\.37\(m\).*1026\.38\(m\)/);
+  assert.match(EXPLANATIONS.assumption.source.reference, /1026\.37\(m\).*1026\.38\(l\)/);
   assert.match(EXPLANATIONS.appraisal.source.reference, /1026\.37\(m\).*1026\.38\(p\)/);
   assert.match(EXPLANATIONS['lender-credits'].source.reference, /1026\.38\(f\)–\(h\)/);
 });

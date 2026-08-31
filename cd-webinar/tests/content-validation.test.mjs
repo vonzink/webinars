@@ -50,7 +50,12 @@ test('invalid bounds, duplicate ids, and missing copy are reported together', ()
 });
 
 test('release validation requires recorded compliance approval', () => {
-  const errors = validateContent({ DOCUMENTS, EXPLANATIONS, HOTSPOTS, release: true });
+  assert.deepEqual(validateContent({ DOCUMENTS, EXPLANATIONS, HOTSPOTS, release: true }), []);
+  const pending = Object.fromEntries(Object.entries(EXPLANATIONS).map(([id, explanation]) => [id, {
+    ...explanation,
+    review: { status: 'pending-msfg', reviewer: '', reviewedOn: '' },
+  }]));
+  const errors = validateContent({ DOCUMENTS, EXPLANATIONS: pending, HOTSPOTS, release: true });
   assert.ok(errors.some(error => error.includes('review status must be approved')));
 });
 
