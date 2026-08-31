@@ -4,107 +4,77 @@
     height: auto;
   }
 
+  .console {
+    display: block;
+  }
+
   .webinar-header {
-    min-height: var(--header-height);
-    padding-inline: 16px;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 10px 14px;
   }
 
   .webinar-header img {
-    width: 150px;
+    width: 132px;
+  }
+
+  .webinar-header h1 {
+    font-size: 14px;
   }
 
   .webinar-layout {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
+    display: block;
   }
 
   .page-nav {
-    display: flex;
+    flex-direction: row;
     align-items: stretch;
-    gap: 18px;
+    gap: 14px;
     overflow-x: auto;
     overflow-y: hidden;
-    padding: 12px 16px;
+    padding: 12px 14px;
     border-right: 0;
-    border-bottom: 1px solid var(--line);
+    border-bottom: 1px solid var(--line-teal);
     scrollbar-width: thin;
-  }
-
-  .page-nav-heading {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip: rect(0 0 0 0);
-    white-space: nowrap;
-    clip-path: inset(50%);
   }
 
   .page-nav-group,
   .page-nav-group + .page-nav-group {
     display: flex;
     flex: 0 0 auto;
-    align-items: center;
-    gap: 8px;
+    flex-direction: column;
     margin: 0;
   }
 
   .page-nav-label {
-    margin: 0;
+    margin: 0 0 6px;
     white-space: nowrap;
   }
 
   .page-nav-buttons {
     display: flex;
-    gap: 3px;
+    gap: 6px;
   }
 
   .page-button {
     width: auto;
-    min-width: 62px;
+    min-width: 60px;
     padding: 4px;
-    border-bottom: 3px solid transparent;
-    border-left: 0;
-    white-space: nowrap;
   }
 
   .page-thumb {
-    width: 54px;
+    width: 50px;
     margin-inline: auto;
   }
 
-  .page-button-caption {
-    justify-content: center;
-    font-size: 0.7rem;
-  }
-
-  .page-button[aria-current="page"] {
-    border-bottom-color: var(--msfg-green);
-    border-left-color: transparent;
-  }
-
-  .page-button[aria-current="page"] .page-thumb {
-    box-shadow: none;
-  }
-
-  .page-button-document {
+  .page-nav-footer {
     display: none;
-  }
-
-  .bubble-layer {
-    display: none;
-  }
-
-  .viewer-tool-magnifier {
-    display: none;
-  }
-
-  .document-region {
-    min-height: min(760px, 74vh);
   }
 
   .viewer-tools {
     flex-wrap: wrap;
+    width: 100%;
+    margin-left: 0;
   }
 
   .mobile-field-selector {
@@ -112,16 +82,17 @@
     width: 100%;
     min-width: 0;
     gap: 5px;
-    padding-top: 4px;
-    border-top: 1px solid var(--line);
+    padding-top: 8px;
+    border-top: 1px solid var(--line-teal);
   }
 
   .mobile-field-label {
     margin: 0;
-    color: var(--forest-mid);
-    font-size: 0.7rem;
-    font-weight: 750;
-    letter-spacing: 0.1em;
+    color: var(--muted-teal);
+    font-family: var(--font-display);
+    font-size: 0.62rem;
+    font-weight: 800;
+    letter-spacing: 2px;
     text-transform: uppercase;
   }
 
@@ -141,31 +112,40 @@
     min-width: 44px;
     min-height: 44px;
     padding: 8px 12px;
-    border: 1px solid var(--line);
-    border-radius: 0;
-    background: var(--white);
-    color: var(--forest-deep);
+    border: 1px solid var(--line-teal-2);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--light-teal);
     cursor: pointer;
     font-size: 0.78rem;
-    font-weight: 650;
+    font-weight: 700;
     line-height: 1.25;
   }
 
   .mobile-field-button:hover,
   .mobile-field-button[aria-pressed="true"] {
     border-color: var(--msfg-green);
-    background: var(--mist);
+    color: var(--msfg-green);
+    background: rgba(140, 198, 62, 0.1);
+  }
+
+  .document-region {
+    display: block;
+    min-height: min(700px, 68vh);
   }
 
   .document-stage {
-    min-height: min(700px, 68vh);
-    padding: 16px;
+    min-height: min(660px, 62vh);
+    padding: 16px 12px 24px;
+  }
+
+  .hint-pill,
+  .decoder-wrap {
+    display: none;
   }
 
   .explanation-panel {
-    padding: 20px 18px;
-    border-top: 1px solid var(--line);
-    border-left: 0;
+    border-top: 1px solid var(--line-teal);
   }
 
   .explanation-panel:has([data-selected-explanation]) {
@@ -189,34 +169,16 @@
 }
 
 @media (max-width: 520px) {
-  .webinar-header {
-    gap: 12px;
-  }
-
   .webinar-header img {
-    width: 118px;
-  }
-
-  .webinar-header h1 {
-    font-size: 1rem;
+    width: 112px;
   }
 
   .eyebrow {
-    font-size: 0.58rem;
-  }
-
-  .viewer-tools {
-    padding-inline: 12px;
-  }
-
-  .viewer-tools-label {
-    display: none;
+    font-size: 8px;
   }
 
   .viewer-tool {
-    flex: 1 1 auto;
-    min-height: 44px;
-    padding-inline: 7px;
+    min-height: 40px;
   }
 }
 

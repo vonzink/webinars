@@ -22,6 +22,10 @@ export function createHotspotViewModel(hotspot, explanation) {
   return model;
 }
 
+const LENS_SIZE = 150;
+const LENS_MAGNIFICATION = 1.8;
+const LENS_RAISE = 170;
+
 export function initViewer({ root, documents, explanations, hotspots }) {
   if (!root) throw new TypeError('viewer root is required');
 
@@ -32,14 +36,120 @@ export function initViewer({ root, documents, explanations, hotspots }) {
   const documentStage = root.querySelector('[data-document-stage]');
   const explanationPanel = root.querySelector('[data-explanation-panel]');
   const viewerDocument = root.ownerDocument;
+  const region = documentStage.parentElement;
   let state = { ...DEFAULT_STATE };
   let animationFrame = 0;
+  let hoveredHotspotId = null;
 
-  const bubbleLayer = createElement('div', 'bubble-layer');
-  bubbleLayer.dataset.bubbleLayer = '';
-  documentStage.parentElement.append(bubbleLayer);
-  const bubblePositions = new Map();
-  let bubbleSpawnCount = 0;
+  /* Magnify lens — one region-level element so the page canvas never clips it. */
+  const lens = createElement('div', 'magnifier-lens');
+  lens.dataset.magnifierLens = '';
+  lens.setAttribute('aria-hidden', 'true');
+  lens.hidden = true;
+  region.append(lens);
+
+  /* Floating decoder card, fixed bottom-right until dragged. */
+  const decoderWrap = createElement('div', 'decoder-wrap');
+  decoderWrap.dataset.decoderCard = '';
+  region.append(decoderWrap);
+  let cardOffset = null;
+
+  const hideLens = () => { lens.hidden = true; };
+
+  const positionLens = event => {
+    const canvas = documentStage.querySelector('[data-page-canvas]');
+    if (!canvas) return hideLens();
+    const canvasRect = canvas.getBoundingClientRect();
+    const regionRect = region.getBoundingClientRect();
+    if (canvasRect.width === 0 || canvasRect.height === 0) return hideLens();
+
+    const cx = event.clientX - canvasRect.left;
+    const cy = event.clientY - canvasRect.top;
+    const page = pages.find(candidate => candidate.id === state.pageId);
+    lens.style.backgroundImage = page ? `url("${page.image}")` : 'none';
+    lens.style.left = `${event.clientX - regionRect.left - LENS_SIZE / 2}px`;
+    lens.style.top = `${event.clientY - regionRect.top - LENS_RAISE}px`;
+    lens.style.backgroundSize = `${canvasRect.width * LENS_MAGNIFICATION}px ${canvasRect.height * LENS_MAGNIFICATION}px`;
+    lens.style.backgroundPosition = `${LENS_SIZE / 2 - cx * LENS_MAGNIFICATION}px ${LENS_SIZE / 2 - cy * LENS_MAGNIFICATION}px`;
+    lens.hidden = false;
+  };
+
+  const modelFor = hotspotId => {
+    const hotspot = hotspots.find(candidate => candidate.id === hotspotId);
+    return hotspot ? createHotspotViewModel(hotspot, explanations[hotspot.explanationId]) : null;
+  };
+
+  const renderDecoderCard = () => {
+    const active = modelFor(state.selectedHotspotId) || modelFor(hoveredHotspotId);
+    const isPinned = Boolean(state.selectedHotspotId) && active?.id === state.selectedHotspotId;
+
+    if (!active) {
+      cardOffset = null;
+      decoderWrap.style.left = '';
+      decoderWrap.style.top = '';
+      decoderWrap.style.right = '';
+      decoderWrap.style.bottom = '';
+      const empty = createElement('div', 'decoder-empty');
+      const lead = createElement('b', '', 'Explore the document.');
+      empty.append(lead, viewerDocument.createTextNode(' Point at any highlighted line to magnify it — click to pin the plain-English explanation here.'));
+      decoderWrap.replaceChildren(empty);
+      return;
+    }
+
+    const documentName = pages.find(candidate => candidate.id === state.pageId)?.document.title ?? '';
+    const stack = createElement('div', 'decoder-stack');
+    const card = createElement('article', 'decoder-card');
+    card.setAttribute('aria-label', active.title);
+
+    const tagRow = createElement('div', 'decoder-tag-row');
+    tagRow.dataset.decoderDrag = '';
+    tagRow.append(createElement('p', 'decoder-tag', `Decoded · ${documentName}`));
+    if (isPinned) {
+      const unpin = createElement('button', 'decoder-unpin', 'Pinned ✕');
+      unpin.type = 'button';
+      unpin.setAttribute('aria-label', `Unpin ${active.title}`);
+      unpin.addEventListener('click', () => dispatch({ type: 'clear-selection' }));
+      tagRow.append(unpin);
+    }
+
+    card.append(tagRow, createElement('h2', 'decoder-title', active.title), createElement('p', 'decoder-body', active.body));
+    if (active.learnerQuestion) card.append(createElement('p', 'explanation-question', active.learnerQuestion));
+    stack.append(card);
+    decoderWrap.replaceChildren(stack);
+    if (cardOffset) {
+      decoderWrap.style.left = `${cardOffset.x}px`;
+      decoderWrap.style.top = `${cardOffset.y}px`;
+      decoderWrap.style.right = 'auto';
+      decoderWrap.style.bottom = 'auto';
+    }
+
+    tagRow.addEventListener('pointerdown', event => {
+      if (event.target.closest('.decoder-unpin')) return;
+      event.preventDefault();
+      const rect = decoderWrap.getBoundingClientRect();
+      const start = { x: rect.left, y: rect.top };
+      const originX = event.clientX;
+      const originY = event.clientY;
+      decoderWrap.classList.add('is-dragging');
+      const move = moveEvent => {
+        cardOffset = {
+          x: Math.max(8, Math.min(window.innerWidth - 120, start.x + moveEvent.clientX - originX)),
+          y: Math.max(8, Math.min(window.innerHeight - 80, start.y + moveEvent.clientY - originY)),
+        };
+        decoderWrap.style.left = `${cardOffset.x}px`;
+        decoderWrap.style.top = `${cardOffset.y}px`;
+        decoderWrap.style.right = 'auto';
+        decoderWrap.style.bottom = 'auto';
+      };
+      const stop = () => {
+        decoderWrap.classList.remove('is-dragging');
+        viewerDocument.removeEventListener('pointermove', move);
+        viewerDocument.removeEventListener('pointerup', stop);
+      };
+      viewerDocument.addEventListener('pointermove', move);
+      viewerDocument.addEventListener('pointerup', stop);
+    });
+  };
 
   const renderNavigation = () => {
     if (!pageNav.querySelector('[data-page-button]')) {
@@ -69,11 +179,7 @@ export function initViewer({ root, documents, explanations, hotspots }) {
           thumb.draggable = false;
           thumb.setAttribute('aria-hidden', 'true');
 
-          const caption = createElement('span', 'page-button-caption');
-          const pageLabel = createElement('span', 'page-button-label', `Page ${page.number}`);
-          const shortLabel = createElement('span', 'page-button-document', document.shortLabel);
-          shortLabel.setAttribute('aria-hidden', 'true');
-          caption.append(pageLabel, shortLabel);
+          const caption = createElement('span', 'page-button-caption', `Page ${page.number}`);
           button.append(thumb, caption);
           button.addEventListener('click', () => dispatch({ type: 'select-page', pageId: page.id }));
           buttons.append(button);
@@ -81,6 +187,16 @@ export function initViewer({ root, documents, explanations, hotspots }) {
         group.append(buttons);
         pageNav.append(group);
       }
+
+      const footer = createElement('p', 'page-nav-footer');
+      footer.append(
+        viewerDocument.createTextNode('Mountain State Financial Group, LLC'),
+        createElement('br'),
+        viewerDocument.createTextNode('NMLS# 1314257 · Equal Housing Lender'),
+        createElement('br'),
+      );
+      footer.append(Object.assign(createElement('span', 'footer-soft', 'Sample forms for education only.'), {}));
+      pageNav.append(footer);
     }
 
     for (const button of pageNav.querySelectorAll('[data-page-button]')) {
@@ -91,29 +207,30 @@ export function initViewer({ root, documents, explanations, hotspots }) {
 
   const renderTools = () => {
     const actions = [
-      ['fit', 'Fit'],
-      ['zoom-out', 'Zoom out'],
-      ['zoom-in', 'Zoom in'],
+      ['fit', 'Fit', 'Fit'],
+      ['zoom-out', 'Zoom out', '−'],
+      ['zoom-in', 'Zoom in', '＋'],
     ];
     if (!viewerTools.querySelector('[data-action]')) {
-      const label = createElement('span', 'viewer-tools-label', 'View');
-      const controls = actions.map(([action, text]) => {
-        const button = createElement('button', 'viewer-tool', text);
-        button.type = 'button';
-        button.dataset.action = action;
-        button.addEventListener('click', () => {
-          if (button.getAttribute('aria-disabled') === 'true') return;
-          dispatch({ type: action });
-        });
-        return button;
-      });
+      const fit = createElement('button', 'viewer-tool', 'Fit');
+      fit.type = 'button';
+      fit.dataset.action = 'fit';
+      const minus = createElement('button', 'viewer-tool', '−');
+      minus.type = 'button';
+      minus.dataset.action = 'zoom-out';
+      minus.setAttribute('aria-label', 'Zoom out');
       const zoom = createElement('output', 'viewer-zoom');
       zoom.setAttribute('aria-label', 'Current zoom');
-      const magnifier = createElement('button', 'viewer-tool viewer-tool-magnifier', 'Magnifier');
-      magnifier.type = 'button';
-      magnifier.dataset.magnifierToggle = '';
-      magnifier.setAttribute('title', 'Follow the pointer with a magnifying lens');
-      magnifier.addEventListener('click', () => dispatch({ type: 'toggle-magnifier' }));
+      const plus = createElement('button', 'viewer-tool', '＋');
+      plus.type = 'button';
+      plus.dataset.action = 'zoom-in';
+      plus.setAttribute('aria-label', 'Zoom in');
+      for (const button of [fit, minus, plus]) {
+        button.addEventListener('click', () => {
+          if (button.getAttribute('aria-disabled') === 'true') return;
+          dispatch({ type: button.dataset.action });
+        });
+      }
       const fieldSelector = createElement('section', 'mobile-field-selector');
       fieldSelector.dataset.mobileFieldSelector = '';
       fieldSelector.setAttribute('aria-label', 'Fields on this page');
@@ -121,11 +238,8 @@ export function initViewer({ root, documents, explanations, hotspots }) {
       const fieldList = createElement('div', 'mobile-field-list');
       fieldList.dataset.mobileFieldList = '';
       fieldSelector.append(fieldLabel, fieldList);
-      viewerTools.append(label, ...controls, zoom, magnifier, fieldSelector);
+      viewerTools.append(fit, minus, zoom, plus, fieldSelector);
     }
-
-    viewerTools.querySelector('[data-magnifier-toggle]')
-      .setAttribute('aria-pressed', String(state.magnifier));
 
     for (const [action] of actions) {
       const button = viewerTools.querySelector(`[data-action="${action}"]`);
@@ -187,16 +301,14 @@ export function initViewer({ root, documents, explanations, hotspots }) {
     const currentCanvas = documentStage.querySelector('[data-page-canvas]');
     if (currentCanvas?.dataset.pageId === page.id) {
       for (const button of currentCanvas.querySelectorAll('[data-hotspot-id]')) {
-        button.setAttribute('aria-pressed', String(state.openBubbleIds.includes(button.dataset.hotspotId)));
-      }
-      currentCanvas.classList.toggle('magnifier-on', state.magnifier);
-      if (!state.magnifier) {
-        const lens = currentCanvas.querySelector('[data-magnifier-lens]');
-        if (lens) lens.hidden = true;
+        button.setAttribute('aria-pressed', String(button.dataset.hotspotId === state.selectedHotspotId));
       }
       renderPageGeometry();
       return;
     }
+
+    hoveredHotspotId = null;
+    hideLens();
 
     const canvas = createElement('div', 'page-canvas');
     canvas.dataset.pageCanvas = '';
@@ -229,9 +341,22 @@ export function initViewer({ root, documents, explanations, hotspots }) {
       button.type = 'button';
       button.dataset.hotspotId = model.id;
       button.setAttribute('aria-label', model.ariaLabel);
-      button.setAttribute('aria-pressed', String(state.openBubbleIds.includes(model.id)));
+      button.setAttribute('aria-pressed', String(model.id === state.selectedHotspotId));
       Object.assign(button.style, model.style);
       button.addEventListener('click', () => dispatch({ type: 'select-hotspot', hotspotId: model.id }));
+      button.addEventListener('pointerenter', event => {
+        hoveredHotspotId = model.id;
+        if (!state.selectedHotspotId) positionLens(event);
+        renderDecoderCard();
+      });
+      button.addEventListener('pointermove', event => {
+        if (hoveredHotspotId === model.id && !state.selectedHotspotId) positionLens(event);
+      });
+      button.addEventListener('pointerleave', () => {
+        if (hoveredHotspotId === model.id) hoveredHotspotId = null;
+        hideLens();
+        renderDecoderCard();
+      });
       hotspotLayer.append(button);
     }
 
@@ -249,128 +374,10 @@ export function initViewer({ root, documents, explanations, hotspots }) {
       documentStage.replaceChildren(unavailable);
     }, { once: true });
 
-    const lens = createElement('div', 'magnifier-lens');
-    lens.dataset.magnifierLens = '';
-    lens.setAttribute('aria-hidden', 'true');
-    lens.hidden = true;
-    lens.style.backgroundImage = `url("${page.image}")`;
-
-    const MAGNIFICATION = 2.4;
-    const positionLens = event => {
-      const rect = canvas.getBoundingClientRect();
-      if (rect.width === 0 || rect.height === 0) return;
-      const x = event.clientX - rect.left;
-      const y = event.clientY - rect.top;
-      const lensSize = lens.offsetWidth || 200;
-      lens.style.left = `${x - lensSize / 2}px`;
-      lens.style.top = `${y - lensSize / 2}px`;
-      lens.style.backgroundSize = `${rect.width * MAGNIFICATION}px ${rect.height * MAGNIFICATION}px`;
-      lens.style.backgroundPosition = `${lensSize / 2 - x * MAGNIFICATION}px ${lensSize / 2 - y * MAGNIFICATION}px`;
-    };
-    canvas.addEventListener('pointermove', event => {
-      if (!state.magnifier) return;
-      lens.hidden = false;
-      positionLens(event);
-    });
-    canvas.addEventListener('pointerleave', () => { lens.hidden = true; });
-    canvas.classList.toggle('magnifier-on', state.magnifier);
-
-    canvas.append(pageHeading, image, hotspotLayer, lens);
+    canvas.append(pageHeading, image, hotspotLayer);
     documentStage.replaceChildren(canvas);
     renderPageGeometry();
     image.src = page.image;
-  };
-
-  const renderBubbles = () => {
-    const region = bubbleLayer.parentElement;
-    for (const bubble of bubbleLayer.querySelectorAll('[data-bubble-id]')) {
-      if (!state.openBubbleIds.includes(bubble.dataset.bubbleId)) {
-        bubblePositions.delete(bubble.dataset.bubbleId);
-        bubble.remove();
-      }
-    }
-
-    state.openBubbleIds.forEach((hotspotId, index) => {
-      let bubble = bubbleLayer.querySelector(`[data-bubble-id="${CSS.escape(hotspotId)}"]`);
-      if (!bubble) {
-        const hotspot = hotspots.find(candidate => candidate.id === hotspotId);
-        if (!hotspot) return;
-        const model = createHotspotViewModel(hotspot, explanations[hotspot.explanationId]);
-
-        bubble = createElement('article', 'explanation-bubble');
-        bubble.dataset.bubbleId = hotspotId;
-        bubble.setAttribute('role', 'note');
-        bubble.setAttribute('aria-label', model.title);
-
-        const header = createElement('div', 'bubble-header');
-        const kicker = createElement('p', 'explanation-kicker', 'Selected item');
-        const close = createElement('button', 'bubble-close', '×');
-        close.type = 'button';
-        close.setAttribute('aria-label', `Close ${model.title}`);
-        close.addEventListener('click', () => dispatch({ type: 'close-bubble', hotspotId }));
-        header.append(kicker, close);
-
-        const title = createElement('h2', 'bubble-title', model.title);
-        const body = createElement('p', 'explanation-body bubble-body', model.body);
-        bubble.append(header, title, body);
-        if (model.learnerQuestion) {
-          bubble.append(createElement('p', 'explanation-question', model.learnerQuestion));
-        }
-
-        if (!bubblePositions.has(hotspotId)) {
-          const cascade = bubbleSpawnCount % 6;
-          bubbleSpawnCount += 1;
-          const regionWidth = region.clientWidth || 900;
-          bubblePositions.set(hotspotId, {
-            x: Math.max(16, regionWidth - 396 - cascade * 30),
-            y: 76 + cascade * 34,
-          });
-        }
-
-        header.addEventListener('pointerdown', event => {
-          if (event.target === close) return;
-          event.preventDefault();
-          const start = bubblePositions.get(hotspotId);
-          const originX = event.clientX;
-          const originY = event.clientY;
-          let lastX = originX;
-          bubble.classList.add('is-dragging');
-          dispatch({ type: 'select-hotspot', hotspotId });
-          const move = moveEvent => {
-            const tilt = Math.max(-4, Math.min(4, (moveEvent.clientX - lastX) * 0.6));
-            lastX = moveEvent.clientX;
-            const next = {
-              x: Math.max(8, Math.min(region.clientWidth - 96, start.x + moveEvent.clientX - originX)),
-              y: Math.max(8, Math.min(region.clientHeight - 56, start.y + moveEvent.clientY - originY)),
-            };
-            bubblePositions.set(hotspotId, next);
-            bubble.style.left = `${next.x}px`;
-            bubble.style.top = `${next.y}px`;
-            bubble.style.setProperty('--bubble-tilt', `${tilt}deg`);
-          };
-          const stop = () => {
-            bubble.classList.remove('is-dragging');
-            bubble.style.setProperty('--bubble-tilt', '0deg');
-            viewerDocument.removeEventListener('pointermove', move);
-            viewerDocument.removeEventListener('pointerup', stop);
-          };
-          viewerDocument.addEventListener('pointermove', move);
-          viewerDocument.addEventListener('pointerup', stop);
-        });
-
-        bubble.addEventListener('pointerdown', () => {
-          if (state.selectedHotspotId !== hotspotId) dispatch({ type: 'select-hotspot', hotspotId });
-        });
-
-        bubbleLayer.append(bubble);
-      }
-
-      const position = bubblePositions.get(hotspotId);
-      bubble.style.left = `${position.x}px`;
-      bubble.style.top = `${position.y}px`;
-      bubble.style.zIndex = String(20 + index);
-      bubble.classList.toggle('is-front', index === state.openBubbleIds.length - 1);
-    });
   };
 
   const renderExplanation = () => {
@@ -410,8 +417,9 @@ export function initViewer({ root, documents, explanations, hotspots }) {
     renderNavigation();
     renderTools();
     renderPage();
-    renderBubbles();
+    renderDecoderCard();
     renderExplanation();
+    if (state.selectedHotspotId) hideLens();
   };
 
   const dispatch = action => {
@@ -422,11 +430,9 @@ export function initViewer({ root, documents, explanations, hotspots }) {
     state = reduceViewerState(state, action, pageIds);
     render();
 
-    if ((action.type === 'clear-selection' && selectedBefore)
-      || (action.type === 'close-bubble' && action.hotspotId)) {
-      const closedId = action.type === 'close-bubble' ? action.hotspotId : selectedBefore;
+    if (action.type === 'clear-selection' && selectedBefore) {
       const selectedButton = [...root.querySelectorAll('[data-hotspot-id]')]
-        .find(button => button.dataset.hotspotId === closedId);
+        .find(button => button.dataset.hotspotId === selectedBefore);
       selectedButton?.focus();
     } else if (pageChanged) {
       documentStage.querySelector('[data-page-heading]')?.focus();
@@ -458,7 +464,8 @@ export function initViewer({ root, documents, explanations, hotspots }) {
       observer.disconnect();
       cancelAnimationFrame(animationFrame);
       viewerDocument.removeEventListener('keydown', handleKeydown);
-      bubbleLayer.remove();
+      lens.remove();
+      decoderWrap.remove();
     },
   };
 }

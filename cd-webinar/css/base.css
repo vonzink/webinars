@@ -7,8 +7,8 @@
 html {
   min-width: 320px;
   color: var(--charcoal);
-  background: var(--mist);
-  font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: var(--chrome);
+  font-family: var(--font-body);
   line-height: 1.5;
 }
 

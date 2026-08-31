@@ -6,24 +6,30 @@
   <title>Understanding Your Loan Estimate and Closing Disclosure | MSFG</title>
   <meta name="description" content="Explore fictional CFPB Loan Estimate and Closing Disclosure samples and learn what each item means.">
   <link rel="icon" href="data:,">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Lato:wght@400;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./css/tokens.css">
   <link rel="stylesheet" href="./css/base.css">
   <link rel="stylesheet" href="./css/webinar.css">
   <link rel="stylesheet" href="./css/responsive.css">
 </head>
 <body>
-  <header class="webinar-header">
-    <img src="./assets/brand/logo-horizontal.svg" alt="Mountain State Financial Group">
-    <div><p class="eyebrow">Interactive webinar</p><h1>Understand Your LE and CD</h1></div>
-  </header>
-  <main class="webinar-layout" data-viewer-root>
-    <nav class="page-nav" aria-label="Disclosure pages" data-page-nav></nav>
-    <section class="document-region" aria-label="Selected disclosure page">
+  <div class="console" data-viewer-root>
+    <header class="webinar-header">
+      <img src="./assets/brand/logo-horizontal-knockout.svg" alt="Mountain State Financial Group">
+      <div><p class="eyebrow">Interactive decoder</p><h1>Understand Your LE and CD</h1></div>
       <div class="viewer-tools" aria-label="Document zoom controls" data-viewer-tools></div>
-      <div class="document-stage" data-document-stage></div>
-    </section>
-    <aside class="explanation-panel" aria-live="polite" aria-atomic="true" data-explanation-panel></aside>
-  </main>
+    </header>
+    <main class="webinar-layout">
+      <nav class="page-nav" aria-label="Disclosure pages" data-page-nav></nav>
+      <section class="document-region" aria-label="Selected disclosure page">
+        <div class="document-stage" data-document-stage></div>
+        <p class="hint-pill" aria-hidden="true">Hover any highlighted line to magnify &middot; click to pin its explanation</p>
+      </section>
+      <aside class="explanation-panel" aria-live="polite" aria-atomic="true" data-explanation-panel></aside>
+    </main>
+  </div>
   <p class="educational-disclaimer">Educational example using fictional CFPB sample documents. This is not a loan quote or legal, tax, or financial advice.</p>
   <script type="module" src="./js/app.js"></script>
 </body>

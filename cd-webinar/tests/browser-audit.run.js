@@ -44,6 +44,7 @@ async (page) => {
     await waitFrames();
   };
   const touchTap = async locator => {
+    await locator.scrollIntoViewIfNeeded();
     const box = await locator.boundingBox();
     if (!box) throw new Error('touch target has no bounding box');
     const client = await page.context().newCDPSession(page);
@@ -169,6 +170,11 @@ async (page) => {
     await apr.hover();
     check(await apr.evaluate(element => parseFloat(getComputedStyle(element).outlineWidth) > 0),
       `${label}: mouse hover does not preview a hotspot`);
+    if (viewport.width >= 900) {
+      await waitFrames();
+      check(await page.locator('[data-magnifier-lens]').isVisible(),
+        `${label}: hovering a field does not raise the magnify lens`);
+    }
     await apr.click();
     const explanation = page.locator('[data-selected-explanation]');
     check(await explanation.locator('h2').textContent() === 'Annual Percentage Rate',
@@ -179,33 +185,28 @@ async (page) => {
       `${label}: expected exactly one selected hotspot`, 'accessibility');
 
     if (viewport.width >= 900) {
-      const bubble = page.locator('[data-bubble-id="cd.p5.apr"]');
-      check(await bubble.isVisible(), `${label}: APR bubble is not visible`);
-      check(await bubble.locator('.bubble-title').textContent() === 'Annual Percentage Rate',
-        `${label}: APR bubble title is wrong`);
-      check(await bubble.locator('.explanation-body').isVisible(), `${label}: APR bubble paragraph is not visible`);
-
-      const beforeDrag = await bubble.boundingBox();
-      await page.mouse.move(beforeDrag.x + 60, beforeDrag.y + 26);
-      await page.mouse.down();
-      await page.mouse.move(beforeDrag.x - 90, beforeDrag.y + 140, { steps: 5 });
-      await page.mouse.up();
-      const afterDrag = await bubble.boundingBox();
-      check(Math.abs(afterDrag.x - beforeDrag.x) > 40 || Math.abs(afterDrag.y - beforeDrag.y) > 40,
-        `${label}: APR bubble did not move when dragged by its header`);
-
-      const magnifierToggle = page.locator('[data-magnifier-toggle]');
-      check(await magnifierToggle.getAttribute('aria-pressed') === 'false',
-        `${label}: magnifier starts pressed`, 'accessibility');
-      await magnifierToggle.click();
-      const canvasBox = await page.locator('[data-page-canvas]').boundingBox();
-      await page.mouse.move(canvasBox.x + canvasBox.width / 2, canvasBox.y + canvasBox.height / 2);
-      await waitFrames();
-      check(await page.locator('[data-magnifier-lens]').isVisible(),
-        `${label}: magnifier lens does not follow the pointer`);
-      await magnifierToggle.click();
+      const card = page.locator('[data-decoder-card]');
+      check(await card.locator('.decoder-title').textContent() === 'Annual Percentage Rate',
+        `${label}: decoder card does not show the pinned APR field`);
+      check(await card.locator('.decoder-body').isVisible(), `${label}: decoder card paragraph is not visible`);
+      check(await card.locator('.decoder-unpin').isVisible(), `${label}: pinned card has no unpin control`);
       check(await page.locator('[data-magnifier-lens]').isHidden(),
-        `${label}: magnifier lens remains after toggling off`);
+        `${label}: magnify lens stays up while a field is pinned`);
+
+      const beforeDrag = await card.boundingBox();
+      const handle = await card.locator('.decoder-tag-row').boundingBox();
+      await page.mouse.move(handle.x + 30, handle.y + handle.height / 2);
+      await page.mouse.down();
+      await page.mouse.move(handle.x - 160, handle.y - 140, { steps: 5 });
+      await page.mouse.up();
+      const afterDrag = await card.boundingBox();
+      check(Math.abs(afterDrag.x - beforeDrag.x) > 40 || Math.abs(afterDrag.y - beforeDrag.y) > 40,
+        `${label}: decoder card did not move when dragged by its header`);
+
+      await card.locator('.decoder-unpin').click();
+      check(await page.locator('[data-selected-explanation]').count() === 0,
+        `${label}: unpin chip did not clear the pinned field`);
+      await apr.click();
     } else {
       check(await explanation.locator('.explanation-body').isVisible(), `${label}: APR paragraph is not visible`);
     }

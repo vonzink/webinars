@@ -1,11 +1,21 @@
 :root {
-  --forest-deep: #0c3335;
+  /* Forest Console palette (MSFG brand) */
+  --forest-deep: #104547;
   --forest-mid: #14494b;
+  --chrome: #0b3335;
   --msfg-green: #8cc63e;
+  --msfg-green-bright: #9ed455;
+  --support-green: #4b7b4d;
+  --line-teal: #1c5254;
+  --line-teal-2: #2a6a6c;
+  --muted-teal: #7fa9a4;
+  --light-teal: #cfe3d2;
   --mist: #f5f7f4;
   --white: #ffffff;
   --charcoal: #404041;
   --line: #d8dfdb;
-  --focus: #245e00;
-  --header-height: 76px;
+  --focus: #b7e386;
+  --header-height: 62px;
+  --font-display: 'Montserrat', ui-sans-serif, -apple-system, sans-serif;
+  --font-body: 'Lato', ui-sans-serif, -apple-system, sans-serif;
 }
