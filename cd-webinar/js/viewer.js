@@ -79,6 +79,12 @@ export function initViewer({ root, documents, explanations, hotspots }) {
     return hotspot ? createHotspotViewModel(hotspot, explanations[hotspot.explanationId]) : null;
   };
 
+  const buildAskCallout = question => {
+    const callout = createElement('p', 'explanation-question');
+    callout.append(createElement('b', '', 'Ask your lender: '), viewerDocument.createTextNode(question));
+    return callout;
+  };
+
   const renderDecoderCard = () => {
     const active = modelFor(state.selectedHotspotId) || modelFor(hoveredHotspotId);
     const isPinned = Boolean(state.selectedHotspotId) && active?.id === state.selectedHotspotId;
@@ -113,7 +119,7 @@ export function initViewer({ root, documents, explanations, hotspots }) {
     }
 
     card.append(tagRow, createElement('h2', 'decoder-title', active.title), createElement('p', 'decoder-body', active.body));
-    if (active.learnerQuestion) card.append(createElement('p', 'explanation-question', active.learnerQuestion));
+    if (active.learnerQuestion) card.append(buildAskCallout(active.learnerQuestion));
     stack.append(card);
     decoderWrap.replaceChildren(stack);
     if (cardOffset) {
@@ -398,7 +404,7 @@ export function initViewer({ root, documents, explanations, hotspots }) {
       content.append(close, kicker, title, body);
 
       if (model.learnerQuestion) {
-        content.append(createElement('p', 'explanation-question', model.learnerQuestion));
+        content.append(buildAskCallout(model.learnerQuestion));
       }
 
       explanationPanel.replaceChildren(content);

@@ -523,6 +523,14 @@ body {
   line-height: 1.55;
 }
 
+.decoder-card .explanation-question {
+  margin-top: 12px;
+  padding: 10px 12px;
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
 .decoder-empty {
   padding: 16px 18px;
   border: 1px dashed var(--line-teal-2);
