@@ -19,6 +19,8 @@ export function createHotspotViewModel(hotspot, explanation) {
     style: hotspotPercentStyle(hotspot.bounds),
   };
   if (explanation.learnerQuestion) model.learnerQuestion = explanation.learnerQuestion;
+  if (explanation.cards) model.cards = explanation.cards;
+  if (explanation.source?.reference) model.sourceReference = explanation.source.reference;
   return model;
 }
 
@@ -53,6 +55,47 @@ export function initViewer({ root, documents, explanations, hotspots }) {
   decoderWrap.dataset.decoderCard = '';
   region.append(decoderWrap);
   let cardOffset = null;
+  let cardSize = null;
+  let cardPaneIndex = 0;
+  let cardActiveId = null;
+
+  const docSwitch = root.querySelector('[data-doc-switch]');
+  const docOf = pageId => pageId.split('-')[0];
+  const lastPageByDoc = Object.fromEntries(documents.map(document => [document.id, document.pages[0].id]));
+
+  const cardResizeObserver = new ResizeObserver(() => {
+    const card = decoderWrap.querySelector('.decoder-card');
+    /* Native CSS resize writes inline width/height; persist those so the
+       user's chosen size survives re-renders and field changes. */
+    if (card && (card.style.width || card.style.height)) {
+      cardSize = { width: card.style.width, height: card.style.height };
+    }
+  });
+
+  const renderDocSwitch = () => {
+    if (!docSwitch) return;
+    if (!docSwitch.querySelector('[data-doc-switch-button]')) {
+      for (const document of documents) {
+        const button = createElement('button', 'doc-switch-button');
+        button.type = 'button';
+        button.dataset.docSwitchButton = '';
+        button.dataset.doc = document.id;
+        button.append(
+          createElement('span', 'doc-switch-short', document.shortLabel),
+          createElement('span', 'doc-switch-full', document.title),
+        );
+        button.setAttribute('aria-label', document.title);
+        button.addEventListener('click', () => {
+          if (docOf(state.pageId) === document.id) return;
+          dispatch({ type: 'select-page', pageId: lastPageByDoc[document.id] });
+        });
+        docSwitch.append(button);
+      }
+    }
+    for (const button of docSwitch.querySelectorAll('[data-doc-switch-button]')) {
+      button.setAttribute('aria-pressed', String(button.dataset.doc === docOf(state.pageId)));
+    }
+  };
 
   const hideLens = () => { lens.hidden = true; };
 
@@ -91,6 +134,8 @@ export function initViewer({ root, documents, explanations, hotspots }) {
 
     if (!active) {
       cardOffset = null;
+      cardActiveId = null;
+      cardPaneIndex = 0;
       decoderWrap.style.left = '';
       decoderWrap.style.top = '';
       decoderWrap.style.right = '';
@@ -101,6 +146,14 @@ export function initViewer({ root, documents, explanations, hotspots }) {
       decoderWrap.replaceChildren(empty);
       return;
     }
+
+    if (active.id !== cardActiveId) {
+      cardActiveId = active.id;
+      cardPaneIndex = 0;
+    }
+    const panes = active.cards ?? [{ heading: '', text: active.body }];
+    cardPaneIndex = Math.max(0, Math.min(panes.length - 1, cardPaneIndex));
+    const pane = panes[cardPaneIndex];
 
     const documentName = pages.find(candidate => candidate.id === state.pageId)?.document.title ?? '';
     const stack = createElement('div', 'decoder-stack');
@@ -118,10 +171,53 @@ export function initViewer({ root, documents, explanations, hotspots }) {
       tagRow.append(unpin);
     }
 
-    card.append(tagRow, createElement('h2', 'decoder-title', active.title), createElement('p', 'decoder-body', active.body));
-    if (active.learnerQuestion) card.append(buildAskCallout(active.learnerQuestion));
+    const paneHeading = createElement('p', 'decoder-pane-heading', pane.heading);
+    const paneBody = createElement('p', 'decoder-body', pane.text);
+    paneBody.dataset.decoderPane = String(cardPaneIndex);
+    card.append(tagRow, createElement('h2', 'decoder-title', active.title), paneHeading, paneBody);
+    if (cardPaneIndex === 0 && active.learnerQuestion) card.append(buildAskCallout(active.learnerQuestion));
+    if (cardPaneIndex === panes.length - 1 && active.sourceReference) {
+      card.append(createElement('p', 'decoder-source', `Source: ${active.sourceReference}`));
+    }
+
+    if (panes.length > 1) {
+      const controls = createElement('div', 'decoder-flip');
+      const back = createElement('button', 'decoder-flip-button', '‹');
+      back.type = 'button';
+      back.dataset.decoderFlipBack = '';
+      back.setAttribute('aria-label', 'Previous card');
+      back.disabled = cardPaneIndex === 0;
+      back.addEventListener('click', () => { cardPaneIndex -= 1; renderDecoderCard(); });
+
+      const dots = createElement('div', 'decoder-flip-dots');
+      panes.forEach((item, index) => {
+        const dot = createElement('button', 'decoder-flip-dot');
+        dot.type = 'button';
+        dot.setAttribute('aria-label', item.heading || `Card ${index + 1}`);
+        dot.setAttribute('aria-pressed', String(index === cardPaneIndex));
+        dot.addEventListener('click', () => { cardPaneIndex = index; renderDecoderCard(); });
+        dots.append(dot);
+      });
+
+      const forward = createElement('button', 'decoder-flip-button', '›');
+      forward.type = 'button';
+      forward.dataset.decoderFlipNext = '';
+      forward.setAttribute('aria-label', 'Next card');
+      forward.disabled = cardPaneIndex === panes.length - 1;
+      forward.addEventListener('click', () => { cardPaneIndex += 1; renderDecoderCard(); });
+
+      controls.append(back, dots, forward);
+      card.append(controls);
+    }
+
+    if (cardSize) {
+      card.style.width = cardSize.width;
+      card.style.height = cardSize.height;
+    }
     stack.append(card);
     decoderWrap.replaceChildren(stack);
+    cardResizeObserver.disconnect();
+    cardResizeObserver.observe(card);
     if (cardOffset) {
       decoderWrap.style.left = `${cardOffset.x}px`;
       decoderWrap.style.top = `${cardOffset.y}px`;
@@ -164,6 +260,7 @@ export function initViewer({ root, documents, explanations, hotspots }) {
 
       for (const document of documents) {
         const group = createElement('section', 'page-nav-group');
+        group.dataset.doc = document.id;
         group.setAttribute('aria-labelledby', `${document.id}-page-group`);
 
         const label = createElement('h3', 'page-nav-label', document.title);
@@ -205,6 +302,9 @@ export function initViewer({ root, documents, explanations, hotspots }) {
       pageNav.append(footer);
     }
 
+    for (const group of pageNav.querySelectorAll('.page-nav-group[data-doc]')) {
+      group.hidden = docSwitch ? group.dataset.doc !== docOf(state.pageId) : false;
+    }
     for (const button of pageNav.querySelectorAll('[data-page-button]')) {
       if (button.dataset.pageId === state.pageId) button.setAttribute('aria-current', 'page');
       else button.removeAttribute('aria-current');
@@ -420,6 +520,8 @@ export function initViewer({ root, documents, explanations, hotspots }) {
   };
 
   const render = () => {
+    lastPageByDoc[docOf(state.pageId)] = state.pageId;
+    renderDocSwitch();
     renderNavigation();
     renderTools();
     renderPage();
@@ -468,10 +570,12 @@ export function initViewer({ root, documents, explanations, hotspots }) {
     dispatch,
     destroy: () => {
       observer.disconnect();
+      cardResizeObserver.disconnect();
       cancelAnimationFrame(animationFrame);
       viewerDocument.removeEventListener('keydown', handleKeydown);
       lens.remove();
       decoderWrap.remove();
+      if (docSwitch) docSwitch.replaceChildren();
     },
   };
 }

@@ -26,6 +26,7 @@ After the reviewed files and official logo are final, run `node cd-webinar/scrip
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | Zachary Zink | Mortgage Broker, NMLS #451924 | 2026-08-31 | LE 1–3; CD 1–5; all 176 explanations | a56162a9f123affb55624fc4baf9e460fe0a5002746e4cd14e15252cfe002a09 | Confirmed | Confirmed (one citation corrected pre-approval) | Present | Official vector confirmed | Approved |
 | Zachary Zink | Mortgage Broker, NMLS #451924 | 2026-08-31 | LE 1–3; CD 1–5; all 176 reworked explanations + 36 asks | e9dd4d1fdc32e771883e3da96b4e7f3b114016e0ccdfd8b376330ce1c2198990 | Confirmed (handoff voice, accuracy-corrected) | Unchanged citations | Present | Official vector confirmed | Approved |
+| Zachary Zink | Mortgage Broker, NMLS #451924 | 2026-08-31 | Same corpus re-bound: each record's approved sentences re-exposed as three flip cards (`cards` field); zero wording changes | c5aeda5c61bdc1b13ba440fa5ddb1a2c4302f23363cfdcaec4711524c5787bbf | Unchanged wording | Unchanged citations | Present | Official vector confirmed | Approved |
 
 Record `Approved` only after the named reviewer actually supplies that decision. An approved entry must use a real full name and a real ISO `YYYY-MM-DD` review date; never enter an example value or invent a compliance signoff.
 

@@ -435,6 +435,12 @@ export const EXPLANATIONS = Object.freeze(Object.fromEntries(items.map(([id, tit
     id,
     title,
     body: `${what} ${group.why} ${SAMPLE_NOTE}`,
+    /* The same approved sentences, split into the decoder card's three flips. */
+    cards: Object.freeze([
+      Object.freeze({ heading: 'Quick definition', text: what }),
+      Object.freeze({ heading: 'In practice', text: group.why }),
+      Object.freeze({ heading: 'More detail', text: SAMPLE_NOTE }),
+    ]),
     source: Object.freeze({
       type: 'CFPB samples, Guide to Forms v2.1, and Regulation Z',
       reference: group.reference,

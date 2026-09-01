@@ -37,7 +37,12 @@ async (page) => {
     return image?.complete && image.naturalWidth > 0;
   });
   const currentPage = () => page.locator('[data-page-button][aria-current="page"]');
+  const revealDoc = async doc => {
+    const switchButton = page.locator(`[data-doc-switch-button][data-doc="${doc}"]`);
+    if (await switchButton.getAttribute('aria-pressed') !== 'true') await switchButton.click();
+  };
   const selectPage = async pageId => {
+    await revealDoc(pageId.split('-')[0]);
     await page.locator(`[data-page-button][data-page-id="${pageId}"]`).click();
     await page.waitForFunction(id => document.querySelector('[data-page-canvas]')?.dataset.pageId === id, pageId);
     await waitForImage();
@@ -132,6 +137,9 @@ async (page) => {
 
     check(await currentPage().count() === 1, `${label}: expected exactly one current page`, 'accessibility');
     check(await currentPage().getAttribute('data-page-id') === 'le-1', `${label}: initial page is not le-1`);
+    check(await page.locator('[data-doc-switch-button]').count() === 2, `${label}: document switch is missing`, 'accessibility');
+    check(await page.locator('[data-doc-switch-button][data-doc="le"]').getAttribute('aria-pressed') === 'true',
+      `${label}: LE is not the pressed document on load`, 'accessibility');
     check(await page.getByRole('button', { name: 'Fit', exact: true }).getAttribute('aria-disabled') === 'true',
       `${label}: Fit is not disabled at 100%`, 'accessibility');
     check(await page.getByRole('button', { name: 'Zoom out', exact: true }).getAttribute('aria-disabled') === 'true',
@@ -163,8 +171,9 @@ async (page) => {
     });
     check(await currentPage().count() === 1, `${label}: direct selection left multiple current pages`, 'accessibility');
     check(await currentPage().getAttribute('data-page-id') === 'cd-5', `${label}: cd-5 did not become current`);
-    check(directSelection.every(pageId => pageId === 'cd-5'),
-      `${label}: direct cd-5 selection visited ${directSelection.join(', ') || 'no observed page'}`);
+    check(directSelection.length <= 2 && directSelection.at(-1) === 'cd-5'
+      && directSelection.every(pageId => pageId === 'cd-5' || pageId === 'cd-1'),
+    `${label}: direct cd-5 selection visited ${directSelection.join(', ') || 'no observed page'} (only the document-switch landing page may precede the target)`);
 
     const apr = page.locator('[data-hotspot-id="cd.p5.apr"]');
     await apr.hover();
@@ -202,6 +211,28 @@ async (page) => {
       const afterDrag = await card.boundingBox();
       check(Math.abs(afterDrag.x - beforeDrag.x) > 40 || Math.abs(afterDrag.y - beforeDrag.y) > 40,
         `${label}: decoder card did not move when dragged by its header`);
+
+      check(await page.locator('[data-decoder-pane]').getAttribute('data-decoder-pane') === '0',
+        `${label}: decoder card does not start on the quick definition`);
+      await page.locator('[data-decoder-flip-next]').click();
+      check(await page.locator('.decoder-pane-heading').textContent() === 'In practice',
+        `${label}: second flip card is not the in-practice pane`);
+      await page.locator('[data-decoder-flip-next]').click();
+      check(await page.locator('.decoder-source').isVisible(),
+        `${label}: the detail flip card does not show its source line`);
+
+      const beforeResize = await card.boundingBox();
+      await page.mouse.move(beforeResize.x + beforeResize.width - 10, beforeResize.y + beforeResize.height - 10);
+      await page.mouse.down();
+      await page.mouse.move(beforeResize.x + beforeResize.width + 90, beforeResize.y + beforeResize.height + 50, { steps: 4 });
+      await page.mouse.up();
+      const afterResize = await card.boundingBox();
+      check(afterResize.width > beforeResize.width + 40,
+        `${label}: decoder card did not resize from its corner grip`);
+      await page.locator('[data-decoder-flip-back]').click();
+      const persisted = await card.boundingBox();
+      check(Math.abs(persisted.width - afterResize.width) < 6,
+        `${label}: resized card size does not persist across flips`);
 
       await card.locator('.decoder-unpin').click();
       check(await page.locator('[data-selected-explanation]').count() === 0,
@@ -464,6 +495,7 @@ async (page) => {
     await page.route('**/cd-page-5.png', route => route.abort('failed'));
     await page.reload();
     await waitForImage();
+    await revealDoc('cd');
     await page.locator('[data-page-button][data-page-id="cd-5"]').click();
     await page.locator('[data-page-image]').evaluate(image => {
       if (image.complete) return undefined;
@@ -477,6 +509,7 @@ async (page) => {
       `${label}: image failure fallback is not visible`, 'failure-state');
     check(await page.locator('[data-hotspot-id]').count() === 0,
       `${label}: image failure left active hotspot buttons`, 'failure-state');
+    await revealDoc('le');
     await page.locator('[data-page-button][data-page-id="le-1"]').click();
     await page.waitForFunction(() => document.querySelector('[data-page-canvas]')?.dataset.pageId === 'le-1');
     check(await currentPage().getAttribute('data-page-id') === 'le-1',
