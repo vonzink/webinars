@@ -16,6 +16,6 @@ test('every hotspot matches the independently locked semantic and geometry fixtu
     bounds: hotspot.bounds,
   }));
 
-  assert.equal(expected.length, 232);
+  assert.equal(expected.length, 502);
   assert.deepEqual(actual, expected);
 });

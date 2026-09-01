@@ -10,9 +10,41 @@
       "pageMap": { "1": 2, "2": 3, "3": 4 }
     },
     {
+      "id": "le2",
+      "file": "loan-estimate-refinance-H24D.pdf",
+      "sha256": "baadbe3d1f1254f422c6ab30b53dac91649be9d5300702cd5068bc1090be1560",
+      "pdfPages": 4,
+      "formPages": 3,
+      "pageMap": { "1": 2, "2": 3, "3": 4 }
+    },
+    {
+      "id": "le3",
+      "file": "loan-estimate-model-H24A.pdf",
+      "sha256": "15713c0328a3a45c856ba1d88a3e462b6aaab2b2b6f1d54227379478d26e610b",
+      "pdfPages": 11,
+      "formPages": 3,
+      "pageMap": { "1": 2, "2": 4, "3": 8 }
+    },
+    {
       "id": "cd",
       "file": "closing-disclosure-H25B.pdf",
       "sha256": "606a93c8baaca815439822df5cf8c78cbb2dcf6cc4af5aa291a459c7917e4173",
+      "pdfPages": 6,
+      "formPages": 5,
+      "pageMap": { "1": 2, "2": 3, "3": 4, "4": 5, "5": 6 }
+    },
+    {
+      "id": "cd2",
+      "file": "closing-disclosure-refinance-H25E.pdf",
+      "sha256": "6c05ffba10741d55d5bdc6dd946eefc0873fd6088a19c3a24219fb2ed8aa341a",
+      "pdfPages": 6,
+      "formPages": 5,
+      "pageMap": { "1": 2, "2": 3, "3": 4, "4": 5, "5": 6 }
+    },
+    {
+      "id": "cd3",
+      "file": "closing-disclosure-refinance-cash-H25G.pdf",
+      "sha256": "06386504873d5d3d8b2268a128a1f9f39d5fcd6407a79ca1d611a9fa94c3789c",
       "pdfPages": 6,
       "formPages": 5,
       "pageMap": { "1": 2, "2": 3, "3": 4, "4": 5, "5": 6 }

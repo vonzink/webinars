@@ -138,6 +138,14 @@ const GROUPS = Object.freeze({
     why: 'It sits on the Closing Disclosure so you know where to take questions and where to find CFPB help or file a complaint.',
     reference: 'H25B page 5; CFPB Guide to Forms v2.1 § 3.6; 12 CFR 1026.38(q)',
   }),
+  'refi-property-value': Object.freeze({
+    why: 'It sits in General Information on the refinance forms, where the property’s value stands in for a sale price that doesn’t exist.',
+    reference: 'H24D page 1; H25E page 1; H25G page 1; CFPB Guide to Forms v2.1 §§ 2.2.1 and 3.2.1; 12 CFR 1026.37(a)(7)(ii), 1026.38(a)(3)(vii)(B)',
+  }),
+  'refi-payoffs': Object.freeze({
+    why: 'It sits in the payoff tables the refinance forms use instead of a purchase ledger, routing the new loan to existing debts before any cash moves.',
+    reference: 'H24D page 2; H25E page 3; H25G page 3; CFPB Guide to Forms v2.1 §§ 2.3.3 and 3.4.2; 12 CFR 1026.37(h)(2), 1026.38(e), 1026.38(t)(5)(vii)(B)',
+  }),
 });
 
 const SAMPLE_NOTE = 'This fictional sample shows one transaction — your own numbers, terms, and providers will differ, so walk through your actual form with your lender or settlement professional.';
@@ -180,6 +188,8 @@ const ASKS = Object.freeze({
   servicing: 'Who will service my loan after closing?',
   'partial-payments': 'What should I do if I ever cannot make a full payment?',
   apr: 'Why is my APR higher than my interest rate?',
+  'appraised-prop-value': 'What happens to my loan terms if the appraisal comes in low?',
+  'total-payoffs-payments': 'Which of my debts are being paid off through the loan, and what does each payoff quote include?',
 });
 
 /* One evergreen "Interesting fact" per field — regulatory history and mortgage
@@ -361,6 +371,10 @@ const FACTS = Object.freeze({
   'liability-after-foreclosure': 'States split into recourse and non-recourse regimes — whether a shortfall can follow you depends on where the home sits.',
   'tax-deductions': 'Since the 2017 tax law, mortgage interest is deductible only on acquisition debt up to federal caps — and only if you itemize.',
   'questions-cfpb': 'The CFPB’s complaint database is public — companies answer on the record, and researchers mine it for industry patterns.',
+  'estimated-prop-value': 'If the appraisal later comes in different from this estimate, a revised Loan Estimate can follow — value is a classic “changed circumstance.”',
+  'appraised-prop-value': 'A refinance has no sale price to check value against — the appraisal alone does the job that market negotiation does in a purchase.',
+  'payoffs-and-payments': 'Debts paid off here do not disappear — they move into the mortgage, trading unsecured balances for debt secured by your home for up to 30 years.',
+  'total-payoffs-payments': 'When payoffs outgrow the new loan, a refinance flips from cash-out to cash-in — the exact scenario CFPB sample H-25(G) exists to illustrate.',
 });
 
 const groupedItems = [
@@ -605,6 +619,14 @@ const groupedItems = [
   ]],
   ['questions', [
     ['questions-cfpb', 'Questions and CFPB Contact', 'Directs questions about the loan’s terms or costs to the listed contacts, and gives the CFPB’s mortgage-closing resources and complaint line.'],
+  ]],
+  ['refi-property-value', [
+    ['estimated-prop-value', 'Estimated Property Value', 'The value the lender is using for the home on a refinance estimate. With no sale price in the deal, this estimate anchors the loan-to-value math instead.'],
+    ['appraised-prop-value', 'Appraised Property Value', 'The appraised value of the home used for the final refinance numbers. Loan-to-value — and with it, whether mortgage insurance is required — is measured against this figure.'],
+  ]],
+  ['refi-payoffs', [
+    ['payoffs-and-payments', 'Payoffs and Payments', 'The itemized list of who gets paid out of your new loan — the old mortgage first, then any liens, credit cards, or other debts you chose to roll in.'],
+    ['total-payoffs-payments', 'Total Payoffs and Payments', 'The combined amount of the new loan spent paying off existing loans and other debts. Set against the loan amount, it decides whether cash comes to you or from you at closing.'],
   ]],
 ];
 

@@ -8,17 +8,22 @@ render_dir=$(mktemp -d)
 trap 'rm -rf -- "$render_dir"' EXIT
 
 mkdir -p "$asset_dir"
-pdftoppm -png -r 180 -f 2 -l 4 "$webinar_dir/references/loan-estimate-H24B.pdf" "$render_dir/le"
-pdftoppm -png -r 180 -f 2 -l 6 "$webinar_dir/references/closing-disclosure-H25B.pdf" "$render_dir/cd"
 
-for mapping in '2:1' '3:2' '4:3'; do
-  source_page=${mapping%%:*}
-  form_page=${mapping##*:}
-  cp "$render_dir/le-$source_page.png" "$asset_dir/le-page-$form_page.png"
-done
+# render <prefix> <pdf> <formPage:pdfPage>...   (mappings mirror source-manifest.json)
+render() {
+  local prefix=$1 pdf=$2; shift 2
+  for mapping in "$@"; do
+    local form_page=${mapping%%:*}
+    local source_page=${mapping##*:}
+    pdftoppm -png -r 180 -f "$source_page" -l "$source_page" \
+      "$webinar_dir/references/$pdf" "$render_dir/$prefix-$form_page-tmp"
+    mv "$render_dir/$prefix-$form_page-tmp"* "$asset_dir/$prefix-page-$form_page.png"
+  done
+}
 
-for mapping in '2:1' '3:2' '4:3' '5:4' '6:5'; do
-  source_page=${mapping%%:*}
-  form_page=${mapping##*:}
-  cp "$render_dir/cd-$source_page.png" "$asset_dir/cd-page-$form_page.png"
-done
+render le loan-estimate-H24B.pdf 1:2 2:3 3:4
+render le2 loan-estimate-refinance-H24D.pdf 1:2 2:3 3:4
+render le3 loan-estimate-model-H24A.pdf 1:2 2:4 3:8
+render cd closing-disclosure-H25B.pdf 1:2 2:3 3:4 4:5 5:6
+render cd2 closing-disclosure-refinance-H25E.pdf 1:2 2:3 3:4 4:5 5:6
+render cd3 closing-disclosure-refinance-cash-H25G.pdf 1:2 2:3 3:4 4:5 5:6

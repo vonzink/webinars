@@ -7,10 +7,17 @@ import {
   validateDocumentCatalog,
 } from '../js/content-validation.js';
 
-test('catalog contains the exact eight disclosure pages', () => {
-  assert.deepEqual(DOCUMENTS.map(item => [item.id, item.pages.length]), [['le', 3], ['cd', 5]]);
-  assert.deepEqual(DOCUMENTS.flatMap(item => item.pages.map(page => page.id)),
-    ['le-1', 'le-2', 'le-3', 'cd-1', 'cd-2', 'cd-3', 'cd-4', 'cd-5']);
+test('catalog contains the exact twenty-four disclosure pages across six examples', () => {
+  assert.deepEqual(DOCUMENTS.map(item => [item.id, item.pages.length]), [['le', 9], ['cd', 15]]);
+  assert.deepEqual(DOCUMENTS.map(item => [item.id, item.examples.map(example => [example.id, example.pages.length])]), [
+    ['le', [['le', 3], ['le2', 3], ['le3', 3]]],
+    ['cd', [['cd', 5], ['cd2', 5], ['cd3', 5]]],
+  ]);
+  assert.deepEqual(DOCUMENTS.flatMap(item => item.pages.map(page => page.id)), [
+    'le-1', 'le-2', 'le-3', 'le2-1', 'le2-2', 'le2-3', 'le3-1', 'le3-2', 'le3-3',
+    'cd-1', 'cd-2', 'cd-3', 'cd-4', 'cd-5', 'cd2-1', 'cd2-2', 'cd2-3', 'cd2-4', 'cd2-5',
+    'cd3-1', 'cd3-2', 'cd3-3', 'cd3-4', 'cd3-5',
+  ]);
 });
 
 test('every page record is deeply frozen', () => {

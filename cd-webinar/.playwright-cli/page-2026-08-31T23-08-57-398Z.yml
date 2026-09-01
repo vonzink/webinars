@@ -1,0 +1,86 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - img "Mountain State Financial Group" [ref=e3]
+    - generic [ref=e4]:
+      - paragraph [ref=e5]: Interactive webinar
+      - heading "Understand Your LE and CD" [level=1] [ref=e6]
+  - main [ref=e7]:
+    - navigation "Disclosure pages" [ref=e8]:
+      - heading "Disclosure pages" [level=2] [ref=e9]
+      - region [ref=e10]:
+        - heading "Loan Estimate" [level=3] [ref=e11]
+        - generic [ref=e12]:
+          - button "Loan Estimate, page 1 of 3" [ref=e13] [cursor=pointer]:
+            - generic [ref=e15]:
+              - generic [ref=e16]: Page 1
+              - generic [ref=e17]: LE
+          - button "Loan Estimate, page 2 of 3" [ref=e18] [cursor=pointer]:
+            - generic [ref=e20]:
+              - generic [ref=e21]: Page 2
+              - generic [ref=e22]: LE
+          - button "Loan Estimate, page 3 of 3" [ref=e23] [cursor=pointer]:
+            - generic [ref=e25]:
+              - generic [ref=e26]: Page 3
+              - generic [ref=e27]: LE
+      - region [ref=e28]:
+        - heading "Closing Disclosure" [level=3] [ref=e29]
+        - generic [ref=e30]:
+          - button "Closing Disclosure, page 1 of 5" [ref=e31] [cursor=pointer]:
+            - generic [ref=e33]:
+              - generic [ref=e34]: Page 1
+              - generic [ref=e35]: CD
+          - button "Closing Disclosure, page 2 of 5" [ref=e36] [cursor=pointer]:
+            - generic [ref=e38]:
+              - generic [ref=e39]: Page 2
+              - generic [ref=e40]: CD
+          - button "Closing Disclosure, page 3 of 5" [ref=e41] [cursor=pointer]:
+            - generic [ref=e43]:
+              - generic [ref=e44]: Page 3
+              - generic [ref=e45]: CD
+          - button "Closing Disclosure, page 4 of 5" [ref=e46] [cursor=pointer]:
+            - generic [ref=e48]:
+              - generic [ref=e49]: Page 4
+              - generic [ref=e50]: CD
+          - button "Closing Disclosure, page 5 of 5" [ref=e51] [cursor=pointer]:
+            - generic [ref=e53]:
+              - generic [ref=e54]: Page 5
+              - generic [ref=e55]: CD
+    - region "Selected disclosure page" [ref=e56]:
+      - generic "Document zoom controls" [ref=e57]:
+        - generic [ref=e58]: View
+        - button "Fit" [disabled] [pressed] [ref=e59]
+        - button "Zoom out" [disabled] [ref=e60]
+        - button "Zoom in" [ref=e61] [cursor=pointer]
+        - status "Current zoom" [ref=e62]: 100%
+        - button "Magnifier" [ref=e63] [cursor=pointer]
+      - group [ref=e65]:
+        - heading "Loan Estimate, page 1" [level=2] [ref=e66]
+        - img "Loan Estimate sample, page 1 of 3" [ref=e67]
+        - generic "Interactive disclosure fields":
+          - button "Date Issued, 2/15/2013" [ref=e68] [cursor=pointer]
+          - button "Applicants, Michael Jones and Mary Stone; 123 Anywhere Street, Anytown, ST 12345" [ref=e69] [cursor=pointer]
+          - button "Property, 456 Somewhere Avenue, Anytown, ST 12345" [ref=e70] [cursor=pointer]
+          - button "Sale Price, 180,000 dollars" [ref=e71] [cursor=pointer]
+          - button "Loan Term, 30 years" [ref=e72] [cursor=pointer]
+          - button "Purpose, Purchase" [ref=e73] [cursor=pointer]
+          - button "Product, Fixed Rate" [ref=e74] [cursor=pointer]
+          - button "Loan Type, Conventional" [ref=e75] [cursor=pointer]
+          - button "Loan ID, 123456789" [ref=e76] [cursor=pointer]
+          - button "Rate Lock, Yes, until 4/16/2013 at 5:00 p.m. EDT" [ref=e77] [cursor=pointer]
+          - button "Loan Amount, 162,000 dollars" [ref=e78] [cursor=pointer]
+          - button "Interest Rate, 3.875 percent" [ref=e79] [cursor=pointer]
+          - button "Monthly Principal and Interest, 761.78 dollars" [ref=e80] [cursor=pointer]
+          - button "Prepayment Penalty, Yes; as high as 3,240 dollars during the first 2 years" [ref=e81] [cursor=pointer]
+          - button "Balloon Payment, No" [ref=e82] [cursor=pointer]
+          - button "Projected Principal and Interest, 761.78 dollars in years 1–7 and years 8–30" [ref=e83] [cursor=pointer]
+          - button "Projected Mortgage Insurance, 82 dollars in years 1–7; none in years 8–30" [ref=e84] [cursor=pointer]
+          - button "Estimated Escrow, 206 dollars in both payment periods" [ref=e85] [cursor=pointer]
+          - button "Estimated Total Monthly Payment, 1,050 dollars in years 1–7; 968 dollars in years 8–30" [ref=e86] [cursor=pointer]
+          - button "Estimated Taxes, Insurance, and Assessments, 206 dollars a month" [ref=e87] [cursor=pointer]
+          - button "Property Taxes, Included in escrow" [ref=e88] [cursor=pointer]
+          - button "Homeowner’s Insurance, Included in escrow" [ref=e89] [cursor=pointer]
+          - button "Estimated Closing Costs, 8,054 dollars" [ref=e90] [cursor=pointer]
+          - button "Estimated Cash to Close, 16,054 dollars" [ref=e91] [cursor=pointer]
+    - complementary [ref=e92]:
+      - paragraph [ref=e93]: Choose any highlighted item on the document to learn what it means.
+  - paragraph [ref=e94]: Educational example using fictional CFPB sample documents. This is not a loan quote or legal, tax, or financial advice.

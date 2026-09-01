@@ -40,9 +40,16 @@ async (page) => {
   const revealDoc = async doc => {
     const switchButton = page.locator(`[data-doc-switch-button][data-doc="${doc}"]`);
     if (await switchButton.getAttribute('aria-pressed') !== 'true') await switchButton.click();
+    const exampleBar = page.locator(`[data-example-bar][data-example="${doc}"]`);
+    if (await exampleBar.getAttribute('aria-pressed') !== 'true') await exampleBar.click();
   };
   const selectPage = async pageId => {
-    await revealDoc(pageId.split('-')[0]);
+    const example = pageId.split('-')[0];
+    const doc = example.replace(/\d+$/, '');
+    const switchButton = page.locator(`[data-doc-switch-button][data-doc="${doc}"]`);
+    if (await switchButton.getAttribute('aria-pressed') !== 'true') await switchButton.click();
+    const exampleBar = page.locator(`[data-example-bar][data-example="${example}"]`);
+    if (await exampleBar.getAttribute('aria-pressed') !== 'true') await exampleBar.click();
     await page.locator(`[data-page-button][data-page-id="${pageId}"]`).click();
     await page.waitForFunction(id => document.querySelector('[data-page-canvas]')?.dataset.pageId === id, pageId);
     await waitForImage();
@@ -140,6 +147,17 @@ async (page) => {
     check(await page.locator('[data-doc-switch-button]').count() === 2, `${label}: document switch is missing`, 'accessibility');
     check(await page.locator('[data-doc-switch-button][data-doc="le"]').getAttribute('aria-pressed') === 'true',
       `${label}: LE is not the pressed document on load`, 'accessibility');
+    check(await page.locator('[data-example-bar]:visible').count() === 3,
+      `${label}: expected three visible example bars`, 'accessibility');
+    await page.locator('[data-example-bar][data-example="le2"]').click();
+    await page.waitForFunction(() => document.querySelector('[data-page-canvas]')?.dataset.pageId === 'le2-1');
+    await waitForImage();
+    check(await page.locator('[data-hotspot-id="le2.p1.est-prop-value"]').count() === 1,
+      `${label}: refinance example does not expose its property-value hotspot`);
+    await page.locator('[data-example-bar][data-example="le"]').click();
+    await page.waitForFunction(() => document.querySelector('[data-page-canvas]')?.dataset.pageId === 'le-1');
+    await waitForImage();
+    await waitFrames();
     check(await page.getByRole('button', { name: 'Fit', exact: true }).getAttribute('aria-disabled') === 'true',
       `${label}: Fit is not disabled at 100%`, 'accessibility');
     check(await page.getByRole('button', { name: 'Zoom out', exact: true }).getAttribute('aria-disabled') === 'true',

@@ -31,7 +31,10 @@ const LENS_RAISE = 170;
 export function initViewer({ root, documents, explanations, hotspots }) {
   if (!root) throw new TypeError('viewer root is required');
 
-  const pages = documents.flatMap(document => document.pages.map(page => ({ ...page, document })));
+  const documentExamples = document => document.examples
+    ?? [{ id: document.id, label: document.title, pages: document.pages }];
+  const pages = documents.flatMap(document => documentExamples(document)
+    .flatMap(example => example.pages.map(page => ({ ...page, document, example }))));
   const pageIds = new Set(pages.map(page => page.id));
   const pageNav = root.querySelector('[data-page-nav]');
   const viewerTools = root.querySelector('[data-viewer-tools]');
@@ -63,13 +66,17 @@ export function initViewer({ root, documents, explanations, hotspots }) {
   let dockWidth = 380;
 
   const docSwitch = root.querySelector('[data-doc-switch]');
-  const docOf = pageId => pageId.split('-')[0];
-  const lastPageByDoc = Object.fromEntries(documents.map(document => [document.id, document.pages[0].id]));
+  const exampleOf = pageId => pageId.split('-')[0];
+  const docOf = pageId => exampleOf(pageId).replace(/\d+$/, '');
+  const lastPageByExample = Object.fromEntries(documents.flatMap(document => documentExamples(document)
+    .map(example => [example.id, example.pages[0].id])));
+  const lastExampleByDoc = Object.fromEntries(documents.map(document => [document.id, documentExamples(document)[0].id]));
 
 
   const renderDocSwitch = () => {
     if (!docSwitch) return;
     if (!docSwitch.querySelector('[data-doc-switch-button]')) {
+      const row = createElement('div', 'doc-switch-row');
       for (const document of documents) {
         const button = createElement('button', 'doc-switch-button');
         button.type = 'button';
@@ -82,13 +89,38 @@ export function initViewer({ root, documents, explanations, hotspots }) {
         button.setAttribute('aria-label', document.title);
         button.addEventListener('click', () => {
           if (docOf(state.pageId) === document.id) return;
-          dispatch({ type: 'select-page', pageId: lastPageByDoc[document.id] });
+          dispatch({ type: 'select-page', pageId: lastPageByExample[lastExampleByDoc[document.id]] });
         });
-        docSwitch.append(button);
+        row.append(button);
       }
+      const bars = createElement('div', 'doc-example-bars');
+      bars.setAttribute('role', 'group');
+      bars.setAttribute('aria-label', 'Choose an example');
+      for (const document of documents) {
+        for (const example of documentExamples(document)) {
+          const bar = createElement('button', 'example-bar');
+          bar.type = 'button';
+          bar.dataset.exampleBar = '';
+          bar.dataset.doc = document.id;
+          bar.dataset.example = example.id;
+          bar.setAttribute('aria-label', `${document.title} example: ${example.label}`);
+          bar.title = example.label;
+          bar.append(createElement('span', 'example-bar-label', example.label));
+          bar.addEventListener('click', () => {
+            if (exampleOf(state.pageId) === example.id) return;
+            dispatch({ type: 'select-page', pageId: lastPageByExample[example.id] });
+          });
+          bars.append(bar);
+        }
+      }
+      docSwitch.append(row, bars);
     }
     for (const button of docSwitch.querySelectorAll('[data-doc-switch-button]')) {
       button.setAttribute('aria-pressed', String(button.dataset.doc === docOf(state.pageId)));
+    }
+    for (const bar of docSwitch.querySelectorAll('[data-example-bar]')) {
+      bar.hidden = bar.dataset.doc !== docOf(state.pageId);
+      bar.setAttribute('aria-pressed', String(bar.dataset.example === exampleOf(state.pageId)));
     }
   };
 
@@ -410,36 +442,39 @@ export function initViewer({ root, documents, explanations, hotspots }) {
       pageNav.append(heading);
 
       for (const document of documents) {
-        const group = createElement('section', 'page-nav-group');
-        group.dataset.doc = document.id;
-        group.setAttribute('aria-labelledby', `${document.id}-page-group`);
+        for (const example of documentExamples(document)) {
+          const group = createElement('section', 'page-nav-group');
+          group.dataset.doc = document.id;
+          group.dataset.example = example.id;
+          group.setAttribute('aria-labelledby', `${example.id}-page-group`);
 
-        const label = createElement('h3', 'page-nav-label', document.title);
-        label.id = `${document.id}-page-group`;
-        group.append(label);
+          const label = createElement('h3', 'page-nav-label', example.label);
+          label.id = `${example.id}-page-group`;
+          group.append(label);
 
-        const buttons = createElement('div', 'page-nav-buttons');
-        for (const page of document.pages) {
-          const button = createElement('button', 'page-button');
-          button.type = 'button';
-          button.dataset.pageButton = '';
-          button.dataset.pageId = page.id;
-          button.setAttribute('aria-label', `${document.title}, page ${page.number} of ${document.pages.length}`);
+          const buttons = createElement('div', 'page-nav-buttons');
+          for (const page of example.pages) {
+            const button = createElement('button', 'page-button');
+            button.type = 'button';
+            button.dataset.pageButton = '';
+            button.dataset.pageId = page.id;
+            button.setAttribute('aria-label', `${document.title} ${example.label}, page ${page.number} of ${example.pages.length}`);
 
-          const thumb = createElement('img', 'page-thumb');
-          thumb.src = page.image;
-          thumb.alt = '';
-          thumb.loading = 'lazy';
-          thumb.draggable = false;
-          thumb.setAttribute('aria-hidden', 'true');
+            const thumb = createElement('img', 'page-thumb');
+            thumb.src = page.image;
+            thumb.alt = '';
+            thumb.loading = 'lazy';
+            thumb.draggable = false;
+            thumb.setAttribute('aria-hidden', 'true');
 
-          const caption = createElement('span', 'page-button-caption', `Page ${page.number}`);
-          button.append(thumb, caption);
-          button.addEventListener('click', () => dispatch({ type: 'select-page', pageId: page.id }));
-          buttons.append(button);
+            const caption = createElement('span', 'page-button-caption', `Page ${page.number}`);
+            button.append(thumb, caption);
+            button.addEventListener('click', () => dispatch({ type: 'select-page', pageId: page.id }));
+            buttons.append(button);
+          }
+          group.append(buttons);
+          pageNav.append(group);
         }
-        group.append(buttons);
-        pageNav.append(group);
       }
 
       const footer = createElement('p', 'page-nav-footer');
@@ -454,7 +489,7 @@ export function initViewer({ root, documents, explanations, hotspots }) {
     }
 
     for (const group of pageNav.querySelectorAll('.page-nav-group[data-doc]')) {
-      group.hidden = docSwitch ? group.dataset.doc !== docOf(state.pageId) : false;
+      group.hidden = docSwitch ? group.dataset.example !== exampleOf(state.pageId) : false;
     }
     for (const button of pageNav.querySelectorAll('[data-page-button]')) {
       if (button.dataset.pageId === state.pageId) button.setAttribute('aria-current', 'page');
@@ -671,7 +706,8 @@ export function initViewer({ root, documents, explanations, hotspots }) {
   };
 
   const render = () => {
-    lastPageByDoc[docOf(state.pageId)] = state.pageId;
+    lastPageByExample[exampleOf(state.pageId)] = state.pageId;
+    lastExampleByDoc[docOf(state.pageId)] = exampleOf(state.pageId);
     renderDocSwitch();
     renderNavigation();
     renderTools();

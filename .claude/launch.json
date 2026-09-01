@@ -4,8 +4,8 @@
     {
       "name": "cd-webinar",
       "runtimeExecutable": "python3",
-      "runtimeArgs": ["-m", "http.server", "4180", "--bind", "127.0.0.1", "--directory", "cd-webinar"],
-      "port": 4180
+      "runtimeArgs": ["-m", "http.server", "4181", "--bind", "127.0.0.1", "--directory", "cd-webinar"],
+      "port": 4181
     }
   ]
 }

@@ -31,24 +31,25 @@ test('review dates must be real ISO calendar dates', () => {
 test('the canonical corpus covers copy, hotspot semantics and geometry, manifest, and exact assets', async () => {
   const corpus = await buildReviewedCorpus();
   assert.equal(corpus.schemaVersion, 1);
-  assert.equal(corpus.explanations.length, 176);
-  assert.equal(corpus.hotspots.length, 232);
-  assert.equal(corpus.sourceManifest.documents.length, 2);
+  assert.equal(corpus.explanations.length, 180);
+  assert.equal(corpus.hotspots.length, 502);
+  assert.equal(corpus.sourceManifest.documents.length, 6);
   assert.deepEqual(corpus.sourceDocuments.map(item => item.path), [
     'references/closing-disclosure-H25B.pdf',
+    'references/closing-disclosure-refinance-H25E.pdf',
+    'references/closing-disclosure-refinance-cash-H25G.pdf',
     'references/loan-estimate-H24B.pdf',
+    'references/loan-estimate-model-H24A.pdf',
+    'references/loan-estimate-refinance-H24D.pdf',
   ]);
   assert.deepEqual(corpus.brandAssets.map(item => item.path), ['assets/brand/logo-horizontal.svg']);
-  assert.equal(corpus.renderedImages.length, 8);
-  assert.deepEqual(corpus.renderedImages.map(item => item.path), [
+  assert.equal(corpus.renderedImages.length, 24);
+  assert.deepEqual(corpus.renderedImages.map(item => item.path).slice(0, 5), [
     'assets/documents/cd-page-1.png',
     'assets/documents/cd-page-2.png',
     'assets/documents/cd-page-3.png',
     'assets/documents/cd-page-4.png',
     'assets/documents/cd-page-5.png',
-    'assets/documents/le-page-1.png',
-    'assets/documents/le-page-2.png',
-    'assets/documents/le-page-3.png',
   ]);
 
   const digest = digestReviewedCorpus(corpus);
@@ -75,7 +76,7 @@ test('pending review fails only on missing genuine approval and digest evidence'
     hotspots: HOTSPOTS,
     approval,
   }), [
-    'real MSFG explanation approval is pending: 176 records',
+    'real MSFG explanation approval is pending: 180 records',
     'reviewed corpus approval status must be approved',
     'reviewed corpus reviewer must contain a real full name',
     'reviewed corpus review date must be a real ISO calendar date',

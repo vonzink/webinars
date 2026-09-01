@@ -79,6 +79,89 @@ const EXPECTED_TARGETS = {
     'liability-after-foreclosure', 'refinance', 'tax-deductions', 'questions-cfpb', 'lender-contact', 'mortgage-broker-contact',
     'buyer-broker-contact', 'seller-broker-contact', 'settlement-agent-contact', 'confirm-receipt',
   ],
+  'le2-1': [
+    'date-issued', 'applicants', 'property', 'est-prop-value', 'loan-term', 'purpose', 'product', 'loan-type', 'loan-id',
+    'rate-lock', 'loan-amount', 'interest-rate', 'monthly-principal-interest', 'prepayment-penalty', 'balloon-payment',
+    'projected-principal-interest', 'mortgage-insurance', 'estimated-escrow', 'estimated-total-monthly-payment',
+    'estimated-taxes-insurance-assessments', 'property-taxes', 'homeowners-insurance', 'estimated-closing-costs',
+    'estimated-cash-to-close',
+  ],
+  'le2-2': [
+    'a-total', 'points', 'b-total', 'c-total', 'd-total', 'e-total', 'f-total', 'g-total', 'h-total', 'i-total', 'j-total',
+    'lender-credits', 'alt-loan-amount', 'cash-total-closing-costs', 'total-payoffs-payments', 'estimated-cash-to-close',
+    'closing-costs-financed',
+  ],
+  'le2-3': [
+    'lender-contact', 'loan-officer-contact', 'five-year-total-paid', 'five-year-principal-paid', 'apr', 'tip', 'appraisal',
+    'assumption', 'homeowners-insurance', 'late-payment', 'liability-after-foreclosure', 'refinance', 'servicing',
+  ],
+  'le3-1': [
+    'date-issued', 'applicants', 'property', 'sale-price', 'loan-term', 'purpose', 'product', 'loan-type', 'loan-id',
+    'rate-lock', 'loan-amount', 'interest-rate', 'monthly-principal-interest', 'prepayment-penalty', 'balloon-payment',
+    'projected-principal-interest', 'mortgage-insurance', 'estimated-escrow', 'estimated-total-monthly-payment',
+    'estimated-taxes-insurance-assessments', 'property-taxes', 'homeowners-insurance', 'estimated-closing-costs',
+    'estimated-cash-to-close',
+  ],
+  'le3-2': [
+    'a-total', 'b-total', 'c-total', 'd-total', 'e-total', 'f-total', 'g-total', 'h-total', 'i-total', 'j-total',
+    'lender-credits', 'cash-total-closing-costs', 'closing-costs-financed', 'down-payment', 'deposit', 'funds-for-borrower',
+    'seller-credits', 'adjustments-other-credits', 'estimated-cash-to-close',
+  ],
+  'le3-3': [
+    'lender-contact', 'loan-officer-contact', 'five-year-total-paid', 'five-year-principal-paid', 'apr', 'tip', 'appraisal',
+    'assumption', 'homeowners-insurance', 'late-payment', 'refinance', 'servicing', 'confirm-receipt',
+  ],
+  'cd2-1': [
+    'date-issued', 'closing-date', 'disbursement-date', 'settlement-agent', 'file-number', 'property', 'appraised-prop-value',
+    'borrower', 'lender', 'loan-term', 'purpose', 'product', 'loan-type', 'loan-id', 'mic-number', 'loan-amount',
+    'interest-rate', 'monthly-principal-interest', 'prepayment-penalty', 'balloon-payment', 'projected-principal-interest',
+    'mortgage-insurance', 'estimated-escrow', 'estimated-total-monthly-payment', 'estimated-taxes-insurance-assessments',
+    'property-taxes', 'homeowners-insurance', 'hoa-dues', 'closing-costs', 'cash-to-close',
+  ],
+  'cd2-2': [
+    'a-total', 'b-total', 'c-total', 'd-total', 'loan-costs-subtotals', 'e-total', 'f-total', 'g-total', 'h-total',
+    'i-total', 'j-total', 'lender-credits',
+  ],
+  'cd2-3': [
+    'payoffs-section', 'payoff-existing-loan', 'k-total', 'alt-loan-amount', 'cash-total-closing-costs',
+    'closing-costs-paid-before-closing', 'total-payoffs-payments', 'cash-to-close', 'closing-costs-financed',
+  ],
+  'cd2-4': [
+    'assumption', 'demand-feature', 'late-payment', 'negative-amortization', 'partial-payments', 'security-interest',
+    'escrow-account', 'escrowed-property-costs', 'non-escrowed-property-costs', 'initial-escrow-payment',
+    'monthly-escrow-payment', 'no-escrow', 'future-escrow-changes',
+  ],
+  'cd2-5': [
+    'total-payments', 'finance-charge', 'amount-financed', 'apr', 'tip', 'appraisal', 'contract-details',
+    'liability-after-foreclosure', 'refinance', 'tax-deductions', 'questions-cfpb', 'lender-contact',
+    'mortgage-broker-contact', 'settlement-agent-contact', 'confirm-receipt',
+  ],
+  'cd3-1': [
+    'date-issued', 'closing-date', 'disbursement-date', 'settlement-agent', 'file-number', 'property', 'appraised-prop-value',
+    'borrower', 'lender', 'loan-term', 'purpose', 'product', 'loan-type', 'loan-id', 'mic-number', 'loan-amount',
+    'interest-rate', 'monthly-principal-interest', 'prepayment-penalty', 'balloon-payment', 'projected-principal-interest',
+    'mortgage-insurance', 'estimated-escrow', 'estimated-total-monthly-payment', 'estimated-taxes-insurance-assessments',
+    'property-taxes', 'homeowners-insurance', 'closing-costs', 'cash-to-close',
+  ],
+  'cd3-2': [
+    'a-total', 'b-total', 'c-total', 'd-total', 'loan-costs-subtotals', 'e-total', 'f-total', 'g-total', 'h-total',
+    'i-total', 'j-total', 'lender-credits',
+  ],
+  'cd3-3': [
+    'payoffs-section', 'payoff-existing-loan', 'payoff-credit-card', 'payoff-mechanics-lien', 'payoff-tax-lien', 'k-total',
+    'alt-loan-amount', 'cash-total-closing-costs', 'closing-costs-paid-before-closing', 'total-payoffs-payments',
+    'cash-to-close', 'closing-costs-financed',
+  ],
+  'cd3-4': [
+    'assumption', 'demand-feature', 'late-payment', 'negative-amortization', 'partial-payments', 'security-interest',
+    'escrow-account', 'escrowed-property-costs', 'non-escrowed-property-costs', 'initial-escrow-payment',
+    'monthly-escrow-payment', 'no-escrow', 'future-escrow-changes',
+  ],
+  'cd3-5': [
+    'total-payments', 'finance-charge', 'amount-financed', 'apr', 'tip', 'appraisal', 'contract-details',
+    'liability-after-foreclosure', 'refinance', 'tax-deductions', 'questions-cfpb', 'lender-contact',
+    'mortgage-broker-contact', 'settlement-agent-contact', 'confirm-receipt',
+  ],
 };
 
 for (const [pageId, names] of Object.entries(EXPECTED_TARGETS)) {
@@ -132,9 +215,9 @@ test('complete inventory retains exact explanation linkage', () => {
   const explanationIds = Object.keys(EXPLANATIONS);
   const usedExplanationIds = new Set(HOTSPOTS.map(item => item.explanationId));
 
-  assert.equal(HOTSPOTS.length, 232);
-  assert.equal(explanationIds.length, 176);
-  assert.equal(usedExplanationIds.size, 176);
+  assert.equal(HOTSPOTS.length, 502);
+  assert.equal(explanationIds.length, 180);
+  assert.equal(usedExplanationIds.size, 180);
   assert.deepEqual(explanationIds.filter(id => !usedExplanationIds.has(id)), []);
   assert.deepEqual([...usedExplanationIds].filter(id => !EXPLANATIONS[id]), []);
 });

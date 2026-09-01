@@ -59,11 +59,63 @@ body {
 
 .doc-switch {
   display: flex;
-  gap: 3px;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
   margin-left: 18px;
+}
+
+.doc-switch-row {
+  display: flex;
+  gap: 3px;
   padding: 3px;
   border: 1px solid var(--line-teal-2);
   border-radius: 999px;
+}
+
+.doc-example-bars {
+  display: flex;
+  gap: 8px;
+}
+
+.example-bar {
+  position: relative;
+  width: 26px;
+  height: 14px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.example-bar::before {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  left: 0;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--line-teal-2);
+  transform: translateY(-50%);
+  content: "";
+}
+
+.example-bar:hover::before {
+  background: var(--muted-teal);
+}
+
+.example-bar[aria-pressed="true"]::before {
+  background: var(--msfg-green);
+}
+
+.example-bar-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 .doc-switch-button {
