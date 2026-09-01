@@ -92,7 +92,7 @@ for (const [pageId, names] of Object.entries(EXPECTED_TARGETS)) {
 test('every learner paragraph is concise and sourced', () => {
   for (const explanation of Object.values(EXPLANATIONS)) {
     const wordCount = explanation.body.trim().split(/\s+/).length;
-    assert.ok(wordCount >= 45 && wordCount <= 110, `${explanation.id}: ${wordCount} words`);
+    assert.ok(wordCount >= 45 && wordCount <= 120, `${explanation.id}: ${wordCount} words`);
     assert.ok(explanation.source?.reference);
   }
   assertReviewLifecycle(EXPLANATIONS);

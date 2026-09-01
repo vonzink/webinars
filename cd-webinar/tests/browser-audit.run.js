@@ -218,8 +218,11 @@ async (page) => {
       check(await page.locator('.decoder-pane-heading').textContent() === 'In practice',
         `${label}: second flip card is not the in-practice pane`);
       await page.locator('[data-decoder-flip-next]').click();
+      check(await page.locator('.decoder-pane-heading').textContent() === 'Interesting fact',
+        `${label}: third flip card is not the interesting fact`);
+      await page.locator('[data-decoder-flip-next]').click();
       check(await page.locator('.decoder-source').isVisible(),
-        `${label}: the detail flip card does not show its source line`);
+        `${label}: the source-guide flip card does not show its citation`);
 
       await page.locator('[data-decoder-flip-next]').click();
       check(await page.locator('.decoder-note-text').isVisible(),
