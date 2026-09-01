@@ -425,18 +425,17 @@ body {
   pointer-events: none;
 }
 
+/* Scope pin: marks the exact point under the cursor at the lens centre. */
 .magnifier-lens::after {
   position: absolute;
-  top: -8px;
-  right: -8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 30px;
-  height: 30px;
+  top: 50%;
+  left: 50%;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
-  background: var(--msfg-green) url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="%230b3335" stroke-width="3"><circle cx="10" cy="10" r="6"/><path d="M15 15 L21 21"/></svg>') center / 14px 14px no-repeat;
-  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.35);
+  background: var(--msfg-green);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.92), 0 0 0 3px rgba(11, 51, 53, 0.35);
+  transform: translate(-50%, -50%);
   content: "";
 }
 
