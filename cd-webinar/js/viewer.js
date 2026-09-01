@@ -58,19 +58,14 @@ export function initViewer({ root, documents, explanations, hotspots }) {
   let cardSize = null;
   let cardPaneIndex = 0;
   let cardActiveId = null;
+  let cardMode = 'float';
+  let cardHidden = false;
+  let dockWidth = 380;
 
   const docSwitch = root.querySelector('[data-doc-switch]');
   const docOf = pageId => pageId.split('-')[0];
   const lastPageByDoc = Object.fromEntries(documents.map(document => [document.id, document.pages[0].id]));
 
-  const cardResizeObserver = new ResizeObserver(() => {
-    const card = decoderWrap.querySelector('.decoder-card');
-    /* Native CSS resize writes inline width/height; persist those so the
-       user's chosen size survives re-renders and field changes. */
-    if (card && (card.style.width || card.style.height)) {
-      cardSize = { width: card.style.width, height: card.style.height };
-    }
-  });
 
   const renderDocSwitch = () => {
     if (!docSwitch) return;
@@ -128,9 +123,80 @@ export function initViewer({ root, documents, explanations, hotspots }) {
     return callout;
   };
 
+  /* Presenter notes live only in this browser's localStorage — the page is
+     public, so nothing typed here is shared or shipped anywhere. */
+  const NOTES_PREFIX = 'lecd-presenter-notes:';
+  const readNote = id => {
+    try {
+      const stored = JSON.parse(localStorage.getItem(NOTES_PREFIX + id));
+      return { text: stored?.text ?? '', link: stored?.link ?? '' };
+    } catch {
+      return { text: '', link: '' };
+    }
+  };
+  const writeNote = (id, note) => {
+    try {
+      if (!note.text && !note.link) localStorage.removeItem(NOTES_PREFIX + id);
+      else localStorage.setItem(NOTES_PREFIX + id, JSON.stringify(note));
+    } catch { /* storage unavailable — notes simply do not persist */ }
+  };
+  const safeNoteLink = value => (/^https?:\/\/\S+$/i.test(value.trim()) ? value.trim() : '');
+
+  const buildNotesPane = model => {
+    const wrap = createElement('div', 'decoder-notes');
+    const note = readNote(model.id);
+
+    const text = createElement('textarea', 'decoder-note-text');
+    text.placeholder = 'Type your talking points for this field…';
+    text.setAttribute('aria-label', `Presenter notes for ${model.title}`);
+    text.value = note.text;
+    text.addEventListener('input', () => writeNote(model.id, { text: text.value, link: link.value }));
+
+    const link = createElement('input', 'decoder-note-link');
+    link.type = 'url';
+    link.placeholder = 'Paste a link (invoice, doc, …) — https://';
+    link.setAttribute('aria-label', `Link for ${model.title}`);
+    link.value = note.link;
+    link.addEventListener('input', () => writeNote(model.id, { text: text.value, link: link.value }));
+
+    wrap.append(text, link);
+    const safeHref = safeNoteLink(note.link);
+    if (safeHref) {
+      const anchor = createElement('a', 'decoder-note-anchor', safeHref);
+      anchor.href = safeHref;
+      anchor.target = '_blank';
+      anchor.rel = 'noopener';
+      wrap.append(anchor);
+    }
+    return wrap;
+  };
+
   const renderDecoderCard = () => {
     const active = modelFor(state.selectedHotspotId) || modelFor(hoveredHotspotId);
     const isPinned = Boolean(state.selectedHotspotId) && active?.id === state.selectedHotspotId;
+
+    if (cardHidden) {
+      decoderWrap.classList.remove('is-docked');
+      region.classList.remove('card-docked');
+      decoderWrap.style.width = '';
+      const reopen = createElement('button', 'decoder-reopen', '«');
+      reopen.type = 'button';
+      reopen.setAttribute('aria-label', 'Show the decoder card');
+      reopen.title = 'Show the decoder card';
+      reopen.addEventListener('click', () => {
+        cardHidden = false;
+        renderDecoderCard();
+        resize();
+      });
+      decoderWrap.replaceChildren(reopen);
+      return;
+    }
+
+    const docked = cardMode === 'docked';
+    decoderWrap.classList.toggle('is-docked', docked);
+    region.classList.toggle('card-docked', docked);
+    decoderWrap.style.width = docked ? `${dockWidth}px` : '';
+    if (docked) region.style.setProperty('--dock-width', `${dockWidth}px`);
 
     if (!active) {
       cardOffset = null;
@@ -141,8 +207,16 @@ export function initViewer({ root, documents, explanations, hotspots }) {
       decoderWrap.style.right = '';
       decoderWrap.style.bottom = '';
       const empty = createElement('div', 'decoder-empty');
+      const emptyClose = createElement('button', 'decoder-mode decoder-hide decoder-empty-close', '✕');
+      emptyClose.type = 'button';
+      emptyClose.setAttribute('aria-label', 'Close the decoder card');
+      emptyClose.addEventListener('click', () => {
+        cardHidden = true;
+        renderDecoderCard();
+        resize();
+      });
       const lead = createElement('b', '', 'Explore the document.');
-      empty.append(lead, viewerDocument.createTextNode(' Point at any highlighted line to magnify it — click to pin the plain-English explanation here.'));
+      empty.append(emptyClose, lead, viewerDocument.createTextNode(' Point at any highlighted line to magnify it — click to pin the plain-English explanation here.'));
       decoderWrap.replaceChildren(empty);
       return;
     }
@@ -151,7 +225,8 @@ export function initViewer({ root, documents, explanations, hotspots }) {
       cardActiveId = active.id;
       cardPaneIndex = 0;
     }
-    const panes = active.cards ?? [{ heading: '', text: active.body }];
+    const contentPanes = active.cards ?? [{ heading: '', text: active.body }];
+    const panes = [...contentPanes, { heading: 'Presenter notes', notes: true }];
     cardPaneIndex = Math.max(0, Math.min(panes.length - 1, cardPaneIndex));
     const pane = panes[cardPaneIndex];
 
@@ -163,22 +238,58 @@ export function initViewer({ root, documents, explanations, hotspots }) {
     const tagRow = createElement('div', 'decoder-tag-row');
     tagRow.dataset.decoderDrag = '';
     tagRow.append(createElement('p', 'decoder-tag', `Decoded · ${documentName}`));
+
+    const windowControls = createElement('span', 'decoder-window-controls');
     if (isPinned) {
       const unpin = createElement('button', 'decoder-unpin', 'Pinned ✕');
       unpin.type = 'button';
       unpin.setAttribute('aria-label', `Unpin ${active.title}`);
       unpin.addEventListener('click', () => dispatch({ type: 'clear-selection' }));
-      tagRow.append(unpin);
+      windowControls.append(unpin);
     }
+    const dockButton = createElement('button', 'decoder-mode', docked ? '⇤' : '⇥');
+    dockButton.type = 'button';
+    dockButton.dataset.decoderDock = '';
+    dockButton.setAttribute('aria-label', docked ? 'Float the card' : 'Pin the card to the side');
+    dockButton.title = docked ? 'Float the card' : 'Pin the card to the side';
+    dockButton.addEventListener('click', () => {
+      cardMode = docked ? 'float' : 'docked';
+      cardOffset = null;
+      decoderWrap.style.left = '';
+      decoderWrap.style.top = '';
+      decoderWrap.style.right = '';
+      decoderWrap.style.bottom = '';
+      renderDecoderCard();
+      resize();
+    });
+    const closeButton = createElement('button', 'decoder-mode decoder-hide', '✕');
+    closeButton.type = 'button';
+    closeButton.dataset.decoderClose = '';
+    closeButton.setAttribute('aria-label', 'Close the decoder card');
+    closeButton.title = 'Close the decoder card';
+    closeButton.addEventListener('click', () => {
+      cardHidden = true;
+      renderDecoderCard();
+      resize();
+    });
+    windowControls.append(dockButton, closeButton);
+    tagRow.append(windowControls);
 
+    const scrollArea = createElement('div', 'decoder-card-scroll');
     const paneHeading = createElement('p', 'decoder-pane-heading', pane.heading);
-    const paneBody = createElement('p', 'decoder-body', pane.text);
-    paneBody.dataset.decoderPane = String(cardPaneIndex);
-    card.append(tagRow, createElement('h2', 'decoder-title', active.title), paneHeading, paneBody);
-    if (cardPaneIndex === 0 && active.learnerQuestion) card.append(buildAskCallout(active.learnerQuestion));
-    if (cardPaneIndex === panes.length - 1 && active.sourceReference) {
-      card.append(createElement('p', 'decoder-source', `Source: ${active.sourceReference}`));
+    scrollArea.append(createElement('h2', 'decoder-title', active.title), paneHeading);
+    if (pane.notes) {
+      scrollArea.append(buildNotesPane(active));
+    } else {
+      const paneBody = createElement('p', 'decoder-body', pane.text);
+      paneBody.dataset.decoderPane = String(cardPaneIndex);
+      scrollArea.append(paneBody);
+      if (cardPaneIndex === 0 && active.learnerQuestion) scrollArea.append(buildAskCallout(active.learnerQuestion));
+      if (cardPaneIndex === contentPanes.length - 1 && active.sourceReference) {
+        scrollArea.append(createElement('p', 'decoder-source', `Source: ${active.sourceReference}`));
+      }
     }
+    card.append(tagRow, scrollArea);
 
     if (panes.length > 1) {
       const controls = createElement('div', 'decoder-flip');
@@ -192,6 +303,11 @@ export function initViewer({ root, documents, explanations, hotspots }) {
       const dots = createElement('div', 'decoder-flip-dots');
       panes.forEach((item, index) => {
         const dot = createElement('button', 'decoder-flip-dot');
+        if (item.notes) {
+          dot.classList.add('decoder-flip-dot--notes');
+          const note = readNote(active.id);
+          if (note.text || note.link) dot.classList.add('has-note');
+        }
         dot.type = 'button';
         dot.setAttribute('aria-label', item.heading || `Card ${index + 1}`);
         dot.setAttribute('aria-pressed', String(index === cardPaneIndex));
@@ -210,14 +326,48 @@ export function initViewer({ root, documents, explanations, hotspots }) {
       card.append(controls);
     }
 
-    if (cardSize) {
+    const grip = createElement('div', 'decoder-resize');
+    grip.dataset.decoderResize = '';
+    grip.setAttribute('aria-hidden', 'true');
+    grip.title = 'Drag to resize';
+    grip.addEventListener('pointerdown', event => {
+      event.preventDefault();
+      event.stopPropagation();
+      const startWidth = docked ? decoderWrap.offsetWidth : card.offsetWidth;
+      const startHeight = card.offsetHeight;
+      const originX = event.clientX;
+      const originY = event.clientY;
+      decoderWrap.classList.add('is-resizing');
+      const move = moveEvent => {
+        if (docked) {
+          dockWidth = Math.max(300, Math.min(680, startWidth - (moveEvent.clientX - originX)));
+          decoderWrap.style.width = `${dockWidth}px`;
+          region.style.setProperty('--dock-width', `${dockWidth}px`);
+          resize();
+          return;
+        }
+        const width = Math.max(300, Math.min(680, startWidth + moveEvent.clientX - originX));
+        const height = Math.max(210, Math.min(Math.round(window.innerHeight * 0.8), startHeight + moveEvent.clientY - originY));
+        cardSize = { width: `${width}px`, height: `${height}px` };
+        card.style.width = cardSize.width;
+        card.style.height = cardSize.height;
+      };
+      const stop = () => {
+        decoderWrap.classList.remove('is-resizing');
+        viewerDocument.removeEventListener('pointermove', move);
+        viewerDocument.removeEventListener('pointerup', stop);
+      };
+      viewerDocument.addEventListener('pointermove', move);
+      viewerDocument.addEventListener('pointerup', stop);
+    });
+    card.append(grip);
+
+    if (cardSize && !docked) {
       card.style.width = cardSize.width;
       card.style.height = cardSize.height;
     }
     stack.append(card);
     decoderWrap.replaceChildren(stack);
-    cardResizeObserver.disconnect();
-    cardResizeObserver.observe(card);
     if (cardOffset) {
       decoderWrap.style.left = `${cardOffset.x}px`;
       decoderWrap.style.top = `${cardOffset.y}px`;
@@ -226,7 +376,8 @@ export function initViewer({ root, documents, explanations, hotspots }) {
     }
 
     tagRow.addEventListener('pointerdown', event => {
-      if (event.target.closest('.decoder-unpin')) return;
+      if (cardMode === 'docked') return;
+      if (event.target.closest('.decoder-unpin, .decoder-mode')) return;
       event.preventDefault();
       const rect = decoderWrap.getBoundingClientRect();
       const start = { x: rect.left, y: rect.top };
@@ -570,7 +721,6 @@ export function initViewer({ root, documents, explanations, hotspots }) {
     dispatch,
     destroy: () => {
       observer.disconnect();
-      cardResizeObserver.disconnect();
       cancelAnimationFrame(animationFrame);
       viewerDocument.removeEventListener('keydown', handleKeydown);
       lens.remove();

@@ -221,6 +221,25 @@ async (page) => {
       check(await page.locator('.decoder-source').isVisible(),
         `${label}: the detail flip card does not show its source line`);
 
+      await page.locator('[data-decoder-flip-next]').click();
+      check(await page.locator('.decoder-note-text').isVisible(),
+        `${label}: the presenter-notes flip card is missing`);
+      await page.locator('.decoder-note-text').fill('Audit talking point');
+      await page.locator('.decoder-note-link').fill('https://example.com/invoice.pdf');
+      await page.locator('[data-decoder-flip-back]').click();
+      await page.locator('[data-decoder-flip-next]').click();
+      check(await page.locator('.decoder-note-text').inputValue() === 'Audit talking point',
+        `${label}: presenter note does not persist across flips`);
+      check(await page.locator('.decoder-note-anchor').getAttribute('href') === 'https://example.com/invoice.pdf',
+        `${label}: presenter link is not rendered as an anchor`);
+      check(await page.locator('.decoder-flip-dot--notes.has-note').count() === 1,
+        `${label}: notes dot does not show its saved state`);
+      await page.evaluate(prefix => {
+        try {
+          for (const key of Object.keys(localStorage)) if (key.startsWith(prefix)) localStorage.removeItem(key);
+        } catch { /* storage unavailable */ }
+      }, 'lecd-presenter-notes:');
+
       const beforeResize = await card.boundingBox();
       await page.mouse.move(beforeResize.x + beforeResize.width - 10, beforeResize.y + beforeResize.height - 10);
       await page.mouse.down();
@@ -233,6 +252,21 @@ async (page) => {
       const persisted = await card.boundingBox();
       check(Math.abs(persisted.width - afterResize.width) < 6,
         `${label}: resized card size does not persist across flips`);
+
+      await page.locator('[data-decoder-dock]').click();
+      check(await page.locator('[data-decoder-card]').evaluate(element => element.classList.contains('is-docked')),
+        `${label}: dock control did not pin the card to the side`);
+      await page.locator('[data-decoder-dock]').click();
+      check(await page.locator('[data-decoder-card]').evaluate(element => !element.classList.contains('is-docked')),
+        `${label}: undock control did not float the card`);
+      await page.locator('[data-decoder-close]').click();
+      check(await page.locator('.decoder-reopen').isVisible(),
+        `${label}: closed card has no reopen control`);
+      check(await page.locator('.decoder-title').count() === 0,
+        `${label}: close did not hide the decoder card`);
+      await page.locator('.decoder-reopen').click();
+      check(await page.locator('.decoder-title').isVisible(),
+        `${label}: reopen did not restore the decoder card`);
 
       await card.locator('.decoder-unpin').click();
       check(await page.locator('[data-selected-explanation]').count() === 0,
