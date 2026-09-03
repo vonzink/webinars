@@ -2,7 +2,7 @@
 
 Date: 2026-09-03
 
-Status: Draft specification for user review
+Status: Approved for implementation planning
 
 ## Objective
 
@@ -30,6 +30,7 @@ The Studio must provide:
 - Put the private presenter and editor inside `dashboard.msfgco.com`.
 - Keep the audience presentation on `msfgmortgage.com`.
 - Make every successful **Save Live** immediately authoritative for new public page loads. Do not add a draft/publish workflow.
+- Keep audience availability separate from content saving. Administrators can enable or disable the public read endpoint for staged migration and rollback; when enabled, every successful **Save Live** is still immediately live.
 - Keep already-open audience sessions pinned to the version they loaded until refreshed.
 - Run custom slide JavaScript inside a slide-only sandbox.
 - Use Master HTML as the shared wrapper and Master CSS as the shared style layer for every slide.
@@ -123,7 +124,7 @@ The public live-bundle endpoint requires no login because the presentation is pu
 
 ## Webinar Studio Experience
 
-The private Studio keeps the existing presenter experience and adds an editor inside Settings. Settings contains four areas.
+The private Studio keeps the existing presenter experience and adds an editor inside Settings. Settings contains five areas.
 
 ### Presenter
 
@@ -163,6 +164,7 @@ Each slide is one expandable editor box containing:
 - a stable internal ID that never changes when the slide moves;
 - an editable title;
 - a unique URL anchor;
+- an editable target duration and shared speaker-notes field;
 - a thumbnail or live preview;
 - one code editor with HTML, CSS, and JavaScript tabs;
 - **Save Live**, duplicate, reorder, and delete controls; and
@@ -176,9 +178,16 @@ The preview refreshes locally while typing. It uses the same sandbox renderer an
 
 The Assets area provides shared upload, search, filtering, preview, usage, archive, and insertion controls as specified below.
 
+### History
+
+- List every complete live revision by version, change summary, editor, and timestamp without loading source into the list response.
+- Preview metadata before restoring.
+- Restore a selected revision as a new live version after confirmation.
+- Keep the prior and restored revision rows append-only.
+
 ## Rendering and Slide Sandbox
 
-The audience shell owns navigation, presentation state, annotations, overlays, timers, and presenter synchronization. Untrusted slide code does not run in that shell.
+The audience shell owns navigation, presentation state, annotations, timers, presenter synchronization, and the fixed control state for supported overlays/calculators. It never inserts webinar-authored markup. Webinar-specific overlay and calculator markup/behavior render inside the same sandboxed slide iframe as the rest of that slide, and the shell only routes their validated fixed state messages.
 
 Each active slide is composed in this order:
 
@@ -190,7 +199,7 @@ Each active slide is composed in this order:
 
 The composed document runs in a sandboxed iframe with scripts enabled but without same-origin, top-navigation, popup, download, form-submission, pointer-lock, or storage privileges. The sandbox content-security policy blocks network connections from JavaScript, allows HTTPS stylesheet and font resources, and limits webinar images and media to the MSFG asset CDN and explicitly required inline or generated sources. External scripts remain blocked. Asset and external-resource policy must be identical in editor preview and public rendering.
 
-The slide runtime exposes a narrow event surface for existing presenter behavior. It can deliver slide-enter, slide-exit, animation-back, animation-forward, animation-play, and animation-pause events to the active slide. Slide code can react inside its own document but cannot alter presenter controls, read authentication data, request Dashboard APIs, or send arbitrary commands to the audience shell.
+The slide runtime exposes a narrow event surface for existing presenter behavior. It can deliver slide-enter, slide-exit, animation-back, animation-forward, animation-play, animation-pause, supported-overlay-state, and supported-calculator-state events to the active slide. Overlay and calculator identifiers are bounded scalar action IDs validated against the active slide; they are not selectors, URLs, or executable strings. The trusted audience shell owns synchronization while slide code renders the corresponding in-slide interface. Slide code can react inside its own document but cannot alter presenter controls, read authentication data, request Dashboard APIs, or send arbitrary commands to the audience shell.
 
 Runtime errors are captured and shown in the private editor. Public rendering records a non-sensitive error code and continues to provide navigation or a safe slide-error state; it never displays stack traces or source data to the audience.
 
@@ -224,6 +233,7 @@ The schema is added through a new, additive Dashboard migration after reconfirmi
 - `master_html`
 - `master_css`
 - `live_version`
+- `audience_enabled`, administrator-controlled and false by default
 - `created_by_user_id`
 - `updated_by_user_id`
 - `created_at`
@@ -237,6 +247,8 @@ The schema is added through a new, additive Dashboard migration after reconfirmi
 - `position`, nullable only while the slide is archived
 - `anchor`, unique within the webinar
 - `title`
+- `target_seconds`
+- `speaker_notes`, shared presenter guidance distinct from each user's private notes
 - `html`
 - `css`
 - `javascript`
@@ -276,10 +288,12 @@ A complete snapshot is stored on every successful webinar-content mutation, incl
 - `webinar_id`
 - `slide_id`, foreign key to the stable slide UUID
 - `body`
+- `source_system` and `source_record_id`, nullable migration provenance used only for idempotent legacy import
 - `created_at`
 - `updated_at`
 
 Multiple notes per user and slide remain supported.
+Normal Studio-created notes leave migration provenance null. The database enforces uniqueness for non-null legacy source identities so rerunning an approved migration cannot duplicate a source note.
 
 ### `webinar_assets`
 
@@ -316,7 +330,15 @@ An `(asset_id, version_number)` pair is unique. Storage keys and public delivery
 - `surface`: `master_html`, `master_css`, `slide_html`, `slide_css`, or `slide_javascript`
 - `created_at`
 
-References are rebuilt transactionally from validated asset tokens whenever affected code is saved. They support usage display, archive protection, revision validation, and exact restoration.
+Live references are rebuilt transactionally from validated asset tokens whenever affected code is saved. They support current usage display and live archive protection.
+
+### `webinar_revision_asset_references`
+
+- `revision_id`, foreign key to the append-only revision
+- `asset_version_id`
+- `created_at`
+
+Revision references are inserted once with each complete revision and never rewritten. Asset usage and archive protection check both live and historical references so an older revision cannot lose an immutable dependency and every revision remains restorable with its exact asset versions.
 
 ### `webinar_audit_events`
 
@@ -336,6 +358,7 @@ All routes below use the existing Dashboard authentication and non-external-user
 - `GET /api/webinars` — assigned webinars for a user; all webinars for administrators
 - `GET /api/webinars/:id` — private Studio document
 - `POST /api/webinars` — administrator creates a webinar and assigns an owner
+- `DELETE /api/webinars/:id` — administrator soft-archives a webinar and disables audience access without deleting history
 - `PUT /api/webinars/:id/master` — validate and save Master HTML/CSS live
 - `POST /api/webinars/:id/slides` — add or duplicate a slide live
 - `PUT /api/webinars/:id/slides/:slideId` — validate and save one slide live
@@ -344,12 +367,13 @@ All routes below use the existing Dashboard authentication and non-external-user
 - `GET /api/webinars/:id/history` — list revision metadata
 - `POST /api/webinars/:id/history/:revisionId/restore` — restore as a new live version
 - `PUT /api/webinars/:id/owner` — administrator-only ownership change
+- `PUT /api/webinars/:id/audience-access` — administrator-only public-read enable or disable; this is not a content publish action
 - `GET /api/webinars/:id/notes` — current user's notes for the webinar
 - `POST /api/webinars/:id/slides/:slideId/notes` — add a current-user note
 - `PUT /api/webinars/:id/notes/:noteId` — update a current-user note
 - `DELETE /api/webinars/:id/notes/:noteId` — delete a current-user note
-- `GET /api/webinars/presenter-settings/me`
-- `PUT /api/webinars/presenter-settings/me`
+- `GET /api/webinar-presenter-settings/me`
+- `PUT /api/webinar-presenter-settings/me`
 - `GET /api/webinar-assets` — shared available asset catalog
 - `POST /api/webinar-assets/upload-intents` — authenticated, constrained upload intent
 - `POST /api/webinar-assets/upload-intents/:id/confirm` — server validation and catalog entry
@@ -358,7 +382,7 @@ All routes below use the existing Dashboard authentication and non-external-user
 - `PATCH /api/webinar-assets/:assetId/versions/:versionId` — archive an allowed unreferenced version
 - `GET /api/webinar-assets/:versionId/usage`
 
-Write requests carry an expected webinar version. A stale expected version receives `409 Conflict` with current version metadata. It never silently overwrites newer work.
+Webinar content mutations and revision restores carry an expected webinar version. A stale expected version receives `409 Conflict` with current version metadata. It never silently overwrites newer work. Creation, owner/audience administration, personal settings/notes, and asset-catalog writes use their route-specific validation and authorization contracts rather than pretending to advance the webinar content version.
 
 ## Public API Surface
 
@@ -367,13 +391,20 @@ Write requests carry an expected webinar version. A stale expected version recei
 - public webinar ID, slug, title, and live version;
 - validated Master HTML and Master CSS;
 - ordered public slide IDs, anchors, titles, HTML, CSS, and JavaScript; and
-- resolved immutable asset URLs required by that version.
+- resolved immutable asset URLs required by that version; and
+- a public resource policy containing only the exact asset-CDN, HTTPS stylesheet, and HTTPS font origins allowed by validation and sandbox CSP.
+
+The public endpoint returns `404` when the webinar is archived or `audience_enabled` is false. Toggling audience access does not create or select a content revision and does not alter **Save Live** semantics.
+
+`POST /api/public/webinars/:slug/runtime-events` accepts only an allow-listed runtime error code, live-version integer, and stable slide UUID from the allowed mortgage-site/local-development origins. It is separately rate-limited, rejects extra/source-bearing fields, writes only a structured non-sensitive operational event, and never mutates webinar content.
 
 The response supports `ETag` revalidation. Normal responses require revalidation so a new page load observes the latest successful save. Edge configuration may serve a stale last-known-good response only when the origin is unavailable. The audience shell loads the bundle once and pins that version for its session.
 
 The public endpoint permits cross-origin reads only from the production mortgage site and explicitly configured local-development origins. Private Dashboard endpoints use the Dashboard's existing authenticated-origin policy.
 
 Public presentation source is inherently inspectable by a browser and is not treated as confidential. Private notes, settings, ownership, audit, storage, and revision information remain excluded.
+
+Shared speaker notes and target timing are presenter-only fields in the private Studio document and complete revision snapshot. They are excluded from the public bundle. User-specific **My Notes** remain separate rows in `webinar_presenter_notes`.
 
 ## Save Live, Validation, and Revisions
 
