@@ -1,1 +1,7 @@
 .worktrees/
+.DS_Store
+**/.DS_Store
+**/node_modules/
+**/.playwright-cli/
+**/output/playwright/
+**/migration/runtime/

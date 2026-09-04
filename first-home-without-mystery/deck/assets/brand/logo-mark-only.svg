@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 760" role="img" aria-label="Mountain State Financial Group mark">
+  <!-- RECONSTRUCTION for layout/comp use. Replace with the official MSFG vector before delivery. Text is live, not outlined. -->
+  <title>Mountain State — mark only</title>
+  <polygon points="60,700 500.0,60.0 579.2,175.2" fill="#8CC63E"/>
+    <polygon points="60,700 579.2,175.2 658.4,290.4" fill="#6BAE47"/>
+    <polygon points="60,700 658.4,290.4 742.0,412.0" fill="#4B7B4D"/>
+    <polygon points="60,700 742.0,412.0 830.0,540.0" fill="#2A5F4E"/>
+    <polygon points="60,700 830.0,540.0 940.0,700.0" fill="#104547"/>
+</svg>

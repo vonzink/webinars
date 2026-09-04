@@ -1,0 +1,128 @@
+/* ============================================================================
+   TOKENS — "Ridgeline" design system
+   Homebuyer's Playbook · Mountain State Financial Group
+
+   Per SLIDE_DESIGN_SPEC.md. Two backgrounds deck-wide (Deep Forest + White/Mist),
+   one green accent moment per slide, Montserrat + Open Sans, 1920×1080 canvas,
+   squared geometry, NO emoji, NO decorative shadows.
+
+   The green (#8cc63E) is an ACCENT and never body text or a full-slide
+   background — there is deliberately no green text token below.
+   ========================================================================= */
+
+:root {
+  /* ---- Palette (the whole deck lives in these) ------------------------ */
+  --forest:      #0C3335;  /* primary dark canvas · photo wash · dark panels */
+  --forest-mid:  #14494B;  /* secondary dark block · hover / active step */
+  --sage:        #4b7b4d;  /* eyebrow labels on light · secondary rules */
+  --green:       #8cc63E;  /* THE accent — one moment per slide */
+  --charcoal:    #404041;  /* body copy on light */
+  --mist:        #F5F7F4;  /* light neutral background */
+  --white:       #FFFFFF;
+  --red:         #C0392B;  /* DON'T on the Do/Don't handout slides only */
+  --do-green:    #3E8E41;  /* DO on the handout — readable green */
+
+  /* ---- Text ----------------------------------------------------------- */
+  --text-on-light:        var(--charcoal);
+  --text-head-light:      var(--forest);
+  --text-on-dark:         var(--white);
+  --text-body-dark:       rgba(255,255,255,0.82);
+  --text-meta-dark:       rgba(255,255,255,0.62);
+  --text-meta-light:      #6A7370;
+
+  /* ---- Backgrounds — exactly two families ----------------------------- */
+  --bg-dark:   var(--forest);
+  --bg-light:  var(--mist);
+  --bg-white:  var(--white);
+
+  /* Cards */
+  --card-on-dark:   rgba(255,255,255,0.07);
+  --card-on-dark-h: rgba(255,255,255,0.12);
+  --card-on-light:  var(--white);
+  --card-border-light: #E2E7E2;
+
+  /* Diagram bands — an on-palette forest→green ramp for the one or two
+     diagrams the deck keeps (payment makeup, process). No numbers ride these. */
+  --band-1: var(--green);
+  --band-2: #6FA847;
+  --band-3: var(--sage);
+  --band-4: var(--forest-mid);
+  --band-5: var(--forest);
+
+  /* Payment-makeup semantic bands (proportional only, always labelled) */
+  --pay-principal: var(--forest);
+  --pay-interest:  var(--forest-mid);
+  --pay-taxes:     var(--sage);
+  --pay-insurance: #8FA69B;
+  --pay-mi:        var(--green);
+  --pay-hoa:       var(--charcoal);
+
+  /* ---- Type ----------------------------------------------------------
+     Montserrat display, Open Sans body. Sizes are the spec's px values on
+     the 1920×1080 canvas (authored 1:1, then the canvas scales to fit).    */
+  --font-display: 'Montserrat', 'Helvetica Neue', Arial, sans-serif;
+  --font-body:    'Open Sans', 'Helvetica Neue', Arial, sans-serif;
+
+  --fs-title:      132px;  /* title slide headline  (900) */
+  --fs-section:    80px;   /* section headline      (800) */
+  --fs-headline:   72px;   /* content headline      (800) */
+  --fs-card-title: 42px;   /* card / item title     (700–800) */
+  --fs-card-title-s: 34px; /* dense grids */
+  --fs-stat:       72px;   /* big stat number       (900) */
+  --fs-eyebrow:    23px;   /* ALL CAPS label        (700) */
+  --fs-body:       30px;   /* body copy             (400) */
+  --fs-body-s:     26px;   /* dense body — the 26px floor for content */
+  --fs-footer:     18px;   /* footer / legal        (400) — reduced per client */
+  --fs-min:        21px;   /* HARD FLOOR — nothing below this, anywhere */
+
+  --ls-title:  -0.035em;
+  --ls-head:   -0.02em;
+  --ls-eyebrow: 0.22em;
+
+  --lh-title:  0.9;
+  --lh-head:   1.0;
+  --lh-body:   1.45;
+
+  --fw-body:      400;
+  --fw-body-semi: 600;
+  --fw-700: 700;
+  --fw-800: 800;
+  --fw-900: 900;
+
+  /* ---- Geometry ------------------------------------------------------- */
+  --slide-w: 1920px;
+  --slide-h: 1080px;
+  --pad-y: 90px;
+  --pad-x: 96px;
+
+  --gap-card:    28px;   /* 26–36 */
+  --gap-section: 60px;   /* 56–64 */
+  --card-pad:    40px;   /* 44–52 */
+
+  --radius: 0px;         /* squared. inner elements ≤4px, prefer 0 */
+  --accent-bar-w: 96px;
+  --accent-bar-h: 8px;
+
+  /* The only permitted shadow: headline over photography. */
+  --shadow-head: 0 4px 40px rgba(0,0,0,0.35);
+
+  /* Photo legibility washes (§5) */
+  --wash-vertical: linear-gradient(180deg,
+      rgba(12,51,53,0.86) 0%, rgba(12,51,53,0.55) 45%, rgba(12,51,53,0.95) 100%);
+  --wash-horizontal: linear-gradient(90deg,
+      rgba(12,51,53,0.35), rgba(12,51,53,0.85));
+
+  /* ---- Motion --------------------------------------------------------- */
+  --ease-out: cubic-bezier(.16, .84, .44, 1);
+  --dur-fast: 200ms;
+  --dur-base: 260ms;
+  --stagger:  60ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --dur-fast: 1ms; --dur-base: 1ms; --stagger: 0ms; }
+  *, *::before, *::after {
+    animation-duration: 1ms !important;
+    transition-duration: 1ms !important;
+  }
+}
