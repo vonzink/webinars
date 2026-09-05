@@ -155,3 +155,65 @@ Webinars repository; its exact commit is recorded in the task handoff.
   controller fails closed on a missing, malformed, or mismatched origin.
 - The feature remains unavailable until separately approved frontend
   publication and feature-gate enablement.
+
+## Review fix round 1
+
+Addressed the reviewer's blocking stale-snapshot/data-loss finding with
+test-first pending-request regressions. Master and slide saves now retain the
+submitted surface snapshot, reconcile the success response against the latest
+`state()`, advance the server live version, and clear a dirty field only when
+its latest value still equals the submitted value. Typing performed after Save
+Live remains in the editor and remains dirty. Edits on other surfaces are also
+preserved.
+
+Add, duplicate, reorder, and archive success now apply their committed server
+result to the latest local state rather than the pre-request snapshot. Tests
+edit surviving slide fields while each structural request is pending and prove
+that the server-created slide/order/archive result and the newer dirty typing
+both survive. Pending 409 and network failures retain the latest source and
+the prior live version; conflicts continue to add only bounded metadata.
+
+Also addressed the reviewer's code-tab accessibility finding. Each slide's
+HTML/CSS/JavaScript tablist now implements native roving-tab behavior for
+ArrowLeft, ArrowRight, Home, and End. The keys move focus, activate the target
+tab, update `aria-selected`/`tabindex`, synchronize the visible tabpanel, and
+wrap at either edge.
+
+Review RED/GREEN evidence:
+
+```text
+pending save reconciliation: failed by reverting newer Master CSS
+pending structural reconciliation: failed by reverting surviving slide notes
+pending conflict/network preservation: passed against existing latest-state failure handling
+code-tab keyboard behavior: failed because ArrowRight was ignored
+final editor suite: 14 passed, 0 failed
+final Task 4 focused suites: 218 passed, 0 failed
+```
+
+Fresh verification after the fixes:
+
+```text
+TZ=UTC full Dashboard: 1,391 passed, 2 accepted Calendar failures, 1,393 total
+Dashboard build: passed; updated editor hash present in dist manifest
+targeted editor test lint: passed
+editor syntax/browser parse/source scans/diff check: passed
+```
+
+Real Chromium verification exercised the actual editor DOM and confirmed:
+
+```text
+ArrowRight: HTML -> CSS with focus, aria-selected, tabindex, and panel sync
+End: CSS -> JavaScript
+ArrowRight wrap: JavaScript -> HTML
+ArrowLeft wrap: HTML -> JavaScript
+Home: JavaScript -> HTML
+two-origin canonical preview: pending -> ready; canonical slide text visible
+browser console: 0 errors, 0 warnings
+```
+
+Dashboard review-fix commit:
+
+```text
+351b9beaa9a14bb64a931e04f467678e5927b34a
+fix(webinars): preserve edits across live mutations
+```
