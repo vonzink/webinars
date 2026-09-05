@@ -11,21 +11,17 @@ whole site (homepage + `/webinars/` + this deck), not just the deck.
 
 ## Redeploy
 
-```bash
-# 1. Build the artifact: site shell + this deck at /webinars/homebuyers-webinar/
-#    (see the build steps in the session; the shell = the amplify export folder's
-#    index.html, amplify.yml, webinars/index.html, and the two linked .pptx)
-#    Deck files exclude build_pptx.py, README.md, DEPLOY.md, SLIDE_DESIGN_SPEC.md.
+The whole-site artifact is built by `site/build.mjs` and deployed with the steps in
+[`site/README.md`](../../site/README.md). This deck ships at **`/webinars/homebuyers-webinar/`**
+because `site/webinars.json` says so. Do not zip this folder on its own.
 
-# 2. Zip from the artifact root (paths must be site-root relative), then:
-APP=d1u9vaaso8yrd4; BR=main
-OUT=$(aws amplify create-deployment --app-id $APP --branch-name $BR --output json)
-JOB=$(echo "$OUT" | python3 -c "import sys,json;print(json.load(sys.stdin)['jobId'])")
-URL=$(echo "$OUT" | python3 -c "import sys,json;print(json.load(sys.stdin)['zipUploadUrl'])")
-curl -H "Content-Type: application/zip" --upload-file site.zip "$URL"
-aws amplify start-deployment --app-id $APP --branch-name $BR --job-id "$JOB"
-# poll: aws amplify get-job --app-id $APP --branch-name $BR --job-id $JOB --query job.summary.status
+Local, from the repository root:
+
+```bash
+node site/build.mjs
 ```
+
+Then follow the Deploy section of `site/README.md`.
 
 ## Rollback
 

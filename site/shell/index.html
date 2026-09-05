@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>MSFG Mortgage Webinars</title>
+    <meta
+      name="description"
+      content="Mortgage education webinars from Mountain State Financial Group, LLC."
+    />
+    <style>
+      :root {
+        --evergreen: #104547;
+        --pine: #4b7b4d;
+        --signal: #8cc63e;
+        --graphite: #404041;
+        --paper: #ffffff;
+        --mist: #f4f7f4;
+        --line: #dce5dc;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        min-height: 100%;
+        margin: 0;
+      }
+
+      body {
+        background: var(--paper);
+        color: var(--graphite);
+        font-family: Inter, Aptos, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      main {
+        min-height: 100vh;
+        display: grid;
+        grid-template-rows: 1fr auto;
+      }
+
+      .hero {
+        display: grid;
+        grid-template-columns: minmax(0, 0.92fr) minmax(360px, 0.58fr);
+        gap: 70px;
+        align-items: center;
+        padding: 84px clamp(28px, 6vw, 104px);
+      }
+
+      .eyebrow {
+        color: var(--pine);
+        font-size: 15px;
+        font-weight: 900;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        max-width: 860px;
+        margin: 22px 0 0;
+        color: var(--evergreen);
+        font-size: clamp(58px, 8vw, 118px);
+        font-weight: 900;
+        letter-spacing: 0;
+        line-height: 0.92;
+      }
+
+      .lead {
+        max-width: 720px;
+        margin: 30px 0 0;
+        color: rgba(64, 64, 65, 0.74);
+        font-size: clamp(22px, 2.2vw, 32px);
+        line-height: 1.25;
+      }
+
+      .webinar-card {
+        padding: 38px;
+        background: var(--mist);
+        border-top: 8px solid var(--signal);
+        box-shadow: 0 28px 74px rgba(16, 69, 71, 0.16);
+      }
+
+      .webinar-card span {
+        color: var(--pine);
+        font-size: 14px;
+        font-weight: 900;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+
+      .webinar-card h2 {
+        margin: 70px 0 0;
+        color: var(--evergreen);
+        font-size: 44px;
+        line-height: 1;
+      }
+
+      .webinar-card p {
+        margin: 18px 0 0;
+        color: rgba(64, 64, 65, 0.72);
+        font-size: 20px;
+        line-height: 1.35;
+      }
+
+      .webinar-card a {
+        display: inline-flex;
+        margin-top: 34px;
+        padding: 17px 22px;
+        background: var(--evergreen);
+        color: var(--paper);
+        font-weight: 900;
+        text-decoration: none;
+      }
+
+      .webinar-card a.library {
+        margin-left: 12px;
+        background: var(--paper);
+        color: var(--evergreen);
+        border: 1px solid var(--line);
+      }
+
+      footer {
+        display: flex;
+        justify-content: space-between;
+        gap: 28px;
+        padding: 24px clamp(28px, 6vw, 104px);
+        border-top: 1px solid var(--line);
+        color: rgba(64, 64, 65, 0.64);
+        font-size: 14px;
+      }
+
+      @media (max-width: 900px) {
+        .hero {
+          grid-template-columns: 1fr;
+          padding-top: 56px;
+        }
+
+        .webinar-card h2 {
+          margin-top: 42px;
+        }
+
+        footer {
+          display: grid;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="hero">
+        <div>
+          <div class="eyebrow">Mountain State Financial Group, LLC</div>
+          <h1>Mortgage education that makes the next step clear.</h1>
+          <p class="lead">
+            Simple, visual webinars built to help buyers understand the numbers, the process,
+            and the questions to ask before they apply.
+          </p>
+        </div>
+
+        <article class="webinar-card">
+          <span>Featured webinar</span>
+          <h2>The Homebuyer's Playbook</h2>
+          <p>
+            A first-time homebuyer seminar covering myths, budget, loan programs,
+            the process, mistakes to avoid, and next steps.
+          </p>
+          <a href="/webinars/homebuyers-webinar/">Open webinar</a>
+          <a class="library" href="/webinars/">All webinars</a>
+        </article>
+      </section>
+
+      <footer>
+        <span>Mountain State Financial Group, LLC</span>
+        <span>Company NMLS #1314257</span>
+      </footer>
+    </main>
+  </body>
+</html>

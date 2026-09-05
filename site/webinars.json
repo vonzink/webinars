@@ -1,0 +1,44 @@
+{
+  "$comment": "Which source folder ships at which path under /webinars/. Paths are relative to the repository root. Add a webinar here and a card in shell/webinars/index.html; the build verifies both agree.",
+  "exclude": [
+    ".DS_Store",
+    ".playwright-cli",
+    "__pycache__",
+    "output",
+    "scripts",
+    "tests",
+    "build_pptx.py",
+    "content.json",
+    "package.json",
+    "README.md",
+    "DEPLOY.md",
+    "SLIDE_DESIGN_SPEC.md",
+    "CONTENT-REVIEW.md",
+    "CONTENT-APPROVAL.json"
+  ],
+  "webinars": [
+    {
+      "slug": "homebuyers-webinar",
+      "title": "The Homebuyer's Playbook",
+      "source": "first-time-homebuyer/deck",
+      "downloads": [
+        { "from": "first-time-homebuyer/Homebuyers-Playbook.pptx", "to": "downloads/Homebuyers-Playbook.pptx" }
+      ]
+    },
+    {
+      "slug": "va",
+      "title": "Understanding VA Loans",
+      "source": "va-loans/deck",
+      "downloads": [
+        { "from": "va-loans/Understanding-VA-Loans.pptx", "to": "downloads/Understanding-VA-Loans.pptx" }
+      ]
+    },
+    {
+      "slug": "le-cd",
+      "title": "Understand Your Loan Estimate and Closing Disclosure",
+      "source": "cd-webinar",
+      "exclude": ["CD Webinar"],
+      "downloads": []
+    }
+  ]
+}
