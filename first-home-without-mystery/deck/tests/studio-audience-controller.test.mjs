@@ -117,7 +117,7 @@ function deferred() {
   return { promise, resolve, reject };
 }
 
-function makeRoot() {
+function makeRoot({ withDock = true } = {}) {
   const selectors = [
     '[data-audience-loading]',
     '[data-audience-fatal]',
@@ -139,6 +139,7 @@ function makeRoot() {
     '[data-animation="play"]',
     '[data-animation="pause"]',
     '[data-annotation-toggle]',
+    '[data-nav-dock]',
   ];
   const elements = new Map(selectors.map(selector => [selector, new FakeElement('div')]));
   for (const selector of selectors.filter(value => value.includes('data-nav')
@@ -150,6 +151,7 @@ function makeRoot() {
   elements.get('[data-audience-fatal]').hidden = true;
   elements.get('[data-audience-shell]').hidden = true;
   elements.get('[data-slide-unavailable]').hidden = true;
+  if (!withDock) elements.delete('[data-nav-dock]');
   return {
     elements,
     querySelector(selector) { return elements.get(selector) || null; },
@@ -165,8 +167,9 @@ function makeHarness({
   fullscreenRejects = false,
   annotationFails = false,
   showSlideThrowsFor = null,
+  withDock = true,
 } = {}) {
-  const root = makeRoot();
+  const root = makeRoot({ withDock });
   const windowObject = new FakeWindow();
   const locationObject = { hash };
   const historyCalls = [];
@@ -234,13 +237,17 @@ function makeHarness({
       annotationCalls.push('init');
       if (annotationFails) throw new Error('annotation unavailable');
     },
-    toggle() { annotationCalls.push('toggle'); },
+    toggle() { annotationCalls.push('toggle'); annotationOn = !annotationOn; },
     clear() {
       annotationCalls.push('clear');
       if (annotationFails) throw new Error('annotation unavailable');
     },
-    isOn() { return annotationCalls.at(-1) === 'toggle'; },
+    enable(on) { annotationCalls.push(['enable', on]); annotationOn = on === true; },
+    setTool(tool) { annotationCalls.push(['setTool', tool]); },
+    setColor(color) { annotationCalls.push(['setColor', color]); },
+    isOn() { return annotationOn; },
   };
+  let annotationOn = false;
 
   const init = () => initStudioAudience({
     annotationApi,
@@ -562,6 +569,10 @@ test('ships one public live region, semantic controls, and no restricted surface
     './js/studio/audience-controller.js',
     './js/studio/presenter-bridge.js',
   ]);
+  const scripts = html.match(/<script\b[^>]*>/g) || [];
+  assert.equal(scripts.length, 1);
+  assert.doesNotMatch(scripts[0], /\bsrc=/);
+  assert.doesNotMatch(html, /import\s*\(|import \* as/);
   assert.doesNotMatch(html, /speaker\s+note|owner|audit|history|code\s+editor|private/i);
 });
 
@@ -587,12 +598,15 @@ test('publishes scalar shell state to subscribers for the presenter bridge and n
   assert.equal(controller.navigationHidden, true);
   assert.equal(controller.setNavigationHidden('yes'), false);
 
-  assert.equal(controller.applyAnnotationCommand({ on: true, tool: 'pen' }), true);
+  assert.equal(controller.applyAnnotationCommand({ on: true, tool: 'pen', color: 'red' }), true);
+  assert.deepEqual(events.at(-1), { type: 'annotation-state', on: true });
+  assert.deepEqual(harness.annotationCalls.slice(-3), [['enable', true], ['setTool', 'pen'], ['setColor', 'red']]);
+  assert.equal(controller.applyAnnotationCommand({ on: false }), true);
   assert.deepEqual(events.at(-1), { type: 'annotation-state', on: false });
 
-  assert.equal(controller.sendSupportedState('calculator', 'cash-to-close'), true);
+  assert.equal(controller.sendSupportedState('calculator', 'cash-to-close', true), true);
   assert.deepEqual(harness.frameCalls.at(-1), ['send', 'supported-calculator-state', { actionId: 'cash-to-close' }]);
-  assert.equal(controller.sendSupportedState('gadget', 'x'), false);
+  assert.equal(controller.sendSupportedState('gadget', 'x', true), false);
 
   await controller.requestFullscreen(true);
   assert.deepEqual(events.at(-1), { type: 'fullscreen-state', on: true });
@@ -609,4 +623,60 @@ test('publishes scalar shell state to subscribers for the presenter bridge and n
   assert.notDeepEqual(events.at(-1), { type: 'slide-state', index: 0, total: 3 });
   controller.destroy();
   assert.equal(typeof controller.subscribe(() => {}), 'function');
+});
+
+test('supported overlay and calculator requests are idempotent against the shell\'s tracked visibility', async () => {
+  const harness = makeHarness({ hash: '#opening' });
+  const controller = await harness.init();
+  const events = [];
+  controller.subscribe(state => events.push(state));
+  harness.runtimeCallback({ type: 'ready' });
+  const sends = () => harness.frameCalls.filter(call => call[0] === 'send' && call[1] === 'supported-overlay-state').length;
+
+  // Not visible yet: asking for hidden is already satisfied and sends nothing.
+  assert.equal(controller.sendSupportedState('overlay', 'rates', false), true);
+  assert.equal(sends(), 0);
+  // Asking for visible toggles the slide, which reports the change back.
+  assert.equal(controller.sendSupportedState('overlay', 'rates', true), true);
+  assert.equal(sends(), 1);
+  harness.runtimeCallback({ type: 'supported-overlay-state', actionId: 'rates' });
+  assert.deepEqual(events.at(-1), { type: 'supported-overlay-state', id: 'rates', visible: true });
+  // Asking for visible again is a no-op; asking for hidden toggles once more.
+  assert.equal(controller.sendSupportedState('overlay', 'rates', true), true);
+  assert.equal(sends(), 1);
+  assert.equal(controller.sendSupportedState('overlay', 'rates', false), true);
+  assert.equal(sends(), 2);
+  harness.runtimeCallback({ type: 'supported-overlay-state', actionId: 'rates' });
+  assert.deepEqual(events.at(-1), { type: 'supported-overlay-state', id: 'rates', visible: false });
+  // A request without a target visibility is refused.
+  assert.equal(controller.sendSupportedState('overlay', 'rates'), false);
+  assert.equal(controller.sendSupportedState('overlay', 'rates', 'yes'), false);
+});
+
+test('navigation visibility is honest: without a dock nothing is hidden and nothing is acknowledged', async () => {
+  const withDock = makeHarness({ hash: '#opening' });
+  const dockController = await withDock.init();
+  assert.equal(dockController.setNavigationHidden(true), true);
+  assert.equal(withDock.root.elements.get('[data-nav-dock]').hidden, true);
+  assert.equal(dockController.setNavigationHidden(false), true);
+  assert.equal(withDock.root.elements.get('[data-nav-dock]').hidden, false);
+
+  const noDock = makeHarness({ hash: '#opening', withDock: false });
+  const controller = await noDock.init();
+  const events = [];
+  controller.subscribe(state => events.push(state));
+  assert.equal(controller.setNavigationHidden(true), false);
+  assert.equal(controller.navigationHidden, false);
+  assert.equal(events.some(event => event.type === 'nav-state'), false);
+});
+
+test('a refused fullscreen request is reported as an audience error, not as success', async () => {
+  const harness = makeHarness({ hash: '#opening', fullscreenRejects: true });
+  const controller = await harness.init();
+  const events = [];
+  controller.subscribe(state => events.push(state));
+  assert.equal(await controller.requestFullscreen(true), false);
+  assert.deepEqual(events.filter(event => event.type === 'audience-error').at(-1), { type: 'audience-error', code: 'FULLSCREEN_DENIED' });
+  assert.deepEqual(events.filter(event => event.type === 'fullscreen-state').at(-1), { type: 'fullscreen-state', on: false });
+  assert.equal(controller.fullscreen, false);
 });

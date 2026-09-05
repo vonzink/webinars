@@ -183,8 +183,11 @@ export async function initStudioAudience({
     emit({ type: 'animation-state', ...animationState });
   }
 
-  /* The slide runtime reports supported overlay and calculator actions by id
-     only. The trusted shell tracks visibility as a toggle per report. */
+  /* Supported overlay and calculator surfaces: the runtime channel carries ids
+     only. A slide reports an id whenever that surface's visibility changes, and
+     an inbound id is a toggle request. The trusted shell keeps the visibility
+     it has inferred from those reports, so presenter requests can be made
+     idempotent against it in sendSupportedState. */
   function applySupportedState(kind, actionId) {
     const map = supportedState[kind];
     if (!map || typeof actionId !== 'string') return;
@@ -352,8 +355,10 @@ export async function initStudioAudience({
     return frame.send(type) === true;
   }
 
-  function sendSupportedState(kind, actionId) {
-    if (destroyed || !runtimeReady || !supportedState[kind] || typeof actionId !== 'string') return false;
+  function sendSupportedState(kind, actionId, visible) {
+    if (destroyed || !runtimeReady || !supportedState[kind] || typeof actionId !== 'string'
+      || typeof visible !== 'boolean') return false;
+    if ((supportedState[kind].get(actionId) === true) === visible) return true;
     return frame.send(`supported-${kind}-state`, { actionId }) === true;
   }
 
@@ -394,19 +399,24 @@ export async function initStudioAudience({
   }
 
   function setNavigationHidden(hidden) {
-    if (destroyed || typeof hidden !== 'boolean') return false;
+    if (destroyed || typeof hidden !== 'boolean' || !navigationDock) return false;
     navigationHidden = hidden;
-    if (navigationDock) navigationDock.hidden = hidden;
+    navigationDock.hidden = hidden;
     emit({ type: 'nav-state', hidden });
     return true;
   }
 
+  /* Browsers grant fullscreen only from a user gesture in this window, so a
+     presenter's request may be refused; the refusal is reported explicitly
+     rather than left as a silent fullscreen-state flip. */
   async function requestFullscreen(on) {
     if (destroyed || typeof on !== 'boolean') return false;
     const active = documentObject.fullscreenElement === shell;
     if (active === on) { syncFullscreen(); return true; }
     await toggleFullscreen();
-    return documentObject.fullscreenElement === shell || !on;
+    const satisfied = (documentObject.fullscreenElement === shell) === on;
+    if (!satisfied) emit({ type: 'audience-error', code: 'FULLSCREEN_DENIED' });
+    return satisfied;
   }
 
   async function toggleFullscreen() {

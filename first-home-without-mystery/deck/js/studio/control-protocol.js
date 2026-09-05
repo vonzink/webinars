@@ -85,6 +85,8 @@ function positionPayload(value) {
 }
 
 function annotationPayload(value) {
+  // `toolbar` is accepted for parity with the presenter's pen controls, but the
+  // public audience page keeps its annotation toolbar hidden, so it is a no-op there.
   const record = exactRecord(value, [], ['on', 'tool', 'color', 'autoOff', 'toolbar', 'undo', 'redo', 'clear']);
   if (!record || Object.keys(record).length === 0) return null;
   const payload = {};
