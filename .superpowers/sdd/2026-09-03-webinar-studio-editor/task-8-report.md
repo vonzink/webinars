@@ -158,9 +158,12 @@ pattern, or data-only record rule they claimed to share with the audience.
 
 ### Dashboard follow-up (`db807d1`)
 
-Each finding got a failing test first. `reconnect()` always reopens the fixed
+Each finding got a failing test first. `reconnect()` reopened the fixed
 window name, which re-navigates any page in that window back to the audience
-URL; `scheduleInit` disconnects as soon as the window closes; `sendControl`
+URL (the final package review later showed this binds to the outgoing
+document when the page is merely reloaded; Dashboard `7ea9d79` handshakes in
+place first and re-navigates only after the in-place attempts lapse);
+`scheduleInit` disconnects as soon as the window closes; `sendControl`
 refuses and disconnects on a closed window; a missing nonce source leaves the
 bridge idle and returns `false`; a blocked popup is reported once; a late
 `audience-ready` for the current launch is accepted because its nonce is

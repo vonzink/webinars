@@ -82,10 +82,135 @@ Webinars deck:
 | `node --check` on the run script, `bash -n` on the runner and build script, `git diff --check` | clean |
 | Studio acceptance | 78 of 78 |
 
-## Independent review, Task 9
+## Independent review, Task 9, round 1: REJECT
+
+A fresh reviewer examined Dashboard `c766d80` and Webinars `b5e7110`, ran
+the unit suites and the acceptance twice (once instrumented), and confirmed
+the security contract: `bridge.js` before the coordinator, production
+config `https` only, audience URL exactly origin plus slug, no storage or
+tokens, the feature flag defaulting to disabled, the client role UI-only,
+and the phone CSS confined to the sub-900px blocks. It rejected on:
+
+1. **Should-fix.** `openNewWebinar` dropped the audience bridge before the
+   discard prompt, so cancelling New webinar severed a live audience and a
+   relaunch restarted the deck in front of viewers.
+2. **Should-fix.** `close()` (Escape, backdrop, Close) dropped a connected
+   bridge without asking.
+3. **Should-fix.** Turning audience access off did not drop a connected
+   bridge, so presenter controls kept driving the open audience window.
+4. Nit: an archived webinar's bridge survived when no webinars remained.
+5. Nit: bridge callbacks were guarded by webinar id, not bridge identity,
+   and `onStatus` lacked the selected-webinar clause.
+6. Nit: `syncSelectedSummary` rebuilt the deck list on every keystroke.
+7. Nit: the header Presenter button is now cosmetic on desktop.
+8. **Should-fix.** The acceptance's "no live content written" check counted
+   a note POST and passed on a coincidental total.
+9. **Should-fix.** The upload checks did not observe the transport PUT.
+10. **Should-fix.** The advertised inner-slide-frame attack was never sent.
+11. **Should-fix.** The built harness viewer still pointed at the production
+    API base when opened by hand.
+12. Nits: two check names overstated their assertions; `pageScrolls` was
+    true by construction and the responsive pass measured before the preview
+    host inflated the workspace; the confirm fixture returned a fuller shape
+    than the real route; the build script's `awk` extraction had no guard;
+    the validation notes cited an uncommitted harness.
+
+Run counts reported: Studio suites 168, full suite 1,508 passed with the
+two accepted Calendar failures, deck 129, acceptance 78 of 78.
+
+## Round 2 fixes (Dashboard `b4af0bf`, Webinars `c6c09ee`)
+
+Each product finding got a failing test first. New webinar drops the bridge
+only after the discard prompt is confirmed; `close()` asks before
+disconnecting a connected or connecting audience and keeps the link when
+declined; a reload that shows audience access off drops the bridge;
+archiving drops it; callbacks are accepted only from the bridge instance
+currently held (a per-instance token plus the selected-webinar clause on
+both callbacks); the deck list is rebuilt only when the summary changed.
+Finding 7 is left as-is: the button is the phone layout's way to reach the
+presenter tab and is harmless on desktop.
+
+The acceptance now snapshots live-content write counts (master, slides,
+history, excluding notes) before section 7 and asserts equality after;
+records the single transport PUT and matches it to the intent's upload URL;
+posts controls from the sandboxed slide frame; renames the two overstated
+checks; measures the responsive pass once the preview host is showing and
+asserts the shell fits the viewport; rewrites the harness viewer's API base
+to the loopback origin and fails the build if any production host remains or
+the modal fragment is empty; answers confirm with the real minimal shape;
+and the validation notes point at the committed Task 8 harness.
+
+Round 2 evidence: Studio suites 176 passed across 9 files; full Dashboard
+suite 1,516 passed with only the two accepted Calendar failures; build,
+ESLint, `node --check`, `git diff --check` clean; deck 129; Chromium
+insertion 27 of 27, presenter 32 of 32, bridge 38 of 38; acceptance
+**83 of 83**.
+
+## Independent review, Task 9, round 2: REJECT
+
+A fresh reviewer confirmed every round-1 finding genuinely resolved (with
+the inner-frame attack shown to be a real probe: the forged nonce passes the
+format rule, so only the source and origin check stops it) and the security
+contract intact, then rejected on one new should-fix: the "Audience
+connected" prompt added to `close()` re-spawned on every Escape, because the
+Studio's Escape handler re-entered `close()` before the dialog's own handler
+could resolve it. Nits: a test name claimed a status case it did not fire;
+the acceptance ran on the native `window.confirm` fallback so the prompt was
+invisible to it; the Task 9 report edit was uncommitted. Run counts: Studio
+176, full suite 1,516 with the two accepted failures, deck 129, acceptance
+83 of 83.
+
+## Final package review, round 1: REJECT
+
+The package reviewer judged every exit-gate item PASS on evidence
+(server-enforced owner and admin checks, unsaved data retained on every
+failure path, the canonical sandbox path, authenticated APIs, browser-covered
+bridge attacks, untouched production deck, nothing deployed and the flag
+disabled) and found the two protocol copies identical across 76,140
+classifications, but rejected on three bridge-lifecycle findings:
+
+1. **Should-fix.** `reconnect()` re-navigated an open window, and the
+   outgoing document answered `presenter-init` before unloading, so a
+   reloaded audience left the presenter bound to a dying page.
+2. **Should-fix.** Deck switch and New webinar still severed a connected
+   audience silently when the editor was clean.
+3. **Should-fix.** Every reconnect restarted the audience at slide 1 and
+   pulled the presenter to 1 of N.
+
+Nits: ledger wording overstated what the `db807d1` reconnect covered; the
+validation baseline table named non-final commits; the attribution trailers
+are a repository policy question before merge; a server-side family-archive
+rule is looser than the UI (asset package, out of range); a pre-existing
+`localhost` URL exists elsewhere in `config.js`.
+
+## Round 3 fixes (Dashboard `7ea9d79`, Webinars `e7c75f8`)
+
+Each finding got a failing test first. `reconnect()` handshakes with the
+page already in the window first and re-navigates once only after the
+in-place attempts lapse (`inPlaceInitAttempts`, default 4), so a reloaded
+audience is recovered in place and a foreign page is still replaced
+promptly. The presenter adopts the audience position on the first launch
+only; after that, an `audience-ready` at a different index sends `goto` to
+the presenter's current slide. Deck switch and New webinar go through the
+same "Audience connected" prompt as closing, awaited only while a link is
+active so selection timing is unchanged otherwise. `close()` carries a
+re-entrancy guard, so a second Escape reaches the prompt. The replaced-bridge
+test now fires status while the other webinar is selected.
+
+The acceptance harness loads the Dashboard's real confirm dialog and
+styles, accepts it automatically except where a check drives it, and proves
+the unsaved-changes prompt, the connected-audience prompt, the second
+Escape dismissing rather than re-spawning, staying connected after
+declining, and a relaunched audience being brought to the presenter's
+slide. The Task 8 harness gains audience reload then reconnect in place.
+
+Round 3 evidence: Studio suites 180 passed across 9 files; full Dashboard
+suite 1,520 passed with only the two accepted Calendar failures; build,
+ESLint, `node --check`, `git diff --check` clean; deck 129; Chromium
+insertion 27 of 27, presenter 32 of 32, bridge 44 of 44; acceptance
+**90 of 90**.
+
+## Final package review, round 2
 
 Pending at the time of writing. The verdict is appended below when received.
 
-## Final package review
-
-Pending at the time of writing. The verdict is appended below when received.
