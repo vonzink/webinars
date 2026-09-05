@@ -113,7 +113,12 @@ export async function initStudioAudience({
   ));
   const eventRemovers = [];
   const reportedErrors = new Set();
+  const subscribers = new Set();
+  const supportedState = { overlay: new Map(), calculator: new Map() };
   const apiOrigin = new URL(apiBase).origin;
+  const navigationDock = root.querySelector?.('[data-nav-dock]') || null;
+  let navigationHidden = false;
+  let animationState = { current: 0, total: 0, playing: false };
   let index = hashIndex(bundle.slides, locationObject.hash).index;
   let runtimeReady = false;
   let destroyed = false;
@@ -133,6 +138,24 @@ export async function initStudioAudience({
     runtimeStatus.textContent = message;
   }
 
+  /* Trusted shell state for the presenter bridge: scalars only, never slide
+     source, and delivered only to listeners registered through subscribe(). */
+  function emit(state) {
+    for (const listener of [...subscribers]) {
+      try { listener(state); } catch { /* a listener cannot break the shell */ }
+    }
+  }
+
+  function snapshot() {
+    return {
+      index,
+      total: bundle.slides.length,
+      annotationOn: annotationAvailable && annotationApi.isOn?.() === true,
+      fullscreen: documentObject.fullscreenElement === shell,
+      navigationHidden,
+    };
+  }
+
   function clearAnnotations() {
     if (!annotationAvailable) return;
     try {
@@ -145,6 +168,7 @@ export async function initStudioAudience({
 
   function resetAnimationState() {
     for (const button of Object.values(animationButtons)) button.disabled = true;
+    animationState = { current: 0, total: 0, playing: false };
   }
 
   function applyAnimationState(state) {
@@ -155,6 +179,18 @@ export async function initStudioAudience({
     animationButtons['animation-forward'].disabled = state.current >= state.total;
     animationButtons['animation-play'].disabled = state.total === 0 || state.playing;
     animationButtons['animation-pause'].disabled = state.total === 0 || !state.playing;
+    animationState = { current: state.current, total: state.total, playing: state.playing };
+    emit({ type: 'animation-state', ...animationState });
+  }
+
+  /* The slide runtime reports supported overlay and calculator actions by id
+     only. The trusted shell tracks visibility as a toggle per report. */
+  function applySupportedState(kind, actionId) {
+    const map = supportedState[kind];
+    if (!map || typeof actionId !== 'string') return;
+    const visible = !map.get(actionId);
+    map.set(actionId, visible);
+    emit({ type: `supported-${kind}-state`, id: actionId, visible });
   }
 
   async function reportRuntimeError(event) {
@@ -200,10 +236,12 @@ export async function initStudioAudience({
     unavailable.hidden = false;
     const slide = bundle.slides[slideIndex];
     setRuntimeStatus(`Slide ${slideIndex + 1} unavailable. Use Previous or Next to continue.`);
+    const safeCode = RUNTIME_ERROR_CODES.has(code) ? code : 'SLIDE_RUNTIME_ERROR';
+    emit({ type: 'audience-error', code: safeCode });
     void reportRuntimeError({
       liveVersion: bundle.webinar.liveVersion,
       slideId: slide.id,
-      code: RUNTIME_ERROR_CODES.has(code) ? code : 'SLIDE_RUNTIME_ERROR',
+      code: safeCode,
     });
   }
 
@@ -224,6 +262,8 @@ export async function initStudioAudience({
       return;
     }
     if (state.type === 'animation-state' && runtimeReady) applyAnimationState(state);
+    if (state.type === 'supported-overlay-state' && runtimeReady) applySupportedState('overlay', state.actionId);
+    if (state.type === 'supported-calculator-state' && runtimeReady) applySupportedState('calculator', state.actionId);
   }
 
   try {
@@ -282,6 +322,9 @@ export async function initStudioAudience({
     }
     surface.scheduleFit?.();
     hasRendered = true;
+    supportedState.overlay.clear();
+    supportedState.calculator.clear();
+    emit({ type: 'slide-state', index, total: bundle.slides.length });
   }
 
   function goToIndex(nextIndex, { updateHash = true } = {}) {
@@ -309,10 +352,61 @@ export async function initStudioAudience({
     return frame.send(type) === true;
   }
 
+  function sendSupportedState(kind, actionId) {
+    if (destroyed || !runtimeReady || !supportedState[kind] || typeof actionId !== 'string') return false;
+    return frame.send(`supported-${kind}-state`, { actionId }) === true;
+  }
+
   function syncFullscreen() {
     const active = documentObject.fullscreenElement === shell;
     setPressed(fullscreenButton, active);
     fullscreenButton.setAttribute('aria-label', active ? 'Exit fullscreen' : 'Enter fullscreen');
+    emit({ type: 'fullscreen-state', on: active });
+  }
+
+  function syncAnnotation() {
+    const on = annotationAvailable && annotationApi.isOn?.() === true;
+    setPressed(annotationButton, on);
+    emit({ type: 'annotation-state', on });
+  }
+
+  /* Annotation commands are the validated scalar set from the presenter
+     bridge. Each maps to one annotation API call; unknown keys are ignored. */
+  function applyAnnotationCommand(command) {
+    if (destroyed || !annotationAvailable || !command || typeof command !== 'object') return false;
+    try {
+      if (typeof command.on === 'boolean') annotationApi.enable?.(command.on);
+      if (typeof command.tool === 'string') annotationApi.setTool?.(command.tool);
+      if (typeof command.color === 'string') annotationApi.setColor?.(command.color);
+      if (typeof command.autoOff === 'boolean') annotationApi.setAutoOff?.(command.autoOff);
+      if (typeof command.toolbar === 'boolean') annotationApi.showToolbar?.(command.toolbar);
+      if (command.undo === true) annotationApi.undo?.();
+      if (command.redo === true) annotationApi.redo?.();
+      if (command.clear === true) annotationApi.clear?.();
+      syncAnnotation();
+      return true;
+    } catch {
+      annotationAvailable = false;
+      annotationButton.disabled = true;
+      setRuntimeStatus('Annotation tools are unavailable.');
+      return false;
+    }
+  }
+
+  function setNavigationHidden(hidden) {
+    if (destroyed || typeof hidden !== 'boolean') return false;
+    navigationHidden = hidden;
+    if (navigationDock) navigationDock.hidden = hidden;
+    emit({ type: 'nav-state', hidden });
+    return true;
+  }
+
+  async function requestFullscreen(on) {
+    if (destroyed || typeof on !== 'boolean') return false;
+    const active = documentObject.fullscreenElement === shell;
+    if (active === on) { syncFullscreen(); return true; }
+    await toggleFullscreen();
+    return documentObject.fullscreenElement === shell || !on;
   }
 
   async function toggleFullscreen() {
@@ -365,7 +459,7 @@ export async function initStudioAudience({
     if (!annotationAvailable) return;
     try {
       annotationApi.toggle?.();
-      setPressed(annotationButton, annotationApi.isOn?.() === true);
+      syncAnnotation();
     } catch {
       annotationAvailable = false;
       annotationButton.disabled = true;
@@ -402,16 +496,31 @@ export async function initStudioAudience({
 
   return Object.freeze({
     get currentSlide() { return bundle.slides[index]; },
+    get index() { return index; },
+    get slideCount() { return bundle.slides.length; },
+    get fullscreen() { return documentObject.fullscreenElement === shell; },
+    get navigationHidden() { return navigationHidden; },
     goToIndex,
     goToAnchor,
     next,
     previous,
     sendAnimation,
+    sendSupportedState,
+    applyAnnotationCommand,
+    setNavigationHidden,
+    requestFullscreen,
     reportRuntimeError,
     toggleFullscreen,
+    snapshot,
+    subscribe(listener) {
+      if (typeof listener !== 'function' || destroyed) return () => {};
+      subscribers.add(listener);
+      return () => { subscribers.delete(listener); };
+    },
     destroy() {
       if (destroyed) return;
       destroyed = true;
+      subscribers.clear();
       for (const remove of eventRemovers.splice(0)) remove();
       clearAnnotations();
       frame.destroy();

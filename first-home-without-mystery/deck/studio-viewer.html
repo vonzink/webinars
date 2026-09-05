@@ -40,7 +40,7 @@
       <div class="viewer-unavailable" data-slide-unavailable hidden>Slide unavailable</div>
     </section>
 
-    <footer class="viewer-dock">
+    <footer class="viewer-dock" data-nav-dock>
       <div class="viewer-animation" role="group" aria-label="Slide animation controls">
         <button type="button" data-animation="back" aria-label="Previous animation" title="Previous animation" disabled>│‹</button>
         <button type="button" data-animation="forward" aria-label="Next animation" title="Next animation" disabled>›│</button>
@@ -67,6 +67,7 @@
   <script type="module">
     import { initPreviewHost } from './js/studio/preview-host.js';
     import { initStudioAudience } from './js/studio/audience-controller.js';
+    import { initPresenterBridge } from './js/studio/presenter-bridge.js';
 
     const mode = new URLSearchParams(window.location.search).get('mode');
     if (mode === 'preview') {
@@ -83,6 +84,18 @@
         root: document,
         slug: 'first-home-without-mystery',
         apiBase: 'https://api.msfgco.com',
+      }).then(controller => {
+        // A presenter window that opened this page may drive it, but only from
+        // the Dashboard origin and only after its presenter-init handshake.
+        // A fatal load returns no controller, so there is nothing to bridge.
+        if (controller) {
+          initPresenterBridge({
+            controller,
+            allowedDashboardOrigins: [
+              'https://dashboard.msfgco.com',
+            ],
+          });
+        }
       });
     }
   </script>

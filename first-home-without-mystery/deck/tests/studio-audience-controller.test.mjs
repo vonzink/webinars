@@ -551,5 +551,62 @@ test('ships one public live region, semantic controls, and no restricted surface
     assert.match(html, new RegExp(`<button[^>]*data-animation="${control}"`));
   }
   assert.match(html, /<canvas[^>]*data-annotation-surface/);
-  assert.doesNotMatch(html, /presenter|speaker\s+note|owner|audit|history|code\s+editor|private/i);
+  // Restricted surfaces are judged on the markup the audience sees. The page
+  // script may only import the three audience-side modules; the bridge is the
+  // audience end of the control contract and carries no presenter UI.
+  const markup = html.replace(/<script[\s\S]*?<\/script>/g, '');
+  assert.doesNotMatch(markup, /presenter|speaker\s+note|owner|audit|history|code\s+editor|private/i);
+  const imports = [...html.matchAll(/import \{[^}]+\} from '([^']+)';/g)].map(match => match[1]);
+  assert.deepEqual(imports, [
+    './js/studio/preview-host.js',
+    './js/studio/audience-controller.js',
+    './js/studio/presenter-bridge.js',
+  ]);
+  assert.doesNotMatch(html, /speaker\s+note|owner|audit|history|code\s+editor|private/i);
+});
+
+test('publishes scalar shell state to subscribers for the presenter bridge and never slide source', async () => {
+  const harness = makeHarness({ hash: '#opening' });
+  const controller = await harness.init();
+  const events = [];
+  const unsubscribe = controller.subscribe(state => events.push(state));
+  assert.deepEqual(controller.snapshot(), { index: 0, total: 3, annotationOn: false, fullscreen: false, navigationHidden: false });
+
+  controller.next();
+  assert.deepEqual(events.at(-1), { type: 'slide-state', index: 1, total: 3 });
+  harness.runtimeCallback({ type: 'ready' });
+  harness.runtimeCallback({ type: 'animation-state', current: 1, total: 3, playing: true });
+  assert.deepEqual(events.at(-1), { type: 'animation-state', current: 1, total: 3, playing: true });
+  harness.runtimeCallback({ type: 'supported-calculator-state', actionId: 'cash-to-close' });
+  assert.deepEqual(events.at(-1), { type: 'supported-calculator-state', id: 'cash-to-close', visible: true });
+  harness.runtimeCallback({ type: 'supported-calculator-state', actionId: 'cash-to-close' });
+  assert.deepEqual(events.at(-1), { type: 'supported-calculator-state', id: 'cash-to-close', visible: false });
+
+  assert.equal(controller.setNavigationHidden(true), true);
+  assert.deepEqual(events.at(-1), { type: 'nav-state', hidden: true });
+  assert.equal(controller.navigationHidden, true);
+  assert.equal(controller.setNavigationHidden('yes'), false);
+
+  assert.equal(controller.applyAnnotationCommand({ on: true, tool: 'pen' }), true);
+  assert.deepEqual(events.at(-1), { type: 'annotation-state', on: false });
+
+  assert.equal(controller.sendSupportedState('calculator', 'cash-to-close'), true);
+  assert.deepEqual(harness.frameCalls.at(-1), ['send', 'supported-calculator-state', { actionId: 'cash-to-close' }]);
+  assert.equal(controller.sendSupportedState('gadget', 'x'), false);
+
+  await controller.requestFullscreen(true);
+  assert.deepEqual(events.at(-1), { type: 'fullscreen-state', on: true });
+  assert.equal(controller.fullscreen, true);
+  await controller.requestFullscreen(true);
+  assert.equal(events.filter(event => event.type === 'fullscreen-state').length >= 2, true);
+
+  harness.runtimeCallback({ type: 'error', code: 'SLIDE_RUNTIME_ERROR' });
+  assert.deepEqual(events.at(-1), { type: 'audience-error', code: 'SLIDE_RUNTIME_ERROR' });
+
+  assert.equal(JSON.stringify(events).includes('<section>'), false);
+  unsubscribe();
+  controller.previous();
+  assert.notDeepEqual(events.at(-1), { type: 'slide-state', index: 0, total: 3 });
+  controller.destroy();
+  assert.equal(typeof controller.subscribe(() => {}), 'function');
 });
