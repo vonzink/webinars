@@ -8,16 +8,7 @@ const ASSET_TOKEN = /\{\{ASSET:([0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][
 const ASSET_LIKE = /\{\{\s*asset\b/i;
 const MASTER_SLIDE_TOKEN = '{{SLIDE_CONTENT}}';
 const RESERVED_MOUNT_ATTRIBUTE = 'data-slide-mount';
-const RAW_TEXT_ELEMENTS = new Set([
-  'iframe',
-  'noembed',
-  'noframes',
-  'noscript',
-  'script',
-  'style',
-  'xmp',
-]);
-const RCDATA_ELEMENTS = new Set(['textarea', 'title']);
+const INERT_PARSER_ROOT_ATTRIBUTE = 'data-msfg-studio-parser-root';
 const NONCE = /^[A-Za-z0-9_-]{16,128}$/;
 const MAX_ASSETS = 10_000;
 const MAX_ORIGINS = 64;
@@ -215,154 +206,103 @@ function containsScriptElement(value) {
   return /<\s*\/?\s*script\b/i.test(value);
 }
 
-function isHtmlSpace(character) {
-  return character === ' ' || character === '\t' || character === '\n'
-    || character === '\f' || character === '\r';
-}
-
-function isAsciiAlpha(character) {
-  if (!character) return false;
-  const code = character.charCodeAt(0);
-  return (code >= 65 && code <= 90) || (code >= 97 && code <= 122);
-}
-
 function asciiLowercase(value) {
   return value.replace(/[A-Z]/g, character => String.fromCharCode(character.charCodeAt(0) + 32));
 }
 
-function startsAsciiCaseInsensitive(source, index, expected) {
-  if (index + expected.length > source.length) return false;
-  return asciiLowercase(source.slice(index, index + expected.length)) === expected;
-}
-
-function isTagNameBoundary(character) {
-  return character === undefined || isHtmlSpace(character) || character === '/' || character === '>';
-}
-
-function skipTagTail(source, index) {
-  let quote = null;
-  for (let cursor = index; cursor < source.length; cursor += 1) {
-    const character = source[cursor];
-    if (quote) {
-      if (character === quote) quote = null;
-    } else if (character === '"' || character === "'") {
-      quote = character;
-    } else if (character === '>') {
-      return cursor + 1;
-    }
+function collectionItem(collection, index) {
+  if (!collection || !Number.isSafeInteger(collection.length) || collection.length < 0) {
+    fail('HTML_PARSER_UNAVAILABLE');
   }
-  return source.length;
+  const value = typeof collection.item === 'function' ? collection.item(index) : collection[index];
+  if (!value) fail('HTML_PARSER_UNAVAILABLE');
+  return value;
 }
 
-function skipHtmlComment(source, index) {
-  if (source[index] === '>') return index + 1;
-  if (source[index] === '-' && source[index + 1] === '>') return index + 2;
-  for (let cursor = index; cursor < source.length; cursor += 1) {
-    if (source.startsWith('-->', cursor)) return cursor + 3;
-    if (source.startsWith('--!>', cursor)) return cursor + 4;
-  }
-  return source.length;
-}
+function countParsedAttribute(root, expectedAttribute) {
+  try {
+    if (!root || typeof root !== 'object') fail('HTML_PARSER_UNAVAILABLE');
+    const stack = [root];
+    let count = 0;
+    while (stack.length) {
+      const node = stack.pop();
+      if (!node || typeof node !== 'object' || !Number.isSafeInteger(node.nodeType)) {
+        fail('HTML_PARSER_UNAVAILABLE');
+      }
+      if (node.nodeType === 1) {
+        const attributes = node.attributes;
+        if (!attributes || !Number.isSafeInteger(attributes.length) || attributes.length < 0) {
+          fail('HTML_PARSER_UNAVAILABLE');
+        }
+        for (let index = 0; index < attributes.length; index += 1) {
+          const attribute = collectionItem(attributes, index);
+          if (typeof attribute.name !== 'string') fail('HTML_PARSER_UNAVAILABLE');
+          if (asciiLowercase(attribute.name) === expectedAttribute) count += 1;
+        }
+        if (asciiLowercase(String(node.localName || '')) === 'template') {
+          if (!node.content || typeof node.content !== 'object') fail('HTML_PARSER_UNAVAILABLE');
+          stack.push(node.content);
+        }
+      }
 
-function skipBogusComment(source, index) {
-  const end = source.indexOf('>', index);
-  return end < 0 ? source.length : end + 1;
-}
-
-function skipRawText(source, index, tagName) {
-  let cursor = index;
-  while (cursor < source.length) {
-    const closingTag = source.indexOf('</', cursor);
-    if (closingTag < 0) return source.length;
-    const nameStart = closingTag + 2;
-    const nameEnd = nameStart + tagName.length;
-    if (startsAsciiCaseInsensitive(source, nameStart, tagName)
-      && isTagNameBoundary(source[nameEnd])) {
-      return skipTagTail(source, nameEnd);
-    }
-    cursor = closingTag + 2;
-  }
-  return source.length;
-}
-
-function scanStartTag(source, index) {
-  let cursor = index + 1;
-  const tagNameStart = cursor;
-  while (cursor < source.length && !isHtmlSpace(source[cursor])
-    && source[cursor] !== '/' && source[cursor] !== '>') cursor += 1;
-  const tagName = asciiLowercase(source.slice(tagNameStart, cursor));
-
-  while (cursor < source.length) {
-    while (isHtmlSpace(source[cursor])) cursor += 1;
-    if (source[cursor] === '>') return { end: cursor + 1, tagName };
-    if (source[cursor] === '/') {
-      if (source[cursor + 1] === '>') return { end: cursor + 2, tagName };
-      cursor += 1;
-      continue;
-    }
-
-    const attributeStart = cursor;
-    while (cursor < source.length && !isHtmlSpace(source[cursor])
-      && source[cursor] !== '/' && source[cursor] !== '>' && source[cursor] !== '=') {
-      cursor += 1;
-    }
-    if (cursor === attributeStart) {
-      cursor += 1;
-      continue;
-    }
-    if (asciiLowercase(source.slice(attributeStart, cursor)) === RESERVED_MOUNT_ATTRIBUTE) {
-      return { end: cursor, reservedMount: true, tagName };
-    }
-
-    while (isHtmlSpace(source[cursor])) cursor += 1;
-    if (source[cursor] !== '=') continue;
-    cursor += 1;
-    while (isHtmlSpace(source[cursor])) cursor += 1;
-    const quote = source[cursor] === '"' || source[cursor] === "'" ? source[cursor] : null;
-    if (quote) {
-      cursor += 1;
-      while (cursor < source.length && source[cursor] !== quote) cursor += 1;
-      if (cursor < source.length) cursor += 1;
-    } else {
-      while (cursor < source.length && !isHtmlSpace(source[cursor]) && source[cursor] !== '>') {
-        cursor += 1;
+      const children = node.childNodes;
+      if (!children || !Number.isSafeInteger(children.length) || children.length < 0) {
+        fail('HTML_PARSER_UNAVAILABLE');
+      }
+      for (let index = children.length - 1; index >= 0; index -= 1) {
+        stack.push(collectionItem(children, index));
       }
     }
+    return count;
+  } catch (error) {
+    if (error instanceof SlideCompositionError) throw error;
+    fail('HTML_PARSER_UNAVAILABLE');
   }
-  return { end: source.length, tagName };
 }
 
-function containsReservedMountAttribute(source) {
-  let cursor = 0;
-  while (cursor < source.length) {
-    const tagOpen = source.indexOf('<', cursor);
-    if (tagOpen < 0) return false;
-    if (source.startsWith('<!--', tagOpen)) {
-      cursor = skipHtmlComment(source, tagOpen + 4);
-      continue;
-    }
-    if (source[tagOpen + 1] === '!' || source[tagOpen + 1] === '?') {
-      cursor = skipBogusComment(source, tagOpen + 2);
-      continue;
-    }
-    if (source[tagOpen + 1] === '/') {
-      cursor = skipTagTail(source, tagOpen + 2);
-      continue;
-    }
-    if (!isAsciiAlpha(source[tagOpen + 1])) {
-      cursor = tagOpen + 1;
-      continue;
-    }
+function createBrowserInertDocument() {
+  const browserDocument = globalThis.document;
+  if (!browserDocument || typeof browserDocument.createElement !== 'function') return null;
+  const template = browserDocument.createElement('template');
+  return template && template.content ? template.content.ownerDocument : null;
+}
 
-    const tag = scanStartTag(source, tagOpen);
-    if (tag.reservedMount) return true;
-    cursor = tag.end;
-    if (tag.tagName === 'plaintext') return false;
-    if (RAW_TEXT_ELEMENTS.has(tag.tagName) || RCDATA_ELEMENTS.has(tag.tagName)) {
-      cursor = skipRawText(source, cursor, tag.tagName);
+export function createInertHtmlParser(createInertDocument) {
+  return function parseInertHtml(source) {
+    try {
+      if (typeof source !== 'string' || typeof createInertDocument !== 'function') {
+        fail('HTML_PARSER_UNAVAILABLE');
+      }
+      const inertDocument = createInertDocument();
+      if (!inertDocument || typeof inertDocument !== 'object' || inertDocument.defaultView !== null
+        || typeof inertDocument.createElement !== 'function') fail('HTML_PARSER_UNAVAILABLE');
+      const root = inertDocument.createElement('html');
+      if (!root || root.nodeType !== 1 || root.ownerDocument !== inertDocument) {
+        fail('HTML_PARSER_UNAVAILABLE');
+      }
+      root.innerHTML = '<head></head><body><div '
+        + INERT_PARSER_ROOT_ATTRIBUTE
+        + '>'
+        + source
+        + '</div></body>';
+      if (countParsedAttribute(root, INERT_PARSER_ROOT_ATTRIBUTE) !== 1) {
+        fail('HTML_PARSER_UNAVAILABLE');
+      }
+      return root;
+    } catch (_error) {
+      fail('HTML_PARSER_UNAVAILABLE');
     }
+  };
+}
+
+function containsReservedMountAttribute(source, parseHtml) {
+  try {
+    if (typeof parseHtml !== 'function') fail('HTML_PARSER_UNAVAILABLE');
+    return countParsedAttribute(parseHtml(source), RESERVED_MOUNT_ATTRIBUTE) > 0;
+  } catch (error) {
+    if (error instanceof SlideCompositionError) throw error;
+    fail('HTML_PARSER_UNAVAILABLE');
   }
-  return false;
 }
 
 function sandboxRuntimeBootstrap(config) {
@@ -517,7 +457,7 @@ function sandboxRuntimeBootstrap(config) {
   }
 }
 
-export function composeSlideDocument(input) {
+function composeSlideDocumentWithParser(input, parseHtml) {
   const master = rootValue(input, 'master');
   const slide = rootValue(input, 'slide');
   const assets = rootValue(input, 'assets');
@@ -537,11 +477,14 @@ export function composeSlideDocument(input) {
   if (firstMount < 0 || firstMount !== masterHtml.lastIndexOf(MASTER_SLIDE_TOKEN)) {
     fail('MASTER_SLIDE_TOKEN_INVALID');
   }
-  if (containsReservedMountAttribute(masterHtml) || containsReservedMountAttribute(slideHtml)) {
-    fail('RESERVED_MOUNT_ATTRIBUTE');
-  }
   if (containsScriptElement(masterHtml) || containsScriptElement(slideHtml)) {
     fail('HTML_SCRIPT_FORBIDDEN');
+  }
+  const authoredComposedHtml = masterHtml.slice(0, firstMount)
+    + slideHtml
+    + masterHtml.slice(firstMount + MASTER_SLIDE_TOKEN.length);
+  if (containsReservedMountAttribute(authoredComposedHtml, parseHtml)) {
+    fail('RESERVED_MOUNT_ATTRIBUTE');
   }
 
   const normalizedPolicy = normalizePolicy(policy);
@@ -550,12 +493,7 @@ export function composeSlideDocument(input) {
     if (asset.origin !== normalizedPolicy.assetOrigin) fail('ASSET_ORIGIN_MISMATCH');
   }
 
-  const resolvedMasterHtml = replaceTokensWithMap(masterHtml, assetMap);
-  const resolvedSlideHtml = replaceTokensWithMap(slideHtml, assetMap);
-  const resolvedMount = resolvedMasterHtml.indexOf(MASTER_SLIDE_TOKEN);
-  const composedHtml = resolvedMasterHtml.slice(0, resolvedMount)
-    + resolvedSlideHtml
-    + resolvedMasterHtml.slice(resolvedMount + MASTER_SLIDE_TOKEN.length);
+  const composedHtml = replaceTokensWithMap(authoredComposedHtml, assetMap);
   const resolvedMasterCss = replaceTokensWithMap(masterCss, assetMap);
   const resolvedSlideCss = replaceTokensWithMap(slideCss, assetMap);
   const resolvedSlideJavascript = replaceTokensWithMap(slideJavascript, assetMap);
@@ -583,3 +521,14 @@ export function composeSlideDocument(input) {
     '</body></html>',
   ].join('');
 }
+
+export function createSlideDocumentComposer(parseHtml) {
+  return function composeWithHtmlParser(input) {
+    if (typeof parseHtml !== 'function') fail('HTML_PARSER_UNAVAILABLE');
+    return composeSlideDocumentWithParser(input, parseHtml);
+  };
+}
+
+export const composeSlideDocument = createSlideDocumentComposer(
+  createInertHtmlParser(createBrowserInertDocument),
+);

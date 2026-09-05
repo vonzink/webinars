@@ -11,7 +11,9 @@ try {
 
 const {
   buildSlideCsp,
-  composeSlideDocument,
+  composeSlideDocument: composeWithBrowserParser,
+  createInertHtmlParser,
+  createSlideDocumentComposer,
   replaceAssetTokens,
 } = composition;
 
@@ -51,6 +53,54 @@ function errorCode(fn) {
   }
   assert.fail('Expected composition to fail');
 }
+
+function nodeList(values) {
+  return {
+    length: values.length,
+    item(index) { return values[index] || null; },
+  };
+}
+
+function parsedElement({ name = 'div', attributes = [], children = [], template = [] } = {}) {
+  return {
+    nodeType: 1,
+    localName: name,
+    attributes: nodeList(attributes.map(attribute => (
+      typeof attribute === 'string' ? { name: attribute, value: '' } : attribute
+    ))),
+    childNodes: nodeList(children),
+    ...(name.toLowerCase() === 'template'
+      ? { content: { nodeType: 11, childNodes: nodeList(template) } }
+      : {}),
+  };
+}
+
+function parsedTreeWithAttributes(attributes = []) {
+  return parsedElement({
+    name: 'html',
+    children: attributes.length ? [parsedElement({ attributes })] : [],
+  });
+}
+
+function composerForParsedSource(expectedSource, attributes = []) {
+  return createSlideDocumentComposer(source => {
+    assert.equal(source, expectedSource);
+    return parsedTreeWithAttributes(attributes);
+  });
+}
+
+function composerReportingReservedMount(masterHtml, slideHtml, attribute = 'data-slide-mount') {
+  const mount = masterHtml.indexOf('{{SLIDE_CONTENT}}');
+  assert.notEqual(mount, -1);
+  const expectedSource = masterHtml.slice(0, mount)
+    + slideHtml
+    + masterHtml.slice(mount + '{{SLIDE_CONTENT}}'.length);
+  return composerForParsedSource(expectedSource, [attribute]);
+}
+
+const composeSlideDocument = typeof createSlideDocumentComposer === 'function'
+  ? createSlideDocumentComposer(() => parsedTreeWithAttributes())
+  : undefined;
 
 function scriptFrom(srcdoc) {
   const scripts = [...srcdoc.matchAll(/<script>([\s\S]*?)<\/script>/gi)];
@@ -239,6 +289,104 @@ test('the slide CSP rejects wildcard, non-HTTPS, path-bearing, credentialed, and
   assert.equal(errorCode(() => buildSlideCsp({ ...policy, extraDirective: 'connect-src *' })), 'RESOURCE_POLICY_INVALID');
 });
 
+test('the inert HTML parser boundary fails closed when its parser or sink is unavailable', () => {
+  assert.equal(typeof createInertHtmlParser, 'function');
+  assert.equal(typeof createSlideDocumentComposer, 'function');
+
+  const input = {
+    master: { html: '<main>{{SLIDE_CONTENT}}</main>', css: '' },
+    slide: { html: '<section>Slide</section>', css: '', javascript: '' },
+    assets: {}, policy, nonce: NONCE, previewMode: false,
+  };
+  assert.equal(errorCode(() => composeWithBrowserParser(input)), 'HTML_PARSER_UNAVAILABLE');
+  assert.equal(errorCode(() => createSlideDocumentComposer(null)(input)), 'HTML_PARSER_UNAVAILABLE');
+
+  for (const createInertDocument of [null, () => null, () => ({
+    defaultView: {},
+    createElement() {},
+  })]) {
+    const parse = createInertHtmlParser(createInertDocument);
+    const compose = createSlideDocumentComposer(parse);
+    assert.equal(errorCode(() => compose(input)), 'HTML_PARSER_UNAVAILABLE');
+  }
+
+  let sinkCalls = 0;
+  const sinkDocument = {
+    defaultView: null,
+    createElement() {
+      const root = parsedTreeWithAttributes();
+      root.ownerDocument = sinkDocument;
+      Object.defineProperty(root, 'innerHTML', {
+        set(_value) {
+          sinkCalls += 1;
+          throw new TypeError('PRIVATE_TRUSTED_TYPES_CANARY');
+        },
+      });
+      return root;
+    },
+  };
+  const composeWithBrokenSink = createSlideDocumentComposer(
+    createInertHtmlParser(() => sinkDocument),
+  );
+  assert.equal(errorCode(() => composeWithBrokenSink(input)), 'HTML_PARSER_UNAVAILABLE');
+  assert.equal(sinkCalls, 1);
+
+  let parsedMarkup = '';
+  const validDocument = {
+    defaultView: null,
+    createElement() {
+      const root = parsedTreeWithAttributes();
+      root.ownerDocument = validDocument;
+      Object.defineProperty(root, 'innerHTML', {
+        set(value) {
+          parsedMarkup = value;
+          root.childNodes = nodeList([
+            parsedElement({ attributes: ['data-msfg-studio-parser-root'] }),
+          ]);
+        },
+      });
+      return root;
+    },
+  };
+  const parsed = createInertHtmlParser(() => validDocument)('<p>safe</p>');
+  assert.equal(parsed.ownerDocument, validDocument);
+  assert.match(parsedMarkup, /data-msfg-studio-parser-root><p>safe<\/p>/);
+});
+
+test('parsed-node inspection is recursive, case-insensitive, and ignores attribute values', () => {
+  assert.equal(typeof createSlideDocumentComposer, 'function');
+  const input = {
+    master: { html: '<main>{{SLIDE_CONTENT}}</main>', css: '' },
+    slide: { html: '<template><svg DATA-SLIDE-MOUNT></svg></template>', css: '', javascript: '' },
+    assets: {}, policy, nonce: NONCE, previewMode: false,
+  };
+  const reservedTree = parsedElement({
+    name: 'html',
+    children: [parsedElement({
+      attributes: [{ name: 'title', value: 'data-slide-mount' }],
+      children: [parsedElement({ name: 'TEMPLATE', template: [parsedElement({
+        name: 'svg',
+        attributes: ['DATA-SLIDE-MOUNT'],
+      })] })],
+    })],
+  });
+  const compose = createSlideDocumentComposer(() => reservedTree);
+
+  assert.equal(errorCode(() => compose(input)), 'RESERVED_MOUNT_ATTRIBUTE');
+
+  const safeTree = parsedElement({
+    name: 'html',
+    children: [parsedElement({
+      attributes: [{ name: 'title', value: 'data-slide-mount' }],
+    })],
+  });
+  const safeDocument = createSlideDocumentComposer(() => safeTree)({
+    ...input,
+    slide: { html: '<p title="data-slide-mount">Safe value</p>', css: '', javascript: '' },
+  });
+  assert.match(safeDocument, /title="data-slide-mount">Safe value/);
+});
+
 test('composition has one mount and bootstrap in the exact Master CSS, slide CSS, HTML, runtime order', () => {
   const srcdoc = composeSlideDocument({
     master: baseMaster,
@@ -308,18 +456,24 @@ test('authored Master and slide elements cannot claim the trusted mount attribut
   ];
 
   for (const attribute of authoredAttributes) {
-    assert.equal(errorCode(() => composeSlideDocument({
-      master: { html: `<main ${attribute}>{{SLIDE_CONTENT}}</main>`, css: '' },
-      slide: { html: '<section>Slide</section>', css: '', javascript: '' },
+    const masterHtml = `<main ${attribute}>{{SLIDE_CONTENT}}</main>`;
+    const masterSlideHtml = '<section>Slide</section>';
+    const composeMaster = composerReportingReservedMount(masterHtml, masterSlideHtml);
+    assert.equal(errorCode(() => composeMaster({
+      master: { html: masterHtml, css: '' },
+      slide: { html: masterSlideHtml, css: '', javascript: '' },
       assets: {},
       policy,
       nonce: NONCE,
       previewMode: false,
     })), 'RESERVED_MOUNT_ATTRIBUTE');
 
-    assert.equal(errorCode(() => composeSlideDocument({
-      master: { html: '<main>{{SLIDE_CONTENT}}</main>', css: '' },
-      slide: { html: `<svg><g ${attribute}></g></svg>`, css: '', javascript: '' },
+    const slideMasterHtml = '<main>{{SLIDE_CONTENT}}</main>';
+    const slideHtml = `<svg><g ${attribute}></g></svg>`;
+    const composeSlide = composerReportingReservedMount(slideMasterHtml, slideHtml);
+    assert.equal(errorCode(() => composeSlide({
+      master: { html: slideMasterHtml, css: '' },
+      slide: { html: slideHtml, css: '', javascript: '' },
       assets: {},
       policy,
       nonce: NONCE,
@@ -359,17 +513,22 @@ test('bogus declarations cannot quote-mask a mount after their first closing ang
   ];
 
   for (const fragment of authoredFragments) {
-    assert.equal(errorCode(() => composeSlideDocument({
-      master: { html: `<main>${fragment}{{SLIDE_CONTENT}}</main>`, css: '' },
-      slide: { html: '<section>Slide</section>', css: '', javascript: '' },
+    const masterHtml = `<main>${fragment}{{SLIDE_CONTENT}}</main>`;
+    const masterSlideHtml = '<section>Slide</section>';
+    const composeMaster = composerReportingReservedMount(masterHtml, masterSlideHtml);
+    assert.equal(errorCode(() => composeMaster({
+      master: { html: masterHtml, css: '' },
+      slide: { html: masterSlideHtml, css: '', javascript: '' },
       assets: {},
       policy,
       nonce: NONCE,
       previewMode: false,
     })), 'RESERVED_MOUNT_ATTRIBUTE');
 
-    assert.equal(errorCode(() => composeSlideDocument({
-      master: { html: '<main>{{SLIDE_CONTENT}}</main>', css: '' },
+    const slideMasterHtml = '<main>{{SLIDE_CONTENT}}</main>';
+    const composeSlide = composerReportingReservedMount(slideMasterHtml, fragment);
+    assert.equal(errorCode(() => composeSlide({
+      master: { html: slideMasterHtml, css: '' },
       slide: { html: fragment, css: '', javascript: '' },
       assets: {},
       policy,
@@ -407,6 +566,88 @@ test('real comments and declaration text before the first closing angle do not c
 
     assert.match(masterDocument, /<body><div data-slide-mount><main>/);
     assert.match(slideDocument, /<body><div data-slide-mount><main>/);
+  }
+});
+
+test('SVG and MathML CDATA keeps mount-looking markup inert but exposes later real elements', () => {
+  const safeForeignCdata = [
+    '<svg><![CDATA[marker > <g data-slide-mount>text</g><style>]]></svg>',
+    '<math><![CDATA[marker > <mrow data-slide-mount>text</mrow><style>]]></math>',
+    '<math><annotation-xml encoding="application/xml"><![CDATA[marker > <span data-slide-mount>text</span>]]></annotation-xml></math>',
+  ];
+  const authoredForeignMounts = [
+    '<svg><![CDATA[marker > <style>]]><g data-slide-mount></g></style></svg>',
+    '<math><![CDATA[marker > <style>]]><mrow data-slide-mount></mrow></style></math>',
+    '<svg><![CDATA[text only]]></svg><div data-slide-mount></div>',
+    '<math><![CDATA[text only]]></math><section DATA-SLIDE-MOUNT="owned"></section>',
+  ];
+
+  for (const fragment of safeForeignCdata) {
+    const masterDocument = composeSlideDocument({
+      master: { html: `<main>${fragment}{{SLIDE_CONTENT}}</main>`, css: '' },
+      slide: { html: '<section>Slide</section>', css: '', javascript: '' },
+      assets: {}, policy, nonce: NONCE, previewMode: false,
+    });
+    const slideDocument = composeSlideDocument({
+      master: { html: '<main>{{SLIDE_CONTENT}}</main>', css: '' },
+      slide: { html: fragment, css: '', javascript: '' },
+      assets: {}, policy, nonce: NONCE, previewMode: false,
+    });
+    assert.match(masterDocument, /<body><div data-slide-mount><main>/);
+    assert.match(slideDocument, /<body><div data-slide-mount><main>/);
+  }
+
+  for (const fragment of authoredForeignMounts) {
+    const masterHtml = `<main>${fragment}{{SLIDE_CONTENT}}</main>`;
+    const masterSlideHtml = '<section>Slide</section>';
+    const composeMaster = composerReportingReservedMount(masterHtml, masterSlideHtml);
+    assert.equal(errorCode(() => composeMaster({
+      master: { html: masterHtml, css: '' },
+      slide: { html: masterSlideHtml, css: '', javascript: '' },
+      assets: {}, policy, nonce: NONCE, previewMode: false,
+    })), 'RESERVED_MOUNT_ATTRIBUTE');
+
+    const slideMasterHtml = '<main>{{SLIDE_CONTENT}}</main>';
+    const composeSlide = composerReportingReservedMount(slideMasterHtml, fragment);
+    assert.equal(errorCode(() => composeSlide({
+      master: { html: slideMasterHtml, css: '' },
+      slide: { html: fragment, css: '', javascript: '' },
+      assets: {}, policy, nonce: NONCE, previewMode: false,
+    })), 'RESERVED_MOUNT_ATTRIBUTE');
+  }
+});
+
+test('foreign-content HTML integration points expose authored mount attributes', () => {
+  const authoredIntegrationMounts = [
+    '<svg><foreignObject><![CDATA[marker > <div data-slide-mount></div>]]></foreignObject></svg>',
+    '<svg><desc><![CDATA[marker > <div data-slide-mount></div>]]></desc></svg>',
+    '<svg><title><![CDATA[marker > <div data-slide-mount></div>]]></title></svg>',
+    '<svg><title>prefix<![CDATA[marker > <div data-slide-mount></div>]]></title></svg>',
+    ...['mi', 'mo', 'mn', 'ms', 'mtext'].map(tag => (
+      `<math><${tag}><![CDATA[marker > <span data-slide-mount></span>]]></${tag}></math>`
+    )),
+    '<math><annotation-xml encoding="text/html"><![CDATA[marker > <span data-slide-mount></span>]]></annotation-xml></math>',
+    '<math><annotation-xml encoding="APPLICATION/XHTML+XML"><![CDATA[marker > <span data-slide-mount></span>]]></annotation-xml></math>',
+    '<math><annotation-xml encoding="text/html">prefix<![CDATA[marker > <span data-slide-mount></span>]]></annotation-xml></math>',
+  ];
+
+  for (const fragment of authoredIntegrationMounts) {
+    const masterHtml = `<main>${fragment}{{SLIDE_CONTENT}}</main>`;
+    const masterSlideHtml = '<section>Slide</section>';
+    const composeMaster = composerReportingReservedMount(masterHtml, masterSlideHtml);
+    assert.equal(errorCode(() => composeMaster({
+      master: { html: masterHtml, css: '' },
+      slide: { html: masterSlideHtml, css: '', javascript: '' },
+      assets: {}, policy, nonce: NONCE, previewMode: false,
+    })), 'RESERVED_MOUNT_ATTRIBUTE');
+
+    const slideMasterHtml = '<main>{{SLIDE_CONTENT}}</main>';
+    const composeSlide = composerReportingReservedMount(slideMasterHtml, fragment);
+    assert.equal(errorCode(() => composeSlide({
+      master: { html: slideMasterHtml, css: '' },
+      slide: { html: fragment, css: '', javascript: '' },
+      assets: {}, policy, nonce: NONCE, previewMode: false,
+    })), 'RESERVED_MOUNT_ATTRIBUTE');
   }
 });
 
