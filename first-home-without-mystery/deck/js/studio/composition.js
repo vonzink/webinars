@@ -8,7 +8,6 @@ const ASSET_TOKEN = /\{\{ASSET:([0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][
 const ASSET_LIKE = /\{\{\s*asset\b/i;
 const MASTER_SLIDE_TOKEN = '{{SLIDE_CONTENT}}';
 const RESERVED_MOUNT_ATTRIBUTE = 'data-slide-mount';
-const INERT_PARSER_ROOT_ATTRIBUTE = 'data-msfg-studio-parser-root';
 const NONCE = /^[A-Za-z0-9_-]{16,128}$/;
 const MAX_ASSETS = 10_000;
 const MAX_ORIGINS = 64;
@@ -267,6 +266,25 @@ function createBrowserInertDocument() {
   return template && template.content ? template.content.ownerDocument : null;
 }
 
+function verifyInertParserSink(root) {
+  try {
+    if (!root || typeof root !== 'object' || root.nodeType !== 1) {
+      fail('HTML_PARSER_UNAVAILABLE');
+    }
+    const children = root.childNodes;
+    if (!children || children.length !== 1) fail('HTML_PARSER_UNAVAILABLE');
+    const probe = collectionItem(children, 0);
+    if (probe.nodeType !== 1 || asciiLowercase(String(probe.localName || '')) !== 'i') {
+      fail('HTML_PARSER_UNAVAILABLE');
+    }
+    if (!probe.attributes || probe.attributes.length !== 0
+      || !probe.childNodes || probe.childNodes.length !== 0) fail('HTML_PARSER_UNAVAILABLE');
+  } catch (error) {
+    if (error instanceof SlideCompositionError) throw error;
+    fail('HTML_PARSER_UNAVAILABLE');
+  }
+}
+
 export function createInertHtmlParser(createInertDocument) {
   return function parseInertHtml(source) {
     try {
@@ -276,18 +294,17 @@ export function createInertHtmlParser(createInertDocument) {
       const inertDocument = createInertDocument();
       if (!inertDocument || typeof inertDocument !== 'object' || inertDocument.defaultView !== null
         || typeof inertDocument.createElement !== 'function') fail('HTML_PARSER_UNAVAILABLE');
-      const root = inertDocument.createElement('html');
+      const root = inertDocument.createElement('div');
       if (!root || root.nodeType !== 1 || root.ownerDocument !== inertDocument) {
         fail('HTML_PARSER_UNAVAILABLE');
       }
-      root.innerHTML = '<head></head><body><div '
-        + INERT_PARSER_ROOT_ATTRIBUTE
-        + '>'
-        + source
-        + '</div></body>';
-      if (countParsedAttribute(root, INERT_PARSER_ROOT_ATTRIBUTE) !== 1) {
-        fail('HTML_PARSER_UNAVAILABLE');
-      }
+      // Exercise the same inert fragment parser on this exact sink with a
+      // private, fixed tree before replacing it with authored markup. The
+      // probe never shares a parse tree or namespace with author content, so
+      // no author-chosen element or attribute can collide with it.
+      root.innerHTML = '<i></i>';
+      verifyInertParserSink(root);
+      root.innerHTML = source;
       return root;
     } catch (_error) {
       fail('HTML_PARSER_UNAVAILABLE');

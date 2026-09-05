@@ -339,10 +339,12 @@ test('the inert HTML parser boundary fails closed when its parser or sink is una
       root.ownerDocument = validDocument;
       Object.defineProperty(root, 'innerHTML', {
         set(value) {
+          if (value === '<i></i>') {
+            root.childNodes = nodeList([parsedElement({ name: 'i' })]);
+            return;
+          }
           parsedMarkup = value;
-          root.childNodes = nodeList([
-            parsedElement({ attributes: ['data-msfg-studio-parser-root'] }),
-          ]);
+          root.childNodes = nodeList([parsedElement({ name: 'p' })]);
         },
       });
       return root;
@@ -350,7 +352,41 @@ test('the inert HTML parser boundary fails closed when its parser or sink is una
   };
   const parsed = createInertHtmlParser(() => validDocument)('<p>safe</p>');
   assert.equal(parsed.ownerDocument, validDocument);
-  assert.match(parsedMarkup, /data-msfg-studio-parser-root><p>safe<\/p>/);
+  assert.equal(parsedMarkup, '<p>safe</p>');
+});
+
+test('author markup cannot collide with the inert parser availability probe', () => {
+  const internalAttribute = 'data-msfg-studio-parser-root';
+  const parsedAssignments = [];
+  const inertDocument = {
+    defaultView: null,
+    createElement(name) {
+      const root = parsedElement({ name });
+      root.ownerDocument = inertDocument;
+      Object.defineProperty(root, 'innerHTML', {
+        set(value) {
+          parsedAssignments.push(value);
+          if (value === '<i></i>') {
+            root.childNodes = nodeList([parsedElement({ name: 'i' })]);
+            return;
+          }
+          const occurrences = [...value.matchAll(/data-msfg-studio-parser-root/gi)].length;
+          root.childNodes = nodeList(occurrences
+            ? [parsedElement({ attributes: Array.from({ length: occurrences }, () => internalAttribute) })]
+            : []);
+        },
+      });
+      return root;
+    },
+  };
+  const parse = createInertHtmlParser(() => inertDocument);
+  const authored = `<section ${internalAttribute}>Safe authored attribute</section>`;
+
+  const parsed = parse(authored);
+
+  assert.equal(parsed.ownerDocument, inertDocument);
+  assert.deepEqual(parsedAssignments, ['<i></i>', authored]);
+  assert.equal(parsed.childNodes.item(0).attributes.item(0).name, internalAttribute);
 });
 
 test('parsed-node inspection is recursive, case-insensitive, and ignores attribute values', () => {
