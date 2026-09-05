@@ -256,6 +256,27 @@ await scenario('audience closed and reconnect', async ({ context, presenter }) =
   check('destroy stops the bridge: no further controls or connects', afterDestroy[1] === false && afterDestroy[2] === false, JSON.stringify(afterDestroy));
 });
 
+await scenario('audience reload then reconnect', async ({ context, presenter }) => {
+  const { audience } = await connect(context, presenter, { pingIntervalMs: 300 });
+  await audience.waitForSelector('[data-audience-shell]:not([hidden])', { timeout: 8000 });
+  await waitStatus(presenter, 'connected');
+  await presenter.evaluate(() => window.__harness.bridge.sendControl('next', {}));
+  await presenter.waitForFunction(() => window.__harness.states.filter(s => s.type === 'slide-state').at(-1)?.payload.index === 1, null, { timeout: 4000 });
+  // The audience presses F5: the page reloads in place and keeps its hash.
+  await audience.reload();
+  await audience.waitForSelector('[data-audience-shell]:not([hidden])', { timeout: 8000 });
+  await waitStatus(presenter, 'disconnected', 8000);
+  check('a reloaded audience page is detected as disconnected', await lastStatus(presenter) === 'disconnected');
+  const reconnected = await presenter.evaluate(() => window.__harness.bridge.reconnect());
+  await waitStatus(presenter, 'connected');
+  check('reconnect completes in place against the reloaded document', reconnected === true && await lastStatus(presenter) === 'connected' && audience.url().includes(`#${fixture.slides[1].anchor}`), audience.url());
+  await presenter.evaluate(() => window.__harness.bridge.sendControl('next', {}));
+  await presenter.waitForFunction(() => window.__harness.states.filter(s => s.type === 'slide-state').at(-1)?.payload.index === 2, null, { timeout: 4000 });
+  check('the reloaded document, not a replaced one, follows the next control', (await audience.evaluate(() => location.hash)) === `#${fixture.slides[2].anchor}` && await lastStatus(presenter) === 'connected');
+  await sleep(1200);
+  check('the link stays connected across heartbeats after an in-place reconnect', await lastStatus(presenter) === 'connected');
+});
+
 await browser.close();
 for (const server of servers) server.kill();
 const passed = results.filter(Boolean).length;

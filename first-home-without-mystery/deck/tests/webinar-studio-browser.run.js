@@ -76,9 +76,18 @@ async (page) => {
     await page.setViewportSize(viewport);
     await page.goto(`${dashboardOrigin}/studio.html`, { waitUntil: 'domcontentloaded' });
     await page.waitForFunction(() => window.WebinarStudio && !document.getElementById('webinarStudioLauncher').disabled);
+    // The real Dashboard confirm dialog is a DOM overlay. Accept it
+    // automatically like a user pressing the primary action, except where a
+    // check takes manual control of it.
+    await page.evaluate(() => {
+      window.__autoConfirm = true;
+      const accept = () => { if (!window.__autoConfirm) return; const ok = document.querySelector('#msfgConfirmOverlay .confirm-ok'); if (ok) ok.click(); };
+      new MutationObserver(accept).observe(document.body, { childList: true });
+    });
     await page.evaluate(() => window.WebinarStudio.open());
     await page.waitForSelector(P + '[data-presenter-panel]');
   }
+  const manualConfirm = on => page.evaluate(flag => { window.__autoConfirm = !flag; }, on);
   const tab = name => page.click(`#wsSettings [data-ws-tab="${name}"]`);
   const codeField = (field, slide = SLIDE) => `${P}textarea[data-code-field="${field}"][data-slide-id="${slide}"]`;
   const previewStatus = slide => page.locator(`${P}[data-preview-status][data-surface="${slide}"]`);
@@ -324,6 +333,36 @@ async (page) => {
   check('the audience DOM carries no notes, ownership, history, settings, or keys', !/speakerNotes|primaryOwnerUserId|x-webinar-key|Mention the cash example|Shared note for|Sam Successor|KeyM/.test(audienceContent));
   check('the audience page source ships no presenter surfaces', !/speaker\s+note|owner|audit|history|code\s+editor|private|x-webinar-key|cognito/i.test(audienceSource.replace(/<script[\s\S]*?<\/script>/g, '')));
 
+  // Escape while connected asks through the real Dashboard dialog; a second
+  // Escape must reach that dialog, not spawn another; Stay keeps the link.
+  check('the real Dashboard confirm dialog is in use, not the native fallback', await page.evaluate(() => typeof window.Utils?.confirm === 'function'));
+  await manualConfirm(true);
+  // The editor still holds the unsaved asset insertion, so Escape asks about
+  // unsaved changes first; leaving them is confirmed, then the audience prompt follows.
+  const overlayText = () => page.locator('#msfgConfirmOverlay').textContent();
+  await page.keyboard.press('Escape');
+  await page.waitForSelector('#msfgConfirmOverlay', { timeout: 5000 });
+  check('Escape with unsaved edits asks about them first', /unsaved changes/i.test(await overlayText()));
+  await page.click('#msfgConfirmOverlay .confirm-ok');
+  await page.waitForFunction(() => /audience window is connected/i.test(document.querySelector('#msfgConfirmOverlay')?.textContent || ''), null, { timeout: 5000 });
+  check('Escape while the audience is connected then asks before disconnecting', true);
+  await page.keyboard.press('Escape');
+  await sleep(400);
+  check('a second Escape dismisses the prompt instead of spawning another, and the Studio stays open and connected', await page.evaluate(() => document.querySelectorAll('#msfgConfirmOverlay').length === 0 && !document.getElementById('webinarStudioModal').hidden) && /connected\./i.test(await page.locator(P + '[data-audience-status]').textContent()));
+  await page.keyboard.press('Escape');
+  await page.waitForSelector('#msfgConfirmOverlay', { timeout: 5000 });
+  await page.click('#msfgConfirmOverlay .confirm-ok');
+  await page.waitForFunction(() => /audience window is connected/i.test(document.querySelector('#msfgConfirmOverlay')?.textContent || ''), null, { timeout: 5000 });
+  await page.click('#msfgConfirmOverlay .confirm-cancel');
+  await sleep(300);
+  check('choosing to stay keeps the Studio open and the audience connected', await page.evaluate(() => !document.getElementById('webinarStudioModal').hidden) && /connected\./i.test(await page.locator(P + '[data-audience-status]').textContent()));
+  await manualConfirm(false);
+  await page.click(P + '[data-nav="previous"]');
+  await audience.waitForFunction(n => document.querySelector('[data-slide-count]')?.textContent.trim() === `1 / ${n}`, TOTAL);
+  await page.click(P + '[data-nav="next"]');
+  await audience.waitForFunction(n => document.querySelector('[data-slide-count]')?.textContent.trim() === `2 / ${n}`, TOTAL);
+  check('controls still reach the audience after the declined close', true);
+
   // Close and reconnect.
   await page.evaluate(() => { window.__statusLog = []; const target = document.querySelector('#wsSettingsPanel [data-audience-status]'); const log = () => window.__statusLog.push([Date.now(), document.querySelector('#wsSettingsPanel [data-audience-status]')?.textContent]); log(); new MutationObserver(log).observe(document.getElementById('wsSettingsPanel'), { childList: true, subtree: true, characterData: true }); void target; });
   const closedAt = Date.now();
@@ -336,9 +375,12 @@ async (page) => {
   const audience2 = await reopened;
   await audience2.waitForSelector('[data-audience-shell]:not([hidden])', { timeout: 15000 });
   await page.waitForFunction(() => /connected\./i.test(document.querySelector('#wsSettingsPanel [data-audience-status]')?.textContent || ''), null, { timeout: 15000, polling: 250 });
+  // The relaunched window opened at slide 1; the presenter, still on slide 2, sends it there.
+  await audience2.waitForFunction(n => document.querySelector('[data-slide-count]')?.textContent.trim() === `2 / ${n}`, TOTAL, { timeout: 8000 });
+  check('a relaunched audience is brought to the presenter\'s current slide instead of resetting the presenter', (await page.locator(P + '[data-position]').textContent()).trim() === `2 / ${TOTAL}`);
   await page.click(P + '[data-nav="next"]');
-  await audience2.waitForFunction(n => document.querySelector('[data-slide-count]')?.textContent.trim() === `2 / ${n}`, TOTAL);
-  check('reconnect reopens the audience and controls resume after a fresh handshake', (await audience2.locator(countSel).textContent()).trim() === `2 / ${TOTAL}`);
+  await audience2.waitForFunction(n => document.querySelector('[data-slide-count]')?.textContent.trim() === `3 / ${n}`, TOTAL);
+  check('reconnect reopens the audience and controls resume after a fresh handshake', (await audience2.locator(countSel).textContent()).trim() === `3 / ${TOTAL}`);
   check('no live content was written by presenter or bridge activity', await requestCount(liveWrites) === liveWritesBefore, `${liveWritesBefore} before, ${await requestCount(liveWrites)} after`);
   await audience2.close();
 

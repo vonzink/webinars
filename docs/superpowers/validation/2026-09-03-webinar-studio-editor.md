@@ -9,8 +9,8 @@ this deck, both on loopback origins.
 
 | Repository | Branch | Commit under test |
 | --- | --- | --- |
-| dashboard.msfgco.com | `codex/webinar-studio-complete` | `c766d80` (`feat(webinars): launch and control the audience from the Studio`) and its review follow-up `fix(webinars): protect a live audience from Studio housekeeping` |
-| Webinars | `codex/webinar-studio` | `c0d8a61` (`fix(webinars): make audience surface control honest and idempotent`) plus the validation commits |
+| dashboard.msfgco.com | `codex/webinar-studio-complete` | `7ea9d79` (`fix(webinars): keep a reconnected audience on the presenter's slide`), the tip after `c766d80` and its review follow-ups |
+| Webinars | `codex/webinar-studio` | `c0d8a61` (`fix(webinars): make audience surface control honest and idempotent`) plus the validation commits up to and including this one |
 
 Production feature flag `WEBINAR_STUDIO_ACCESS` remained disabled by default.
 No assigned-owner or audience access was enabled anywhere. Neither frontend
@@ -28,7 +28,9 @@ DASHBOARD_ROOT=/Users/zacharyzink/MSFG/WebProjects/dashboard.msfgco.com ./tests/
 
 `tests/webinar-studio-harness/build-harness.sh` assembles the page: the real
 `#webinarStudioModal` markup from the Dashboard's `index.html`, the Studio
-modules in the Dashboard's own script order, and an in-memory stand-in for the
+modules in the Dashboard's own script order, the Dashboard's `js/utils.js`
+(so confirmations use the real dialog, not the native fallback), its
+`variables.css` and `components.css`, and an in-memory stand-in for the
 authenticated `ServerAPI` (`harness-tail.html`). This deck's
 `studio-viewer.html` is served at `/webinars/first-home-without-mystery/` on a
 second loopback origin and acts as both the exact-origin preview host and the
@@ -46,7 +48,7 @@ and writes screenshots to `output/playwright/webinar-studio/`.
 
 ## Result
 
-`83 of 83` checks passed at 1440×900, then the responsive pass at 1440×900,
+`90 of 90` checks passed at 1440×900, then the responsive pass at 1440×900,
 1024×768, 390×844, and 844×390. Zero page errors in the Dashboard or audience
 windows; zero requests outside the fulfilled fixtures.
 
@@ -92,11 +94,16 @@ Covered, in order:
    and is inside the Dashboard's own trust boundary, so it is not an
    attack); the real presenter still drives the audience afterwards; the
    audience DOM and source carry no notes, ownership, history, settings, or
-   keys; closing the audience is detected as disconnected within the
-   heartbeat budget; reconnect reopens it and controls resume after a fresh
-   handshake; the count of live-content writes (master, slides, history,
-   excluding notes) is identical before and after all presenter and bridge
-   activity.
+   keys; with the audience connected and edits unsaved, Escape asks about
+   the unsaved edits first and then about the connected audience, a second
+   Escape dismisses that prompt instead of spawning another, and choosing to
+   stay keeps the Studio open and the link driving the audience; closing the
+   audience is detected as disconnected within the heartbeat budget;
+   reconnect reopens the window and brings it to the presenter's current
+   slide rather than resetting the presenter, and controls resume after a
+   fresh handshake; the count of live-content writes (master, slides,
+   history, excluding notes) is identical before and after all presenter and
+   bridge activity.
 8. Responsive, measured once the preview host is showing: no horizontal
    overflow, the page is locked behind the Studio and the shell fits the
    viewport, close, both launch buttons, and all five tabs are visible
@@ -123,7 +130,8 @@ Covered, in order:
   unit tests pin the production values.
 - The heartbeat runs at production timing here; the Task 8 harness under
   `.superpowers/sdd/2026-09-03-webinar-studio-editor/task-8-browser/` covers
-  the shortened-timing and foreign-window cases.
+  the shortened-timing, foreign-window, and audience-reload-then-reconnect
+  cases (44 of 44).
 - The New webinar form (`POST /webinars`) is not exercised here; it is
   covered by the shell unit suite.
 - Delivery of the real preview host and audience page to
