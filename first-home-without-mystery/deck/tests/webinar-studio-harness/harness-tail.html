@@ -116,7 +116,8 @@
         const rejected = /reject/i.test(body.filename);
         families.unshift({ id: assetId, displayName: body.displayName, description: body.description, createdByUserId: 1, createdAt: now(), archivedAt: null, versions: [] });
         pendingVersions.set(versionId, { assetId, polls: 0, rejected, version: { id: versionId, versionNumber: 1, mediaType: 'image', mimeType: body.contentType, byteSize: body.byteSize, width: 2, height: 2, durationMs: null, status: 'processing', rejectionCode: null, uploadedByUserId: 1, uploaderName: 'Admin', createdAt: now(), archivedAt: null, publicUrl: null } });
-        return { assetId, versionId, uploadUrl: `https://uploads.example/put/${versionId}` };
+        window.__harness.lastIntent = { assetId, versionId, uploadUrl: `https://uploads.example/put/${versionId}` };
+        return { ...window.__harness.lastIntent };
       }
       if (method === 'POST' && (m = path.match(/^\/webinar-assets\/upload-intents\/([^/]+)\/confirm$/))) {
         const pending = pendingVersions.get(m[1]); if (!pending) throw httpError(404);
@@ -128,7 +129,8 @@
           const family = families.find(f => f.id === pending.assetId);
           if (family && !family.versions.some(v => v.id === pending.version.id)) family.versions.push(clone(pending.version));
         }
-        return clone(pending.version);
+        // The real confirm route returns the minimal shape, not the full version row.
+        return { versionId: pending.version.id, status: pending.version.status, sha256: 'b'.repeat(64), publicUrl: pending.version.publicUrl, rejectionCode: pending.version.rejectionCode };
       }
       if (method === 'GET' && /^\/webinar-assets\/[^/]+\/usage$/.test(path)) return { current: [], history: [] };
       if (method === 'PATCH' && path.startsWith('/webinar-assets/')) return { ok: true };

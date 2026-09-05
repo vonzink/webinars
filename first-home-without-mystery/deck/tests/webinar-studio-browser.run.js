@@ -18,6 +18,7 @@ async (page) => {
   const pageErrors = [];
   const unexpectedRequests = [];
   const screenshots = [];
+  const transportPuts = [];
   const check = (name, ok, detail = '') => { checks.push({ name, ok, detail }); if (!ok) failures.push(detail ? `${name} — ${detail}` : name); };
   const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
   const P = '#wsSettingsPanel ';
@@ -53,16 +54,16 @@ async (page) => {
   await context.route('**/*', async route => {
     const request = route.request();
     const url = request.url();
-    if (url.startsWith(`${dashboardOrigin}/`) || url.startsWith(`${audienceOrigin}/`)) { await route.continue(); return; }
-    if (url === 'https://api.msfgco.com/api/public/webinars/first-home-without-mystery/live' && request.method() === 'GET') {
+    if (url === `${audienceOrigin}/api/public/webinars/first-home-without-mystery/live` && request.method() === 'GET') {
       await route.fulfill({ status: 200, contentType: 'application/json; charset=utf-8', headers: { ...cors, etag: '"8888"' }, body: JSON.stringify(bundle) });
       return;
     }
-    if (url === 'https://api.msfgco.com/api/public/webinars/first-home-without-mystery/runtime-events') {
+    if (url === `${audienceOrigin}/api/public/webinars/first-home-without-mystery/runtime-events`) {
       await route.fulfill({ status: request.method() === 'OPTIONS' ? 204 : 200, headers: cors, contentType: 'application/json', body: '{}' });
       return;
     }
-    if (url.startsWith('https://uploads.example/put/') && request.method() === 'PUT') { await route.fulfill({ status: 200, headers: { 'access-control-allow-origin': dashboardOrigin, 'access-control-allow-methods': 'PUT, OPTIONS', 'access-control-allow-headers': 'Content-Type' } }); return; }
+    if (url.startsWith(`${dashboardOrigin}/`) || url.startsWith(`${audienceOrigin}/`)) { await route.continue(); return; }
+    if (url.startsWith('https://uploads.example/put/') && request.method() === 'PUT') { transportPuts.push(url); await route.fulfill({ status: 200, headers: { 'access-control-allow-origin': dashboardOrigin, 'access-control-allow-methods': 'PUT, OPTIONS', 'access-control-allow-headers': 'Content-Type' } }); return; }
     if (url.startsWith('https://uploads.example/put/') && request.method() === 'OPTIONS') { await route.fulfill({ status: 204, headers: { 'access-control-allow-origin': dashboardOrigin, 'access-control-allow-methods': 'PUT, OPTIONS', 'access-control-allow-headers': 'Content-Type' } }); return; }
     if (url.startsWith('https://assets.example/')) { await route.fulfill({ status: 200, contentType: 'image/png', headers: { 'access-control-allow-origin': '*', 'cross-origin-resource-policy': 'cross-origin' }, body: PNG }); return; }
     if (url === 'https://evil.example/download' && request.method() === 'GET') { await route.fulfill({ status: 204 }); return; }
@@ -208,11 +209,12 @@ async (page) => {
   await page.setInputFiles(P + '[data-upload-file]', { name: 'porch.png', mimeType: 'image/png', buffer: PNG });
   await page.click(P + 'form[data-asset-upload-form] button[type="submit"]');
   await page.waitForFunction(() => /processing is still running/i.test(document.querySelector('#wsSettingsPanel [data-asset-activity]')?.textContent || ''), null, { timeout: 10000 });
-  check('an upload reports processing after the transport PUT', true);
+  const intentUrl = await page.evaluate(() => window.__requests.filter(r => r.method === 'POST' && r.path === '/webinar-assets/upload-intents').length === 1 ? window.__harness.lastIntent?.uploadUrl : null);
+  check('the file went out as exactly one PUT to the intent upload URL before processing was reported', transportPuts.length === 1 && transportPuts[0] === intentUrl, JSON.stringify({ transportPuts, intentUrl }));
   await page.waitForFunction(() => /approved and ready/i.test(document.querySelector('#wsSettingsPanel [data-asset-activity]')?.textContent || ''), null, { timeout: 10000 });
   const uploadedVersion = await page.evaluate(() => window.__harness.families[0].versions[0].id);
   check('the processed upload appears as an available version', await page.locator(`${P}[data-asset-version="${uploadedVersion}"] .ws-asset-status-available`).count() === 1);
-  check('the upload transport was a single PUT to the intent URL', await requestCount(`r.method === 'POST' && r.path === '/webinar-assets/upload-intents'`) === 1);
+  check('one upload intent was created for the upload', await requestCount(`r.method === 'POST' && r.path === '/webinar-assets/upload-intents'`) === 1);
   await page.setInputFiles(P + '[data-upload-file]', { name: 'reject.png', mimeType: 'image/png', buffer: PNG });
   await page.fill(P + '[data-upload-display-name]', 'Rejected upload');
   await page.click(P + 'form[data-asset-upload-form] button[type="submit"]');
@@ -259,13 +261,15 @@ async (page) => {
   check('ArrowRight navigates locally in rehearsal and is suppressed inside the note textarea', /^2 \//.test((await page.locator(P + '[data-position]').textContent()).trim()));
 
   /* ---------------- 7. Two windows: launch, control, attacks, reconnect, privacy ---------------- */
+  const liveWrites = `(r.method === 'PUT' || r.method === 'POST' || r.method === 'DELETE') && /\\/webinars\\/\\d+\\/(master|slides|history)/.test(r.path) && !/\\/notes/.test(r.path)`;
+  const liveWritesBefore = await requestCount(liveWrites);
   const popup = context.waitForEvent('page', { timeout: 15000 });
   await page.click('#wsLaunchAudience');
   const audience = await popup;
   await audience.waitForSelector('[data-audience-shell]:not([hidden])', { timeout: 15000 });
   await page.waitForFunction(() => /connected\./i.test(document.querySelector('#wsSettingsPanel [data-audience-status]')?.textContent || ''), null, { timeout: 15000 });
   check('Launch audience opens the audience window on the audience origin and the presenter reports connected', audience.url().startsWith(`${audienceOrigin}/webinars/first-home-without-mystery/studio-viewer.html`) && /connected\./i.test(await page.locator(P + '[data-audience-status]').textContent()));
-  check('the audience window never received the Dashboard origin as an opener it must not trust: it only answers the exact opener', await audience.evaluate(() => window.opener !== null));
+  check('the audience window was opened with an opener reference, not noopener, so the bridge can address it', await audience.evaluate(() => window.opener !== null));
   const countSel = '[data-slide-count]';
   await page.click(P + '[data-nav="next"]');
   await audience.waitForFunction(n => document.querySelector('[data-slide-count]')?.textContent.trim() === `2 / ${n}`, TOTAL);
@@ -299,9 +303,17 @@ async (page) => {
     window.postMessage({ v: 1, nonce: 'wrongwrongwrongwrongwrong', type: 'presenter-init', payload: {} }, '*');
     window.postMessage({ v: 1, nonce: 'wrongwrongwrongwrongwrong', type: 'next', payload: {} }, '*');
   });
+  // The sandboxed slide frame is the surface an attacker actually controls.
+  const slideFrame = audience.frames().find(frame => frame !== audience.mainFrame());
+  check('the audience page hosts exactly one inner slide frame to attack from', Boolean(slideFrame) && audience.frames().length === 2);
+  await slideFrame.evaluate(() => {
+    parent.postMessage({ v: 1, nonce: 'wrongwrongwrongwrongwrong', type: 'presenter-init', payload: {} }, '*');
+    parent.postMessage({ v: 1, nonce: 'wrongwrongwrongwrongwrong', type: 'next', payload: {} }, '*');
+    parent.postMessage({ v: 1, nonce: 'wrongwrongwrongwrongwrong', type: 'goto', payload: { index: 3 } }, '*');
+  });
   await page.evaluate(origin => { const target = window.open('', 'MSFGWebinarAudience'); target.postMessage({ v: 1, nonce: 'wrongwrongwrongwrongwrong', type: 'next', payload: {} }, origin); target.postMessage({ v: 2, nonce: 'wrongwrongwrongwrongwrong', type: 'next', payload: {} }, origin); target.postMessage('next', origin); }, audienceOrigin);
   await sleep(400);
-  check('wrong-source and wrong-nonce controls change nothing in the audience', (await audience.locator(countSel).textContent()).trim() === before);
+  check('controls from the audience window itself, from its sandboxed slide frame, and with a wrong nonce from the opener change nothing', (await audience.locator(countSel).textContent()).trim() === before);
   await page.click(P + '[data-nav="next"]');
   await audience.waitForFunction(n => document.querySelector('[data-slide-count]')?.textContent.trim() === `2 / ${n}`, TOTAL);
   check('the real presenter still drives the audience after the attacks', true);
@@ -326,14 +338,17 @@ async (page) => {
   await page.waitForFunction(() => /connected\./i.test(document.querySelector('#wsSettingsPanel [data-audience-status]')?.textContent || ''), null, { timeout: 15000, polling: 250 });
   await page.click(P + '[data-nav="next"]');
   await audience2.waitForFunction(n => document.querySelector('[data-slide-count]')?.textContent.trim() === `2 / ${n}`, TOTAL);
-  check('reconnect reopens the audience and controls resume under the new nonce', true);
-  check('no live content was written by presenter or bridge activity', await requestCount(`(r.method === 'PUT' || r.method === 'POST' || r.method === 'DELETE') && /\\/webinars\\/\\d+\\/(master|slides)/.test(r.path)`) === 8);
+  check('reconnect reopens the audience and controls resume after a fresh handshake', (await audience2.locator(countSel).textContent()).trim() === `2 / ${TOTAL}`);
+  check('no live content was written by presenter or bridge activity', await requestCount(liveWrites) === liveWritesBefore, `${liveWritesBefore} before, ${await requestCount(liveWrites)} after`);
   await audience2.close();
 
   /* ---------------- 8. Responsive sizes ---------------- */
   for (const viewport of [{ width: 1440, height: 900 }, { width: 1024, height: 768 }, { width: 390, height: 844 }, { width: 844, height: 390 }]) {
     const label = `${viewport.width}x${viewport.height}`;
     await openStudio(viewport);
+    // Measure the steady state: after the preview host has inflated the workspace.
+    await page.waitForFunction(() => document.querySelector('#wsPreviewHost') && !document.querySelector('#wsPreviewHost').hidden, null, { timeout: 20000, polling: 250 }).catch(() => {});
+    check(`${label}: the preview host is showing before the layout is measured`, await page.evaluate(() => !document.querySelector('#wsPreviewHost').hidden));
     const layout = await page.evaluate(() => {
       const doc = document.documentElement;
       const within = el => { if (!el) return false; const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0 && r.left >= 0 && r.top >= 0 && r.right <= innerWidth + 1 && r.bottom <= innerHeight + 1; };
@@ -341,7 +356,8 @@ async (page) => {
       const nested = scrollers.filter(el => scrollers.some(other => other !== el && other.contains(el)));
       return {
         horizontalOverflow: doc.scrollWidth > doc.clientWidth + 1,
-        pageScrolls: getComputedStyle(document.body).overflow !== 'hidden' && doc.scrollHeight > doc.clientHeight + 1,
+        bodyLocked: getComputedStyle(document.body).overflow === 'hidden',
+        shellFits: (() => { const r = document.querySelector('#webinarStudioModal .ws-shell').getBoundingClientRect(); return r.top >= 0 && r.bottom <= innerHeight + 1; })(),
         close: within(document.getElementById('wsClose')),
         launchPresenter: within(document.getElementById('wsLaunchPresenter')),
         launchAudience: within(document.getElementById('wsLaunchAudience')),
@@ -349,7 +365,7 @@ async (page) => {
         nestedScrollers: nested.length,
       };
     });
-    check(`${label}: no horizontal overflow and the page itself does not scroll behind the Studio`, !layout.horizontalOverflow && !layout.pageScrolls, JSON.stringify(layout));
+    check(`${label}: no horizontal overflow, the page is locked behind the Studio, and the shell fits the viewport`, !layout.horizontalOverflow && layout.bodyLocked && layout.shellFits, JSON.stringify(layout));
     check(`${label}: close, launch buttons, and every settings tab are visible without scrolling`, layout.close && layout.launchPresenter && layout.launchAudience && layout.tabs, JSON.stringify(layout));
     check(`${label}: no nested scroll regions inside the Studio`, layout.nestedScrollers === 0, JSON.stringify(layout));
     await page.locator(P + '[data-nav="next"]').scrollIntoViewIfNeeded();

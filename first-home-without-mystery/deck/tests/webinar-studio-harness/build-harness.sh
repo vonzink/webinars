@@ -24,6 +24,7 @@ ln -sfn "$dashboard/css" "$out/dashboard/css"
 ln -sfn "$dashboard/vendor" "$out/dashboard/vendor"
 printf 'window.__liveBundle = %s;\n' "$(cat "$deck/tests/fixtures/studio-live-bundle.json")" > "$out/dashboard/fixture.js"
 awk '/id="webinarStudioModal"/{f=1} f{print} /^  <\/section>$/{if(f){exit}}' "$dashboard/index.html" > "$out/dashboard/modal.fragment.html"
+grep -q 'id="wsSettingsPanel"' "$out/dashboard/modal.fragment.html" || { echo 'modal fragment extraction failed: wsSettingsPanel not found' >&2; exit 1; }
 # The Studio scripts, in exactly the order the Dashboard ships them.
 scripts=$(grep -oE '<script src="js/webinar-studio[^"]*"></script>' "$dashboard/index.html" | sed -E 's/\?v=[0-9]+//')
 {
@@ -35,8 +36,12 @@ scripts=$(grep -oE '<script src="js/webinar-studio[^"]*"></script>' "$dashboard/
 ln -sfn "$deck/js" "$out/audience/js"
 ln -sfn "$deck/css" "$out/audience/css"
 ln -sfn "$deck/tests" "$out/audience/tests"
-sed "s#'https://dashboard.msfgco.com'#'$dashboard_origin'#" "$deck/studio-viewer.html" > "$out/audience/studio-viewer.html"
+# Rewrite both the trusted Dashboard origin and the public API base so the
+# harness page is inert without Playwright: it never talks to production.
+sed -e "s#'https://dashboard.msfgco.com'#'$dashboard_origin'#" -e "s#'https://api.msfgco.com'#'$audience_origin'#" "$deck/studio-viewer.html" > "$out/audience/studio-viewer.html"
 grep -q "$dashboard_origin" "$out/audience/studio-viewer.html"
+grep -q "apiBase: '$audience_origin'" "$out/audience/studio-viewer.html"
+if grep -q 'msfgco.com\|msfgmortgage.com' "$out/audience/studio-viewer.html"; then echo 'harness viewer still references a production host' >&2; exit 1; fi
 # Production serves the viewer under /webinars/<slug>/; mount the same path locally.
 ln -sfn ".." "$out/audience/webinars/first-home-without-mystery"
 echo "harness ready: $out"

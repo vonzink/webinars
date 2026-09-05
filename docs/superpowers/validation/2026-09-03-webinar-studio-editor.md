@@ -9,8 +9,8 @@ this deck, both on loopback origins.
 
 | Repository | Branch | Commit under test |
 | --- | --- | --- |
-| dashboard.msfgco.com | `codex/webinar-studio-complete` | `c766d80` (`feat(webinars): launch and control the audience from the Studio`) |
-| Webinars | `codex/webinar-studio` | `c0d8a61` (`fix(webinars): make audience surface control honest and idempotent`) plus this validation commit |
+| dashboard.msfgco.com | `codex/webinar-studio-complete` | `c766d80` (`feat(webinars): launch and control the audience from the Studio`) and its review follow-up `fix(webinars): protect a live audience from Studio housekeeping` |
+| Webinars | `codex/webinar-studio` | `c0d8a61` (`fix(webinars): make audience surface control honest and idempotent`) plus the validation commits |
 
 Production feature flag `WEBINAR_STUDIO_ACCESS` remained disabled by default.
 No assigned-owner or audience access was enabled anywhere. Neither frontend
@@ -32,11 +32,13 @@ modules in the Dashboard's own script order, and an in-memory stand-in for the
 authenticated `ServerAPI` (`harness-tail.html`). This deck's
 `studio-viewer.html` is served at `/webinars/first-home-without-mystery/` on a
 second loopback origin and acts as both the exact-origin preview host and the
-audience window, with its Dashboard origin rewritten to the local one so the
-exact-origin checks can pass off production. Playwright fulfils the public
-live bundle from `tests/fixtures/studio-live-bundle.json` at the production
-API URL, the asset upload transport, and the approved asset origin. Nothing
-else may leave the two loopback origins; the audit fails if it does.
+audience window, with its Dashboard origin and its public API base rewritten
+to the loopback origins so the exact-origin checks can pass off production
+and the harness page is inert even without Playwright. Playwright fulfils the
+public live bundle from `tests/fixtures/studio-live-bundle.json` at that
+rewritten API base, the asset upload transport, and the approved asset
+origin. Nothing else may leave the two loopback origins; the audit fails if
+it does.
 
 `tests/webinar-studio-browser.run.js` is the Playwright CLI `run-code`
 function. It returns `{ status, passed, total, failures, checks, screenshots }`
@@ -44,7 +46,7 @@ and writes screenshots to `output/playwright/webinar-studio/`.
 
 ## Result
 
-`78 of 78` checks passed at 1440×900, then the responsive pass at 1440×900,
+`83 of 83` checks passed at 1440×900, then the responsive pass at 1440×900,
 1024×768, 390×844, and 844×390. Zero page errors in the Dashboard or audience
 windows; zero requests outside the fulfilled fixtures.
 
@@ -70,8 +72,10 @@ Covered, in order:
    shows the new owner; audience off updates the status line and disables
    the audience launch; the presenter's Launch audience is refused with the
    reason in the status line; audience on re-enables the launch.
-5. Assets: upload reports processing after the transport PUT, then
-   available; a rejected upload shows its server code; Insert at cursor is
+5. Assets: the file goes out as exactly one PUT to the intent's upload URL
+   before processing is reported, then available; the confirm route answers
+   with its real minimal shape; a rejected upload shows its server code;
+   Insert at cursor is
    enabled for the Code field chosen before opening Assets and inserts the
    canonical token at the caret.
 6. Presenter: up-next preview settles on ready; notes add, edit, delete
@@ -81,17 +85,23 @@ Covered, in order:
    and the presenter reports connected; Next and Previous drive the real
    viewer; animation forward runs the real slide animation; drawing toggles
    the audience pen; navigation visibility hides and restores the dock;
-   fullscreen is honoured or explicitly denied; wrong-source and wrong-nonce
-   controls change nothing; the real presenter still drives the audience
-   afterwards; the audience DOM and source carry no notes, ownership,
-   history, settings, or keys; closing the audience is detected as
-   disconnected within the heartbeat budget; reconnect reopens it and
-   controls resume under the new nonce; presenter and bridge activity wrote
-   no live content.
-8. Responsive: no horizontal overflow, the page does not scroll behind the
-   Studio, close, both launch buttons, and all five tabs are visible without
-   scrolling, no nested scroll regions, presenter navigation and the code
-   editor reachable, at every size.
+   fullscreen is honoured or explicitly denied; controls posted by the
+   audience window itself, by its sandboxed slide frame (the surface an
+   attacker controls), and with a wrong nonce from the opener change nothing
+   (a presenter-init from the real opener is the reconnect path by design
+   and is inside the Dashboard's own trust boundary, so it is not an
+   attack); the real presenter still drives the audience afterwards; the
+   audience DOM and source carry no notes, ownership, history, settings, or
+   keys; closing the audience is detected as disconnected within the
+   heartbeat budget; reconnect reopens it and controls resume after a fresh
+   handshake; the count of live-content writes (master, slides, history,
+   excluding notes) is identical before and after all presenter and bridge
+   activity.
+8. Responsive, measured once the preview host is showing: no horizontal
+   overflow, the page is locked behind the Studio and the shell fits the
+   viewport, close, both launch buttons, and all five tabs are visible
+   without scrolling, no nested scroll regions, presenter navigation and the
+   code editor reachable, at every size.
 
 ## Defects found by this audit and fixed in `c766d80`
 
@@ -111,8 +121,11 @@ Covered, in order:
   Studio does not republish to that window in the harness.
 - Production `https` origins are rewritten to loopback `http` origins; the
   unit tests pin the production values.
-- The heartbeat runs at production timing here; the earlier Task 8 harness
-  covers the shortened-timing and foreign-window cases.
+- The heartbeat runs at production timing here; the Task 8 harness under
+  `.superpowers/sdd/2026-09-03-webinar-studio-editor/task-8-browser/` covers
+  the shortened-timing and foreign-window cases.
+- The New webinar form (`POST /webinars`) is not exercised here; it is
+  covered by the shell unit suite.
 - Delivery of the real preview host and audience page to
   `msfgmortgage.com/webinars/first-home-without-mystery/` is a deployment
   prerequisite that this audit does not perform.
