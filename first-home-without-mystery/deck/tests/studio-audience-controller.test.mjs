@@ -164,6 +164,7 @@ function makeHarness({
   fetchImpl = async () => ({ ok: true, status: 204 }),
   fullscreenRejects = false,
   annotationFails = false,
+  showSlideThrowsFor = null,
 } = {}) {
   const root = makeRoot();
   const windowObject = new FakeWindow();
@@ -206,7 +207,10 @@ function makeHarness({
   const frameCalls = [];
   let runtimeCallback;
   const frame = {
-    showSlide(slide) { frameCalls.push(['show', slide.anchor]); },
+    showSlide(slide) {
+      frameCalls.push(['show', slide.anchor]);
+      if (slide.anchor === showSlideThrowsFor) throw new Error('frame install failed');
+    },
     send(type, payload) { frameCalls.push(['send', type, payload]); return true; },
     destroy() { frameCalls.push(['destroy']); },
   };
@@ -428,6 +432,42 @@ test('keeps navigation usable after a runtime failure and posts one redacted eve
   assert.equal(controller.next(), true);
   assert.equal(controller.currentSlide.anchor, 'confident-number');
   assert.equal(element(harness, '[data-slide-unavailable]').hidden, true);
+});
+
+test('ignores preserved prior-frame events after a replacement throws', async () => {
+  const requests = [];
+  const harness = makeHarness({
+    showSlideThrowsFor: 'confident-number',
+    fetchImpl: async (...args) => {
+      requests.push(args);
+      return { ok: true, status: 204 };
+    },
+  });
+  const controller = await harness.init();
+
+  assert.equal(controller.next(), true);
+  await flush();
+  assert.equal(controller.currentSlide.anchor, 'confident-number');
+  assert.equal(element(harness, '[data-slide-frame]').hidden, true);
+  assert.equal(element(harness, '[data-slide-unavailable]').hidden, false);
+  assert.match(element(harness, '[data-runtime-status]').textContent, /Slide 2 unavailable/);
+  assert.deepEqual(JSON.parse(requests[0][1].body), {
+    liveVersion: 7,
+    slideId: '22222222-2222-4222-8222-222222222222',
+    code: 'SLIDE_RUNTIME_ERROR',
+  });
+
+  harness.runtimeCallback({ type: 'ready' });
+  harness.runtimeCallback({ type: 'error', code: 'SLIDE_STARTUP_TIMEOUT' });
+  harness.runtimeCallback({ type: 'animation-state', current: 0, total: 2, playing: false });
+  await flush();
+
+  assert.equal(element(harness, '[data-slide-frame]').hidden, true);
+  assert.equal(element(harness, '[data-slide-unavailable]').hidden, false);
+  assert.match(element(harness, '[data-runtime-status]').textContent, /Slide 2 unavailable/);
+  assert.equal(element(harness, '[data-animation="forward"]').disabled, true);
+  assert.equal(harness.frameCalls.filter(call => call[0] === 'send').length, 0);
+  assert.equal(requests.length, 1);
 });
 
 test('tracks browser fullscreen state and reports rejected requests without trapping controls', async () => {

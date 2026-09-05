@@ -119,6 +119,9 @@ export async function initStudioAudience({
   let destroyed = false;
   let hasRendered = false;
   let annotationAvailable = false;
+  let renderGeneration = 0;
+  let installedGeneration = 0;
+  let installedSlideIndex = null;
   let frame;
 
   function listen(target, type, listener) {
@@ -188,14 +191,15 @@ export async function initStudioAudience({
     }
   }
 
-  function showUnavailable(code) {
+  function showUnavailable(code, slideIndex = index) {
     if (destroyed) return;
     runtimeReady = false;
     resetAnimationState();
+    frameContainer.hidden = true;
     unavailable.textContent = 'Slide unavailable';
     unavailable.hidden = false;
-    const slide = bundle.slides[index];
-    setRuntimeStatus(`Slide ${index + 1} unavailable. Use Previous or Next to continue.`);
+    const slide = bundle.slides[slideIndex];
+    setRuntimeStatus(`Slide ${slideIndex + 1} unavailable. Use Previous or Next to continue.`);
     void reportRuntimeError({
       liveVersion: bundle.webinar.liveVersion,
       slideId: slide.id,
@@ -204,17 +208,19 @@ export async function initStudioAudience({
   }
 
   function onRuntimeState(state) {
-    if (destroyed || !state || typeof state !== 'object') return;
+    if (destroyed || !state || typeof state !== 'object'
+      || installedGeneration !== renderGeneration || installedSlideIndex === null) return;
+    const runtimeSlideIndex = installedSlideIndex;
     if (state.type === 'ready') {
       runtimeReady = true;
       unavailable.hidden = true;
       frame.send('slide-enter');
-      const slide = bundle.slides[index];
-      setRuntimeStatus(`Slide ${index + 1} of ${bundle.slides.length}: ${slide.title}.`);
+      const slide = bundle.slides[runtimeSlideIndex];
+      setRuntimeStatus(`Slide ${runtimeSlideIndex + 1} of ${bundle.slides.length}: ${slide.title}.`);
       return;
     }
     if (state.type === 'error') {
-      showUnavailable(state.code);
+      showUnavailable(state.code, runtimeSlideIndex);
       return;
     }
     if (state.type === 'animation-state' && runtimeReady) applyAnimationState(state);
@@ -250,7 +256,12 @@ export async function initStudioAudience({
 
   function render() {
     const slide = bundle.slides[index];
+    const generation = renderGeneration + 1;
+    renderGeneration = generation;
+    installedGeneration = 0;
+    installedSlideIndex = null;
     runtimeReady = false;
+    frameContainer.hidden = true;
     unavailable.hidden = true;
     resetAnimationState();
     if (hasRendered) clearAnnotations();
@@ -263,8 +274,11 @@ export async function initStudioAudience({
     setRuntimeStatus(`Loading slide ${index + 1} of ${bundle.slides.length}.`);
     try {
       frame.showSlide(slide);
+      installedSlideIndex = index;
+      installedGeneration = generation;
+      frameContainer.hidden = false;
     } catch {
-      showUnavailable('SLIDE_RUNTIME_ERROR');
+      showUnavailable('SLIDE_RUNTIME_ERROR', index);
     }
     surface.scheduleFit?.();
     hasRendered = true;
