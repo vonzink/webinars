@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Bridge harness stranger</title></head>
+<body>
+  <p>Stranger window on the audience origin. It is not the presenter's audience window.</p>
+  <script>
+    // Served from the audience origin so its messages carry the right origin
+    // but the wrong source. The driver asks it to forge acknowledgements to the
+    // presenter (its opener) and to open its own audience window and try to
+    // drive it from a non-Dashboard origin.
+    window.__stranger = {
+      forgeAck(nonce) {
+        window.opener.postMessage({ v: 1, nonce, type: 'slide-state', payload: { index: 99, total: 100 } }, '*');
+        window.opener.postMessage({ v: 1, nonce, type: 'audience-ready', payload: { index: 0, total: 1 } }, '*');
+      },
+      openOwnAudience(url) {
+        const target = window.open(url, 'StrangerAudience');
+        return Boolean(target);
+      },
+      driveOwnAudience() {
+        const target = window.open('', 'StrangerAudience');
+        target.postMessage({ v: 1, nonce: 'strangerstrangerstranger', type: 'presenter-init', payload: {} }, '*');
+        target.postMessage({ v: 1, nonce: 'strangerstrangerstranger', type: 'next', payload: {} }, '*');
+      },
+    };
+  </script>
+</body>
+</html>

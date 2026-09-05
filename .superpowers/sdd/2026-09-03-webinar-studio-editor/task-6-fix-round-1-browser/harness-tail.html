@@ -1,0 +1,71 @@
+<script>
+  // Test-only stubs. The real page provides CONFIG and ServerAPI; here they are
+  // deterministic fixtures so the real Studio modules run unmodified.
+  window.CONFIG = { currentUser: { id: 1, name: 'Admin', activeRole: 'admin', role: 'admin' } };
+  window.__previewBoots = [];
+  window.__requests = [];
+  const FAMILY = '11111111-1111-4111-8111-111111111111';
+  const VERSION = '22222222-2222-4222-8222-222222222222';
+  const SECOND = '55555555-5555-4555-8555-555555555555';
+  const publicUrl = 'https://assets.example/approved/sha256/' + 'a'.repeat(64) + '/asset';
+  const family = { id: FAMILY, displayName: 'Front porch', description: 'Reusable opening image', createdByUserId: 7, createdAt: '2026-09-04T10:00:00.000Z', archivedAt: null,
+    versions: [{ id: VERSION, versionNumber: 1, mediaType: 'image', mimeType: 'image/webp', byteSize: 4096, width: 1280, height: 720, durationMs: null, status: 'available', rejectionCode: null, uploadedByUserId: 7, uploaderName: 'Seth Angell', createdAt: '2026-09-04T10:01:00.000Z', archivedAt: null, publicUrl }] };
+  const doc = (id, title) => ({ id, slug: id === 12 ? 'first-home' : 'deck-' + id, title, primaryOwnerUserId: 7, audienceEnabled: false, liveVersion: 7,
+    masterHtml: '<main>{{SLIDE_CONTENT}}</main>', masterCss: 'main{gap:8px}',
+    resourcePolicy: { assetOrigin: 'https://assets.example', stylesheetOrigins: [], fontOrigins: [] }, assets: {},
+    slides: [
+      { id: FAMILY, title: 'Opening', anchor: 'opening', targetSeconds: 60, speakerNotes: '', html: '<section>before after</section>', css: '', javascript: '' },
+      { id: SECOND, title: 'Agenda', anchor: 'agenda', targetSeconds: 90, speakerNotes: '', html: '<article>agenda</article>', css: '', javascript: '' },
+    ] });
+  const docs = { 12: doc(12, 'First Home'), 13: doc(13, 'Second Deck') };
+  const summaries = Object.values(docs).map(d => ({ id: d.id, slug: d.slug, title: d.title, liveVersion: d.liveVersion, audienceEnabled: d.audienceEnabled }));
+  const respond = (method, path, body) => {
+    window.__requests.push({ method, path });
+    const m = path.match(/^\/webinars\/(\d+)$/);
+    if (method === 'GET' && path === '/webinars') return summaries;
+    if (method === 'GET' && m && docs[m[1]]) return structuredClone(docs[m[1]]);
+    if (method === 'GET' && path.startsWith('/webinar-assets')) return [family];
+    if (method === 'GET' && path === '/users/directory') return [{ id: 7, name: 'Active Owner', email: 'owner@example.test' }];
+    if (method === 'DELETE' && /^\/webinars\/12\/slides\//.test(path)) return { liveVersion: 8, updatedAt: '2026-09-05T12:08:00.000Z' };
+    // Presenter notes and account settings fixtures (in-memory).
+    window.__notes = window.__notes || [{ id: 5, slideId: FAMILY, body: 'Mention the cash example', createdAt: '2026-09-05T10:00:00.000Z', updatedAt: '2026-09-05T10:00:00.000Z' }];
+    window.__settings = window.__settings || { shortcuts: {}, preferences: {} };
+    const notesMatch = path.match(/^\/webinars\/(\d+)\/notes$/);
+    if (method === 'GET' && notesMatch) return window.__notes.map(n => ({ ...n }));
+    const addMatch = path.match(/^\/webinars\/(\d+)\/slides\/([^/]+)\/notes$/);
+    if (method === 'POST' && addMatch) { const note = { id: 100 + window.__notes.length, slideId: addMatch[2], body: String(body.body).trim() }; window.__notes.push(note); return { ...note }; }
+    const noteMatch = path.match(/^\/webinars\/(\d+)\/notes\/(\d+)$/);
+    if (method === 'PUT' && noteMatch) { const note = window.__notes.find(n => n.id === Number(noteMatch[2])); note.body = String(body.body).trim(); return { id: note.id, body: note.body }; }
+    if (method === 'DELETE' && noteMatch) { window.__notes = window.__notes.filter(n => n.id !== Number(noteMatch[2])); return undefined; }
+    if (method === 'GET' && path === '/webinar-presenter-settings/me') return { ...window.__settings };
+    if (method === 'PUT' && path === '/webinar-presenter-settings/me') { window.__settings = { shortcuts: { ...body.shortcuts }, preferences: { ...body.preferences } }; return { ...window.__settings }; }
+    const error = new Error('Not found'); error.status = 404; throw error;
+  };
+  window.ServerAPI = {
+    get: p => Promise.resolve().then(() => respond('GET', p)),
+    post: (p, b) => Promise.resolve().then(() => respond('POST', p, b)),
+    put: (p, b) => Promise.resolve().then(() => respond('PUT', p, b)),
+    patch: (p, b) => Promise.resolve().then(() => respond('PATCH', p, b)),
+    delete: (p, b) => Promise.resolve().then(() => respond('DELETE', p, b)),
+  };
+  // Preview: the coordinator builds the canonical controller from the published
+  // preview module using CONFIG.webinarStudio.preview. The harness supplies a
+  // same-shaped recording factory so boots can be asserted without a live host.
+  window.CONFIG.webinarStudio = { preview: { url: 'https://msfgmortgage.com/webinars/first-home-without-mystery/studio-viewer.html?mode=preview', origin: 'https://msfgmortgage.com' } };
+  window.__previewFactoryCalls = [];
+  window.WebinarStudioPreview = {
+    createPreviewController(options) {
+      window.__previewFactoryCalls.push({ allowedOrigin: options.allowedOrigin, sandbox: options.iframe.getAttribute('sandbox'), src: options.iframe.getAttribute('src'), attached: options.iframe.isConnected });
+      return { boot: async candidate => { window.__previewBoots.push({ at: performance.now(), slideHtml: candidate.slide.html, masterCss: candidate.master.css }); return { type: 'ready' }; }, destroy() {} };
+    },
+  };
+</script>
+<script src="js/webinar-studio/api.js"></script>
+<script src="js/webinar-studio/state.js"></script>
+<script src="js/webinar-studio/access-history.js"></script>
+<script src="js/webinar-studio/assets.js"></script>
+<script src="js/webinar-studio/editor.js"></script>
+<script src="js/webinar-studio/presenter.js"></script>
+<script src="js/webinar-studio.js"></script>
+</body>
+</html>

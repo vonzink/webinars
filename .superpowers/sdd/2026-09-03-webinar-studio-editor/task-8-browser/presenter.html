@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Bridge harness presenter</title>
+</head>
+<body>
+  <p>Presenter harness. The driver calls <code>window.__harness.connect()</code>.</p>
+  <script src="bridge.js"></script>
+  <script>
+    // Records every acknowledgement, status change, and ignore reason, and
+    // every raw message that reaches this window (with its origin) so the
+    // driver can prove nothing arrived from anywhere but the audience origin.
+    window.__harness = {
+      states: [], statuses: [], ignored: [], raw: [], bridge: null,
+      connect(audienceUrl, allowedOrigin, options = {}) {
+        this.bridge = WebinarStudioBridge.createAudienceBridge({
+          audienceUrl,
+          allowedOrigin,
+          onState: state => this.states.push(state),
+          onStatus: status => this.statuses.push(status),
+          onIgnored: reason => this.ignored.push(reason),
+          ...options,
+        });
+        return this.bridge.connect();
+      },
+    };
+    window.addEventListener('message', event => {
+      window.__harness.raw.push({ origin: event.origin, type: event.data && event.data.type });
+    });
+  </script>
+</body>
+</html>
