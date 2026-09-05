@@ -1,0 +1,158 @@
+<script src="fixture.js"></script>
+<script>
+  // Deterministic, in-memory stand-in for the Dashboard's authenticated
+  // ServerAPI. The real Studio modules run unmodified against it. Nothing here
+  // is reachable from production; the harness only ever runs on loopback.
+  (() => {
+    const AUDIENCE_ORIGIN = '__AUDIENCE_ORIGIN__';
+    const bundle = window.__liveBundle;
+    const now = () => new Date().toISOString();
+    const clone = value => JSON.parse(JSON.stringify(value));
+    const FAMILY = '11111111-1111-4111-8111-111111111111';
+    const VERSION = '22222222-2222-4222-8222-222222222222';
+    const users = [
+      { id: 7, name: 'Active Owner', email: 'owner@example.test', isActive: true },
+      { id: 8, name: 'Sam Successor', email: 'sam@example.test', isActive: true },
+      { id: 9, name: 'Inactive Person', email: 'gone@example.test', isActive: false },
+    ];
+    const slideFromBundle = slide => ({
+      id: slide.id, title: slide.title, anchor: slide.anchor, targetSeconds: 60, speakerNotes: `Shared note for ${slide.anchor}`,
+      html: slide.html, css: slide.css, javascript: slide.javascript,
+    });
+    const docs = {
+      12: {
+        id: 12, slug: 'first-home-without-mystery', title: 'Your first home, without the mystery.', primaryOwnerUserId: 7, audienceEnabled: true,
+        liveVersion: bundle.webinar.liveVersion, masterHtml: bundle.master.html, masterCss: bundle.master.css,
+        resourcePolicy: bundle.resourcePolicy, assets: {}, slides: bundle.slides.map(slideFromBundle),
+      },
+      13: {
+        id: 13, slug: 'second-deck', title: 'Second deck', primaryOwnerUserId: 7, audienceEnabled: false, liveVersion: 2,
+        masterHtml: '<main>{{SLIDE_CONTENT}}</main>', masterCss: '', resourcePolicy: bundle.resourcePolicy, assets: {},
+        slides: [{ id: '55555555-5555-4555-8555-555555555555', title: 'Opening', anchor: 'opening', targetSeconds: 30, speakerNotes: '', html: '<section>second</section>', css: '', javascript: '' }],
+      },
+    };
+    const history = { 12: [], 13: [] };
+    const snapshots = {};
+    let historyId = 100;
+    const record = (doc, changeType, summary) => {
+      history[doc.id].unshift({ id: ++historyId, version: doc.liveVersion, changeType, changeSummary: summary, createdAt: now(), createdBy: { id: 7, name: 'Active Owner' } });
+      snapshots[historyId] = clone(doc);
+    };
+    Object.values(docs).forEach(doc => record(doc, 'saved_revision', 'Baseline live version'));
+    let notes = [{ id: 5, slideId: bundle.slides[0].id, body: 'Mention the cash example', createdAt: now(), updatedAt: now() }];
+    let settings = { shortcuts: {}, preferences: {} };
+    const families = [{
+      id: FAMILY, displayName: 'Front porch', description: 'Reusable opening image', createdByUserId: 7, createdAt: now(), archivedAt: null,
+      versions: [{ id: VERSION, versionNumber: 1, mediaType: 'image', mimeType: 'image/webp', byteSize: 4096, width: 1280, height: 720, durationMs: null, status: 'available', rejectionCode: null, uploadedByUserId: 7, uploaderName: 'Active Owner', createdAt: now(), archivedAt: null, publicUrl: `https://assets.example/approved/sha256/${'a'.repeat(64)}/asset` }],
+    }];
+    const pendingVersions = new Map();
+    let uploadCounter = 0;
+    const uuid = n => `${String(n).padStart(8, '0')}-0000-4000-8000-000000000000`;
+    const httpError = (status, extra = {}) => Object.assign(new Error(extra.message || `HTTP ${status}`), { status, ...extra });
+    const summaries = () => Object.values(docs).map(d => ({ id: d.id, slug: d.slug, title: d.title, liveVersion: d.liveVersion, audienceEnabled: d.audienceEnabled }));
+    const requireVersion = (doc, body) => {
+      if (window.__harness.forceConflict) {
+        window.__harness.forceConflict = false;
+        doc.liveVersion += 1;
+        record(doc, 'saved_revision', 'Concurrent editor change');
+      }
+      if (Number(body?.expectedVersion) !== doc.liveVersion) {
+        throw httpError(409, { code: 'VERSION_CONFLICT', currentVersion: doc.liveVersion, updatedAt: now(), updatedBy: { id: 8, name: 'Sam Successor' } });
+      }
+    };
+    const advance = (doc, changeType, summary) => { doc.liveVersion += 1; record(doc, changeType, summary); return { liveVersion: doc.liveVersion, updatedAt: now() }; };
+    function respond(method, path, body) {
+      window.__requests.push({ method, path, body: body === undefined ? null : clone(body) });
+      let m;
+      if (method === 'GET' && path === '/webinars') return summaries();
+      if (method === 'GET' && (m = path.match(/^\/webinars\/(\d+)$/))) { const doc = docs[m[1]]; if (!doc) throw httpError(404); return clone(doc); }
+      if (method === 'DELETE' && (m = path.match(/^\/webinars\/(\d+)$/))) { delete docs[m[1]]; return undefined; }
+      if (method === 'PUT' && (m = path.match(/^\/webinars\/(\d+)\/master$/))) {
+        const doc = docs[m[1]]; requireVersion(doc, body); doc.masterHtml = body.masterHtml; doc.masterCss = body.masterCss; return advance(doc, 'master_saved', 'Master layout saved');
+      }
+      if (method === 'POST' && (m = path.match(/^\/webinars\/(\d+)\/slides$/))) {
+        const doc = docs[m[1]]; requireVersion(doc, body);
+        const source = body.sourceSlideId ? doc.slides.find(s => s.id === body.sourceSlideId) : null;
+        const slide = source
+          ? { ...clone(source), id: uuid(900 + doc.slides.length), anchor: `${source.anchor}-copy`, title: `${source.title} (copy)` }
+          : { id: uuid(900 + doc.slides.length), title: body.title, anchor: body.anchor, targetSeconds: body.targetSeconds, speakerNotes: body.speakerNotes, html: body.html, css: body.css, javascript: body.javascript };
+        doc.slides.push(slide);
+        return { slide: clone(slide), ...advance(doc, 'slide_added', `Added ${slide.title}`) };
+      }
+      if (method === 'PUT' && (m = path.match(/^\/webinars\/(\d+)\/slides\/order$/))) {
+        const doc = docs[m[1]]; requireVersion(doc, body);
+        doc.slides = body.slideIds.map(id => doc.slides.find(s => s.id === id));
+        return advance(doc, 'slides_reordered', 'Slides reordered');
+      }
+      if (method === 'PUT' && (m = path.match(/^\/webinars\/(\d+)\/slides\/([^/]+)$/))) {
+        const doc = docs[m[1]]; requireVersion(doc, body);
+        const slide = doc.slides.find(s => s.id === m[2]); if (!slide) throw httpError(404);
+        Object.assign(slide, { anchor: body.anchor, title: body.title, targetSeconds: body.targetSeconds, speakerNotes: body.speakerNotes, html: body.html, css: body.css, javascript: body.javascript });
+        return advance(doc, 'slide_saved', `Saved ${slide.title}`);
+      }
+      if (method === 'DELETE' && (m = path.match(/^\/webinars\/(\d+)\/slides\/([^/]+)$/))) {
+        const doc = docs[m[1]]; requireVersion(doc, body); doc.slides = doc.slides.filter(s => s.id !== m[2]);
+        return advance(doc, 'slide_archived', 'Slide removed');
+      }
+      if (method === 'GET' && (m = path.match(/^\/webinars\/(\d+)\/history$/))) return clone(history[m[1]] || []);
+      if (method === 'POST' && (m = path.match(/^\/webinars\/(\d+)\/history\/(\d+)\/restore$/))) {
+        const doc = docs[m[1]]; requireVersion(doc, body); const snapshot = snapshots[m[2]]; if (!snapshot) throw httpError(404);
+        Object.assign(doc, { masterHtml: snapshot.masterHtml, masterCss: snapshot.masterCss, slides: clone(snapshot.slides) });
+        return advance(doc, 'restored', `Restored version ${snapshot.liveVersion}`);
+      }
+      if (method === 'PUT' && (m = path.match(/^\/webinars\/(\d+)\/owner$/))) { docs[m[1]].primaryOwnerUserId = Number(body.primaryOwnerUserId); return { ok: true }; }
+      if (method === 'PUT' && (m = path.match(/^\/webinars\/(\d+)\/audience-access$/))) { docs[m[1]].audienceEnabled = body.enabled === true; return { ok: true }; }
+      if (method === 'GET' && path === '/users/directory') return clone(users);
+      if (method === 'GET' && (m = path.match(/^\/webinars\/(\d+)\/notes$/))) return clone(notes);
+      if (method === 'POST' && (m = path.match(/^\/webinars\/(\d+)\/slides\/([^/]+)\/notes$/))) { const note = { id: 100 + notes.length, slideId: m[2], body: String(body.body).trim(), createdAt: now(), updatedAt: now() }; notes.push(note); return clone(note); }
+      if (method === 'PUT' && (m = path.match(/^\/webinars\/(\d+)\/notes\/(\d+)$/))) { const note = notes.find(n => n.id === Number(m[2])); note.body = String(body.body).trim(); return clone(note); }
+      if (method === 'DELETE' && (m = path.match(/^\/webinars\/(\d+)\/notes\/(\d+)$/))) { notes = notes.filter(n => n.id !== Number(m[2])); return undefined; }
+      if (method === 'GET' && path === '/webinar-presenter-settings/me') return clone(settings);
+      if (method === 'PUT' && path === '/webinar-presenter-settings/me') { settings = { shortcuts: { ...body.shortcuts }, preferences: { ...body.preferences } }; return clone(settings); }
+      if (method === 'GET' && path.startsWith('/webinar-assets')) return clone(families);
+      if (method === 'POST' && path === '/webinar-assets/upload-intents') {
+        uploadCounter += 1;
+        const assetId = uuid(300 + uploadCounter); const versionId = uuid(400 + uploadCounter);
+        const rejected = /reject/i.test(body.filename);
+        families.unshift({ id: assetId, displayName: body.displayName, description: body.description, createdByUserId: 1, createdAt: now(), archivedAt: null, versions: [] });
+        pendingVersions.set(versionId, { assetId, polls: 0, rejected, version: { id: versionId, versionNumber: 1, mediaType: 'image', mimeType: body.contentType, byteSize: body.byteSize, width: 2, height: 2, durationMs: null, status: 'processing', rejectionCode: null, uploadedByUserId: 1, uploaderName: 'Admin', createdAt: now(), archivedAt: null, publicUrl: null } });
+        return { assetId, versionId, uploadUrl: `https://uploads.example/put/${versionId}` };
+      }
+      if (method === 'POST' && (m = path.match(/^\/webinar-assets\/upload-intents\/([^/]+)\/confirm$/))) {
+        const pending = pendingVersions.get(m[1]); if (!pending) throw httpError(404);
+        pending.polls += 1;
+        if (pending.polls >= 2) {
+          pending.version.status = pending.rejected ? 'rejected' : 'available';
+          pending.version.rejectionCode = pending.rejected ? 'UNSUPPORTED_CONTENT' : null;
+          pending.version.publicUrl = pending.rejected ? null : `https://assets.example/approved/sha256/${'b'.repeat(64)}/asset`;
+          const family = families.find(f => f.id === pending.assetId);
+          if (family && !family.versions.some(v => v.id === pending.version.id)) family.versions.push(clone(pending.version));
+        }
+        return clone(pending.version);
+      }
+      if (method === 'GET' && /^\/webinar-assets\/[^/]+\/usage$/.test(path)) return { current: [], history: [] };
+      if (method === 'PATCH' && path.startsWith('/webinar-assets/')) return { ok: true };
+      throw httpError(404);
+    }
+    window.__requests = [];
+    window.__harness = { forceConflict: false, docs, families, get notes() { return notes; }, get settings() { return settings; } };
+    window.ServerAPI = {
+      get: p => Promise.resolve().then(() => respond('GET', p)),
+      post: (p, b) => Promise.resolve().then(() => respond('POST', p, b)),
+      put: (p, b) => Promise.resolve().then(() => respond('PUT', p, b)),
+      patch: (p, b) => Promise.resolve().then(() => respond('PATCH', p, b)),
+      delete: (p, b) => Promise.resolve().then(() => respond('DELETE', p, b)),
+    };
+    window.CONFIG = {
+      currentUser: { id: 1, name: 'Admin', activeRole: 'admin', role: 'admin' },
+      webinarStudio: {
+        preview: { url: `${AUDIENCE_ORIGIN}/webinars/first-home-without-mystery/studio-viewer.html?mode=preview`, origin: AUDIENCE_ORIGIN },
+        audience: { origin: AUDIENCE_ORIGIN },
+      },
+    };
+    window.__harnessConfig = { audienceOrigin: AUDIENCE_ORIGIN, firstSlideId: bundle.slides[0].id, secondSlideId: bundle.slides[1].id, slideCount: bundle.slides.length, assetVersionId: VERSION };
+  })();
+</script>
+__STUDIO_SCRIPTS__
+</body>
+</html>
