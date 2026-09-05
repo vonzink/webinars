@@ -282,6 +282,17 @@ resolves the one still open as declined. Studio suites 187 passed across 9
 files; full suite 1,527 passed with only the two accepted Calendar
 failures; build, ESLint, `node --check`, `git diff --check` clean;
 Chromium insertion 27 of 27, presenter 32 of 32, bridge 44 of 44;
-acceptance 90 of 90. This commit landed after the approving review and was
-not itself independently re-reviewed before the branches were pushed.
+acceptance 90 of 90. This commit landed after the approving review; a
+focused independent review of it ran while the branches were pushed and
+returned **APPROVE**: both should-fixes correctly and minimally addressed,
+every overlapping-prompt path resolving to a side-effect-free decline, and
+the webinar forwarding guarded by the coordinator. Three nits, none
+requiring a change before merge: a ready adopted before the panel's first
+render cannot carry the audience's slide (unreachable in the real app,
+where a bridge exists only after the rendered panel launches it); the
+serialization covers Studio prompts only, with the root cure being a
+one-line resolve in the shared `js/utils.js` confirm before it removes an
+existing overlay; and that shared dialog leaves its keydown listener
+attached when replaced, which this commit makes strictly safer rather than
+worse.
 
