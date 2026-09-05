@@ -115,7 +115,7 @@ f9994c8b3bb1f361ca9182006b729cabd13c42728fd90485ffd5bdf2b8b2fd42  first-home-wit
 Task 6 source hashes before commit:
 
 ```text
-e36525117b2a35b6c87b7f0d46d1220ad3c5b550e67fcd37e812604f88faa1c7  first-home-without-mystery/deck/tests/studio-renderer-browser.run.js
+41ee4ca1f9802e4e6f4c6df168692a16365b6dd7c404541e65c07777813c2c3a  first-home-without-mystery/deck/tests/studio-renderer-browser.run.js
 41d566f59a43eb6735e3b03a99f700cd73d7785f77944d5c7f618c8f7316c40c  first-home-without-mystery/deck/tests/run-studio-renderer-browser-audit.sh
 d40a2480ed79542a7916fcb160b408807871aa5d8e7edd05536886c81c030790  first-home-without-mystery/deck/tests/fixtures/studio-live-bundle.json
 ```
@@ -124,6 +124,30 @@ d40a2480ed79542a7916fcb160b408807871aa5d8e7edd05536886c81c030790  first-home-wit
 check, and the public credential/private-data scan all passed. The unrelated
 pre-existing untracked `webinar-api/` directory was not read into, modified,
 staged, or committed by Task 6.
+
+## Review fix — exact audit allow-lists
+
+The browser harness accepts only the exact bodyless request signature:
+
+```text
+GET https://evil.example/download
+```
+
+Every other external method, path, query string, or body is appended to the
+unexpected-request evidence and aborted. The same exact matcher is used for
+failed-resource handling; other expected CSP failures have their own finite
+method, URL, and body signatures. Harness negative controls proved that
+`POST /download-private`, `GET /download?exfil=secret`, another path on the
+same domain, and a body-bearing apparent download do not match either list.
+
+Console handling likewise uses explicit policy categories and exact fixture
+URLs. It recognizes only the expected top-navigation, popup, form, connect,
+Fetch API, font, script, stylesheet, image, media, frame, worker, and download
+signatures. Negative controls proved that a query-bearing URL, an unrelated
+same-domain URL, a correct URL under the wrong CSP directive, and a generic
+message containing `sandboxed` remain unexpected. The final browser run
+observed every required policy category and retained zero unexpected console,
+network, failed-resource, or page-error entries.
 
 ## Residual deployment boundary
 

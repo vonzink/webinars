@@ -6,6 +6,8 @@ async (page) => {
   const failures = [];
   const pageErrors = [];
   const expectedPolicyConsole = [];
+  const observedPolicyCategories = new Set();
+  const observedPolicyUrls = new Set();
   const unexpectedConsole = [];
   const unexpectedRequests = [];
   const localRequests = [];
@@ -21,6 +23,197 @@ async (page) => {
   const check = (condition, message) => {
     if (!condition) failures.push(message);
   };
+  const EXPECTED_EXPOSED_DOWNLOAD_URL = 'https://evil.example/download';
+  const EXPECTED_POLICY_FAILURES = new Set([
+    'GET\nhttps://evil.example/fetch\n',
+    'GET\nhttps://evil.example/fetch-audit\n',
+    'GET\nhttps://evil.example/xhr\n',
+    'GET\nhttps://evil.example/xhr-audit\n',
+    'GET\nwss://evil.example/socket\n',
+    'GET\nwss://evil.example/socket-audit\n',
+    'GET\nhttps://evil.example/events\n',
+    'GET\nhttps://evil.example/events-audit\n',
+    'POST\nhttps://evil.example/beacon\nescape',
+    'POST\nhttps://evil.example/beacon-audit\nescape',
+    'GET\nhttps://evil.example/worker.js\n',
+    'GET\nhttps://evil.example/worker-audit.js\n',
+    'GET\nhttps://evil.example/sw.js\n',
+    'GET\nhttps://evil.example/sw-audit.js\n',
+    'GET\nhttps://evil.example/external.js\n',
+    'GET\nhttps://evil.example/external.css\n',
+    'GET\nhttps://evil.example/image.png\n',
+    'GET\nhttps://evil.example/audio.mp3\n',
+    'GET\nhttps://evil.example/video.mp4\n',
+    'GET\nhttps://evil.example/frame\n',
+    'GET\nhttps://evil.example/font.woff2\n',
+  ]);
+  const requestSignature = request => {
+    try {
+      return `${request.method()}\n${request.url()}\n${request.postData() ?? ''}`;
+    } catch {
+      return null;
+    }
+  };
+  const isExpectedExposedDownloadRequest = request => {
+    try {
+      return request.method() === 'GET'
+        && request.url() === EXPECTED_EXPOSED_DOWNLOAD_URL
+        && request.postData() === null;
+    } catch {
+      return false;
+    }
+  };
+  const isExpectedBrowserPolicyFailure = request => EXPECTED_POLICY_FAILURES.has(requestSignature(request));
+  const requestProbe = (method, url, body = null) => ({
+    method: () => method,
+    url: () => url,
+    postData: () => body,
+  });
+  check(isExpectedExposedDownloadRequest(requestProbe('GET', 'https://evil.example/download')),
+    'harness self-test: exact exposed GET download must be recognized');
+  check(!isExpectedExposedDownloadRequest(requestProbe('POST', 'https://evil.example/download-private', 'secret')),
+    'harness self-test: POST /download-private must remain unexpected');
+  check(!isExpectedExposedDownloadRequest(requestProbe('GET', 'https://evil.example/download?exfil=secret')),
+    'harness self-test: query-bearing download must remain unexpected');
+  check(!isExpectedExposedDownloadRequest(requestProbe('GET', 'https://evil.example/other')),
+    'harness self-test: other same-domain routes must remain unexpected');
+  check(!isExpectedExposedDownloadRequest(requestProbe('GET', 'https://evil.example/download', 'secret')),
+    'harness self-test: a request body must prevent exposed-download recognition');
+  check(!isExpectedBrowserPolicyFailure(requestProbe('POST', 'https://evil.example/download-private', 'secret')),
+    'harness self-test: POST /download-private must not be an expected browser policy failure');
+  check(!isExpectedBrowserPolicyFailure(requestProbe('GET', 'https://evil.example/download?exfil=secret')),
+    'harness self-test: query-bearing download must not be an expected browser policy failure');
+  check(!isExpectedBrowserPolicyFailure(requestProbe('GET', 'https://evil.example/other')),
+    'harness self-test: other same-domain failures must remain unexpected');
+  const CONNECT_POLICY_URLS = new Set([
+    'https://evil.example/fetch',
+    'https://evil.example/fetch-audit',
+    'https://evil.example/xhr',
+    'https://evil.example/xhr-audit',
+    'wss://evil.example/socket',
+    'wss://evil.example/socket-audit',
+    'https://evil.example/events',
+    'https://evil.example/events-audit',
+    'https://evil.example/beacon',
+    'https://evil.example/beacon-audit',
+  ]);
+  const POPUP_POLICY_URLS = new Set([
+    'https://evil.example/popup',
+    'https://evil.example/popup-audit',
+  ]);
+  const WORKER_POLICY_URLS = new Set([
+    'https://evil.example/worker.js',
+    'https://evil.example/worker-audit.js',
+    'https://evil.example/sw.js',
+    'https://evil.example/sw-audit.js',
+  ]);
+  const exactQuotedTarget = (text, prefix, urls, requiredFragments) => {
+    if (!text.startsWith(prefix)) return null;
+    const end = text.indexOf("'", prefix.length);
+    if (end < 0) return null;
+    const url = text.slice(prefix.length, end);
+    return urls.has(url) && requiredFragments.every(fragment => text.includes(fragment)) ? url : null;
+  };
+  const policyConsoleSignatures = [
+    {
+      category: 'sandbox-top-navigation',
+      match: text => text.startsWith('Unsafe attempt to initiate navigation for frame with origin ')
+        && text.includes("from frame with URL 'about:srcdoc'.")
+        && text.includes("flag of 'allow-top-navigation' or 'allow-top-navigation-by-user-activation' is not set."),
+    },
+    {
+      category: 'sandbox-popup',
+      match: text => exactQuotedTarget(text, "Blocked opening '", POPUP_POLICY_URLS,
+        ["sandboxed frame whose 'allow-popups' permission is not set."]),
+    },
+    {
+      category: 'sandbox-form',
+      match: text => exactQuotedTarget(text, "Blocked form submission to '",
+        new Set(['https://evil.example/form']), ["sandboxed and the 'allow-forms' permission is not set."]),
+    },
+    {
+      category: 'csp-connect',
+      match: text => exactQuotedTarget(text, "Connecting to '", CONNECT_POLICY_URLS,
+        ["Content Security Policy directive: \"connect-src 'none'\"", 'The action has been blocked.']),
+    },
+    {
+      category: 'csp-fetch-api',
+      match: text => {
+        const prefix = 'Fetch API cannot load ';
+        const suffix = ". Refused to connect because it violates the document's Content Security Policy.";
+        if (!text.startsWith(prefix) || !text.endsWith(suffix)) return null;
+        const url = text.slice(prefix.length, -suffix.length);
+        return new Set(['https://evil.example/fetch', 'https://evil.example/fetch-audit']).has(url) ? url : null;
+      },
+    },
+    {
+      category: 'csp-font',
+      match: text => exactQuotedTarget(text, "Loading the font '",
+        new Set(['https://evil.example/font.woff2']),
+        ['Content Security Policy directive: "font-src https://assets.example"', 'The action has been blocked.']),
+    },
+    {
+      category: 'csp-script',
+      match: text => exactQuotedTarget(text, "Loading the script '",
+        new Set(['https://evil.example/external.js']),
+        ["Content Security Policy directive: \"script-src 'unsafe-inline'\"", 'The action has been blocked.']),
+    },
+    {
+      category: 'csp-style',
+      match: text => exactQuotedTarget(text, "Loading the stylesheet '",
+        new Set(['https://evil.example/external.css']),
+        ["Content Security Policy directive: \"style-src 'unsafe-inline'\"", 'The action has been blocked.']),
+    },
+    {
+      category: 'csp-image',
+      match: text => exactQuotedTarget(text, "Loading the image '",
+        new Set(['https://evil.example/image.png']),
+        ['Content Security Policy directive: "img-src https://assets.example data: blob:"', 'The action has been blocked.']),
+    },
+    {
+      category: 'csp-media',
+      match: text => exactQuotedTarget(text, "Loading media from  '",
+        new Set(['https://evil.example/audio.mp3', 'https://evil.example/video.mp4']),
+        ['Content Security Policy directive: "media-src https://assets.example blob:"', 'The action has been blocked.']),
+    },
+    {
+      category: 'csp-frame',
+      match: text => exactQuotedTarget(text, "Framing '", new Set(['https://evil.example/']),
+        ["Content Security Policy directive: \"child-src 'none'\"", 'The request has been blocked.']),
+    },
+    {
+      category: 'csp-worker',
+      match: text => exactQuotedTarget(text, "Creating a worker from '", WORKER_POLICY_URLS,
+        ["Content Security Policy directive: \"worker-src 'none'\"", 'blocked']),
+    },
+    {
+      category: 'sandbox-download',
+      match: text => text.startsWith('Download is disallowed.')
+        && text.includes('frame initiating or instantiating the download is sandboxed')
+        && text.includes("'allow-downloads'"),
+    },
+  ];
+  const classifyExpectedPolicyConsole = text => {
+    for (const signature of policyConsoleSignatures) {
+      const match = signature.match(text);
+      if (match) return { category: signature.category, url: typeof match === 'string' ? match : null };
+    }
+    return null;
+  };
+  check(classifyExpectedPolicyConsole(
+    "Connecting to 'https://evil.example/fetch' violates the following Content Security Policy directive: \"connect-src 'none'\". The action has been blocked.",
+  )?.category === 'csp-connect', 'harness self-test: exact CSP URL/category signature must be recognized');
+  check(classifyExpectedPolicyConsole(
+    "Connecting to 'https://evil.example/fetch?exfil=secret' violates the following Content Security Policy directive: \"connect-src 'none'\". The action has been blocked.",
+  ) === null, 'harness self-test: query-bearing CSP console URL must remain unexpected');
+  check(classifyExpectedPolicyConsole(
+    "Loading the script 'https://evil.example/download-private' violates the following Content Security Policy directive: \"script-src 'unsafe-inline'\". The action has been blocked.",
+  ) === null, 'harness self-test: other same-domain console URLs must remain unexpected');
+  check(classifyExpectedPolicyConsole(
+    "Connecting to 'https://evil.example/fetch' violates the following Content Security Policy directive: \"img-src 'none'\". The action has been blocked.",
+  ) === null, 'harness self-test: allowed URL with the wrong policy category must remain unexpected');
+  check(classifyExpectedPolicyConsole('A generic sandboxed warning') === null,
+    'harness self-test: generic sandbox substrings must remain unexpected');
   const waitFrames = count => page.evaluate(frames => new Promise(resolve => {
     const step = () => frames-- > 0 ? requestAnimationFrame(step) : resolve();
     requestAnimationFrame(step);
@@ -47,17 +240,18 @@ async (page) => {
   page.on('console', message => {
     if (!['warning', 'error'].includes(message.type())) return;
     const text = message.text();
-    if (((text.includes('Content Security Policy') || text.startsWith('Refused to '))
-        && (text.includes('evil.example') || text.includes('worker-src') || text.includes('sandboxed')))
-      || (text.includes('sandboxed') && (text.includes('Unsafe attempt to initiate navigation')
-        || text.includes('Blocked opening') || text.includes('Blocked form submission')
-        || text.includes('Blocked download')))) {
-      expectedPolicyConsole.push(text);
-    } else unexpectedConsole.push(`${message.type()}: ${text}`);
+    const classified = classifyExpectedPolicyConsole(text);
+    if (!classified) {
+      unexpectedConsole.push(`${message.type()}: ${text}`);
+      return;
+    }
+    expectedPolicyConsole.push({ ...classified, text });
+    observedPolicyCategories.add(classified.category);
+    if (classified.url) observedPolicyUrls.add(classified.url);
   });
   page.on('requestfailed', request => {
     const url = request.url();
-    if (!url.startsWith('https://evil.example') && !url.startsWith('wss://evil.example')) {
+    if (!isExpectedExposedDownloadRequest(request) && !isExpectedBrowserPolicyFailure(request)) {
       failedResources.push(`${request.method()} ${url}: ${request.failure()?.errorText || 'failed'}`);
     }
   });
@@ -106,7 +300,7 @@ async (page) => {
         return;
       }
     }
-    if (url.startsWith('https://evil.example/') || url.startsWith('wss://evil.example/')) {
+    if (isExpectedExposedDownloadRequest(request)) {
       deniedProbeRequests.push(`${method} ${url}`);
       await route.fulfill({ status: 204, headers: { 'cache-control': 'no-store' } });
       return;
@@ -262,7 +456,7 @@ async (page) => {
     'cookie', 'indexedDB', 'fetch', 'xhr', 'websocket', 'eventSource', 'worker', 'serviceWorker']) {
     check(containment.results[probe]?.blocked === true, `${probe} containment attempt must be blocked`);
   }
-  check(expectedPolicyConsole.some(message => message.includes('beacon-audit'))
+  check(observedPolicyUrls.has('https://evil.example/beacon-audit')
       && deniedProbeRequests.every(request => !request.includes('beacon-audit')),
     'sendBeacon may report queued but CSP must block it before a network request is dispatched');
   check(containment.origin === 'null', 'containment slide must retain an opaque origin');
@@ -271,10 +465,22 @@ async (page) => {
   check(page.url().startsWith(origin), 'top navigation attempt must not leave the trusted local viewer');
   check(unexpectedRequests.length === 0,
     `CSP/sandbox must prevent outbound requests before dispatch: ${unexpectedRequests.join(' | ')}`);
-  for (const resource of ['external.js', 'external.css', 'image.png', 'audio.mp3', 'video.mp4', 'frame', 'font.woff2']) {
-    check(expectedPolicyConsole.some(message => message.includes(resource)),
-      `browser policy evidence must identify blocked ${resource}`);
+  for (const [resource, url] of [
+    ['external.js', 'https://evil.example/external.js'],
+    ['external.css', 'https://evil.example/external.css'],
+    ['image.png', 'https://evil.example/image.png'],
+    ['audio.mp3', 'https://evil.example/audio.mp3'],
+    ['video.mp4', 'https://evil.example/video.mp4'],
+    ['frame', 'https://evil.example/'],
+    ['font.woff2', 'https://evil.example/font.woff2'],
+  ]) {
+    check(observedPolicyUrls.has(url), `browser policy evidence must identify blocked ${resource}`);
   }
+  for (const category of [
+    'sandbox-top-navigation', 'sandbox-popup', 'sandbox-form', 'csp-connect',
+    'csp-fetch-api', 'csp-font', 'csp-script', 'csp-style', 'csp-image',
+    'csp-media', 'csp-frame',
+  ]) check(observedPolicyCategories.has(category), `browser policy evidence must include ${category}`);
   check((await page.locator('[data-slide-count]').textContent())?.trim() === '2 / 4',
     'containment slide must preserve correct position output');
 
@@ -462,7 +668,7 @@ async (page) => {
       && !Object.hasOwn(headers, 'authorization') && !Object.hasOwn(headers, 'cookie')),
     'public bundle requests must omit credentials and private authorization headers');
   check(deniedProbeRequests.length > 0
-      && deniedProbeRequests.every(request => request.includes('https://evil.example/download')),
+      && deniedProbeRequests.every(request => request === 'GET https://evil.example/download'),
     'only the planned sandboxed download probe may reach the local containment boundary');
   const allowedLocalRequests = new Set([
     'GET /studio-viewer.html',
