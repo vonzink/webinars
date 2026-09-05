@@ -85,8 +85,12 @@ async (page) => {
     if (response.status() >= 400) networkFailures.push(`${response.status()} ${response.url()}`);
   });
   page.on('requestfailed', request => {
+    const errorText = request.failure()?.errorText ?? 'unknown';
+    // A reload or page switch cancels page images the thumbnail rail is still
+    // fetching; the browser reports those as ERR_ABORTED, not as a broken asset.
+    if (errorText === 'net::ERR_ABORTED') return;
     const expected = deliberateFailureActive && /\/cd-page-5\.png(?:$|[?#])/.test(request.url());
-    if (!expected) networkFailures.push(`FAILED ${request.url()}: ${request.failure()?.errorText ?? 'unknown'}`);
+    if (!expected) networkFailures.push(`FAILED ${request.url()}: ${errorText}`);
   });
 
   await page.emulateMedia({ reducedMotion: 'reduce' });
@@ -552,12 +556,12 @@ async (page) => {
     await waitForImage();
     await revealDoc('cd');
     await page.locator('[data-page-button][data-page-id="cd-5"]').click();
-    await page.locator('[data-page-image]').evaluate(image => {
-      if (image.complete) return undefined;
-      return new Promise(resolve => {
-        image.addEventListener('load', resolve, { once: true });
-        image.addEventListener('error', resolve, { once: true });
-      });
+    // A failed page image is replaced by the unavailable status, so wait for
+    // either that status or a settled image rather than for the image itself.
+    await page.waitForFunction(() => {
+      if (document.querySelector('[data-page-unavailable]')) return true;
+      const image = document.querySelector('[data-page-image]');
+      return Boolean(image?.complete);
     });
     await waitFrames();
     check(await page.getByText('This disclosure page is temporarily unavailable.', { exact: true }).isVisible(),
