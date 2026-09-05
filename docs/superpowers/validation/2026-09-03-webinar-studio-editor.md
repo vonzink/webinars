@@ -9,7 +9,7 @@ this deck, both on loopback origins.
 
 | Repository | Branch | Commit under test |
 | --- | --- | --- |
-| dashboard.msfgco.com | `codex/webinar-studio-complete` | `893bcbb` (`fix(webinars): key audience adoption to the webinar, not the panel`), the tip after `c766d80` and its review follow-ups |
+| dashboard.msfgco.com | `codex/webinar-studio-complete` | `885dcc8` (`fix(webinars): name the webinar on audience readies and serialize prompts`), the tip after `c766d80` and its review follow-ups |
 | Webinars | `codex/webinar-studio` | `c0d8a61` (`fix(webinars): make audience surface control honest and idempotent`) plus the validation commits up to and including this one |
 
 Production feature flag `WEBINAR_STUDIO_ACCESS` remained disabled by default.
@@ -140,7 +140,11 @@ Covered, in order:
   answers first, the link binds to it until the heartbeat notices (about
   twenty seconds), then the presenter pushes its slide again. Bounded and
   self-healing; wait for the audience page to finish loading before
-  pressing Reconnect.
+  pressing Reconnect. The header's audience button also re-navigates a
+  disconnected window after about two seconds of in-place attempts, so a
+  merely throttled audience tab that comes back is reloaded and loses any
+  on-screen annotations; use the panel only when you know the page is
+  alive and just slow.
 - Delivery of the real preview host and audience page to
   `msfgmortgage.com/webinars/first-home-without-mystery/` is a deployment
   prerequisite that this audit does not perform.

@@ -250,7 +250,38 @@ ESLint, `node --check`, `git diff --check` clean; deck 129; Chromium
 insertion 27 of 27, presenter 32 of 32, bridge 44 of 44; acceptance
 90 of 90.
 
-## Final package review, round 3
+## Final package review, round 3: APPROVE
 
-Pending at the time of writing. The verdict is appended below when received.
+The package reviewer confirmed the round-2 blocker fixed and browser-proven
+(an independent probe against the real presenter module reproduced the
+deck-switch-off-tab scenario and showed it clean), the header relaunch,
+the abandoned close, and the runbook note all resolved, re-judged every
+exit-gate item PASS with evidence, and re-confirmed the non-negotiables.
+Verdict: **APPROVE**, with two should-fixes to land before the feature flag
+is enabled rather than before merge:
+
+1. When the very first ready arrives before the presenter panel has ever
+   rendered, the adoption key was `null`, so the next ready for the same
+   webinar was adopted instead of pushed.
+2. A close prompt replaced by another prompt (the shared `Utils.confirm`
+   replaces an open dialog without resolving it) could strand the close
+   guard until reload.
+
+Nits: an abandoned close gives no feedback; the header's reconnect path
+re-navigates a merely slow audience after the in-place attempts (documented
+in the validation notes). Run counts: Studio 184, full suite 1,524 with the
+two accepted failures, deck 129, acceptance 90 of 90, bridge harness 44 of
+44.
+
+## Post-approval follow-up (Dashboard `885dcc8`)
+
+Both should-fixes were landed with failing tests first: the coordinator
+forwards every ready with the webinar it belongs to and the presenter
+prefers that id, and Studio prompts are serialized so a newer prompt
+resolves the one still open as declined. Studio suites 187 passed across 9
+files; full suite 1,527 passed with only the two accepted Calendar
+failures; build, ESLint, `node --check`, `git diff --check` clean;
+Chromium insertion 27 of 27, presenter 32 of 32, bridge 44 of 44;
+acceptance 90 of 90. This commit landed after the approving review and was
+not itself independently re-reviewed before the branches were pushed.
 
