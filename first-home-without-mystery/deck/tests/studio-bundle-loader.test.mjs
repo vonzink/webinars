@@ -184,6 +184,43 @@ test('rejects invalid status, content type, JSON, slug, and schema with fixed sa
   ));
 });
 
+test('matches the server 190-character slug and anchor boundary', async () => {
+  for (const length of [129, 190]) {
+    const identifier = 'a'.repeat(length);
+    const bundle = liveBundle({
+      webinar: { ...liveBundle().webinar, slug: identifier },
+      slides: [{ ...liveBundle().slides[0], anchor: identifier }],
+    });
+    const loader = createBundleLoader({
+      apiBase: 'https://dashboard.example',
+      fetchImpl: async () => responseFor(bundle),
+    });
+
+    const loaded = await loader.loadOnce(identifier);
+    assert.equal(loaded.webinar.slug.length, length);
+    assert.equal(loaded.slides[0].anchor.length, length);
+  }
+
+  const overlongSlugLoader = createBundleLoader({
+    apiBase: 'https://dashboard.example',
+    fetchImpl: async () => assert.fail('an overlong slug must not fetch'),
+  });
+  await assert.rejects(overlongSlugLoader.loadOnce('a'.repeat(191)), error => (
+    expectSafeLoadError(error, 'BUNDLE_SLUG_INVALID')
+  ));
+
+  const overlongAnchorLoader = createBundleLoader({
+    apiBase: 'https://dashboard.example',
+    fetchImpl: async () => responseFor(liveBundle({
+      slides: [{ ...liveBundle().slides[0], anchor: 'a'.repeat(191) }],
+    })),
+  });
+  await assert.rejects(
+    overlongAnchorLoader.loadOnce('first-home-without-mystery'),
+    error => expectSafeLoadError(error, 'BUNDLE_SCHEMA_INVALID'),
+  );
+});
+
 test('rejects duplicate identities, non-contiguous order, bad assets, and policy mismatches', async () => {
   const base = liveBundle();
   const secondSlide = {

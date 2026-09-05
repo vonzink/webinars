@@ -8,6 +8,7 @@ const MAX_SLIDES = 1_000;
 const MAX_ASSETS = 10_000;
 const MAX_TEXT = 1_000_000;
 const MAX_ORIGINS = 64;
+const MAX_PUBLIC_IDENTIFIER = 190;
 
 export class BundleLoadError extends Error {
   constructor(code) {
@@ -124,7 +125,7 @@ function normalizeBundle(value, requestedSlug) {
   const webinar = exactRecord(root.webinar.value, ['id', 'slug', 'title', 'liveVersion']);
   if (!webinar || !Number.isSafeInteger(webinar.id.value) || webinar.id.value < 1
     || webinar.slug.value !== requestedSlug
-    || !boundedString(webinar.slug.value, { min: 1, max: 128, pattern: SLUG })
+    || !boundedString(webinar.slug.value, { min: 1, max: MAX_PUBLIC_IDENTIFIER, pattern: SLUG })
     || !boundedString(webinar.title.value, { min: 1, max: 512 })
     || !Number.isSafeInteger(webinar.liveVersion.value) || webinar.liveVersion.value < 1) {
     fail('BUNDLE_SCHEMA_INVALID');
@@ -182,7 +183,7 @@ function normalizeBundle(value, requestedSlug) {
     ]);
     if (!slide || !UUID.test(slide.id.value) || ids.has(slide.id.value)
       || slide.position.value !== index
-      || !boundedString(slide.anchor.value, { min: 1, max: 128, pattern: SLUG })
+      || !boundedString(slide.anchor.value, { min: 1, max: MAX_PUBLIC_IDENTIFIER, pattern: SLUG })
       || anchors.has(slide.anchor.value)
       || !boundedString(slide.title.value, { min: 1, max: 512 })
       || !boundedString(slide.html.value) || !boundedString(slide.css.value)
@@ -288,7 +289,7 @@ export function createBundleLoader({ fetchImpl, apiBase }) {
 
   return Object.freeze({
     loadOnce(slug) {
-      if (!boundedString(slug, { min: 1, max: 128, pattern: SLUG })) {
+      if (!boundedString(slug, { min: 1, max: MAX_PUBLIC_IDENTIFIER, pattern: SLUG })) {
         return Promise.reject(new BundleLoadError('BUNDLE_SLUG_INVALID'));
       }
       if (pinnedSlug !== null && slug !== pinnedSlug) {
