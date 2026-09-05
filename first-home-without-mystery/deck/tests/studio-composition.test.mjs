@@ -61,6 +61,7 @@ function scriptFrom(srcdoc) {
 function runComposedRuntime(srcdoc) {
   const posted = [];
   const dispatched = [];
+  const appendedScripts = [];
   const listeners = new Map();
   const parentWindow = {
     postMessage(message, targetOrigin) {
@@ -105,7 +106,18 @@ function runComposedRuntime(srcdoc) {
     },
     body: {
       appendChild(node) {
-        if (node.tagName === 'SCRIPT') vm.runInContext(node.textContent, context);
+        if (node.tagName === 'SCRIPT') {
+          appendedScripts.push(node.textContent);
+          try {
+            new vm.Script(node.textContent, { filename: 'slide-runtime.js' }).runInContext(context);
+          } catch (error) {
+            const location = /slide-runtime\.js:(\d+):(\d+)/.exec(error.stack || '');
+            const event = new RuntimeEvent('error');
+            event.lineno = Number(location?.[1]) || 1;
+            event.colno = Number(location?.[2]) || 0;
+            sandbox.dispatchEvent(event);
+          }
+        }
         return node;
       },
     },
@@ -119,6 +131,7 @@ function runComposedRuntime(srcdoc) {
   return {
     posted,
     dispatched,
+    appendedScripts,
     window: sandbox,
     dispatchMessage(data, source = parentWindow) {
       const encoded = JSON.stringify(JSON.stringify(data));
@@ -284,6 +297,61 @@ test('composition inserts slide HTML only at one literal Master mount token', ()
   }
 });
 
+test('authored Master and slide elements cannot claim the trusted mount attribute', () => {
+  const authoredAttributes = [
+    'data-slide-mount',
+    'DATA-SLIDE-MOUNT',
+    'data-slide-mount="owned"',
+    "data-slide-mount='owned'",
+    'data-slide-mount=owned',
+    'DaTa-SlIdE-MoUnT = unquoted',
+  ];
+
+  for (const attribute of authoredAttributes) {
+    assert.equal(errorCode(() => composeSlideDocument({
+      master: { html: `<main ${attribute}>{{SLIDE_CONTENT}}</main>`, css: '' },
+      slide: { html: '<section>Slide</section>', css: '', javascript: '' },
+      assets: {},
+      policy,
+      nonce: NONCE,
+      previewMode: false,
+    })), 'RESERVED_MOUNT_ATTRIBUTE');
+
+    assert.equal(errorCode(() => composeSlideDocument({
+      master: { html: '<main>{{SLIDE_CONTENT}}</main>', css: '' },
+      slide: { html: `<svg><g ${attribute}></g></svg>`, css: '', javascript: '' },
+      assets: {},
+      policy,
+      nonce: NONCE,
+      previewMode: false,
+    })), 'RESERVED_MOUNT_ATTRIBUTE');
+  }
+});
+
+test('mount reservation parses attributes without false positives in text, comments, raw text, or values', () => {
+  const safeSlideHtml = [
+    '<p>data-slide-mount is documentation text.</p>',
+    '<p title="data-slide-mount">Attribute value</p>',
+    '<p data-slide-mountish data-note=data-slide-mount>Unrelated attributes</p>',
+    '<!-- <div data-slide-mount>commented example</div> -->',
+    '<textarea><div data-slide-mount>textarea text</div></textarea>',
+    '<style>.example::after{content:"<div data-slide-mount>"}</style>',
+    '<pre>&lt;div data-slide-mount&gt;</pre>',
+  ].join('');
+  const srcdoc = composeSlideDocument({
+    master: { html: '<main>{{SLIDE_CONTENT}}</main>', css: '' },
+    slide: { html: safeSlideHtml, css: '', javascript: '' },
+    assets: {},
+    policy,
+    nonce: NONCE,
+    previewMode: false,
+  });
+
+  assert.match(srcdoc, /<body><div data-slide-mount><main>/);
+  assert.match(srcdoc, /data-slide-mount is documentation text/);
+  assert.match(srcdoc, /title="data-slide-mount"/);
+});
+
 test('an asset resolved before the Master mount cannot shift the slide insertion point', () => {
   const srcdoc = composeSlideDocument({
     master: {
@@ -388,7 +456,7 @@ test('script-safe serialization preserves adversarial slide source without creat
   });
 });
 
-test('the guarded runtime preserves the non-module script semantics accepted by server validation', () => {
+test('the classic runtime preserves the non-module script semantics accepted by server validation', () => {
   const srcdoc = composeSlideDocument({
     master: baseMaster,
     slide: {
@@ -409,6 +477,67 @@ test('the guarded runtime preserves the non-module script semantics accepted by 
     type: 'runtime-ready',
     payload: {},
   });
+});
+
+test('authored strict-mode directives remain at the start of the classic slide script', () => {
+  const srcdoc = composeSlideDocument({
+    master: baseMaster,
+    slide: {
+      ...baseSlide,
+      javascript: '"use strict"; accidentalGlobal = 7;',
+    },
+    assets,
+    policy,
+    nonce: NONCE,
+    previewMode: false,
+  });
+  const runtime = runComposedRuntime(srcdoc);
+
+  assert.equal(runtime.appendedScripts[0].startsWith('"use strict";'), true);
+  assert.equal(runtime.window.accidentalGlobal, undefined);
+  assert.deepEqual(runtime.posted.map(entry => entry.message.type), ['runtime-error']);
+  assert.deepEqual(runtime.posted[0].message.payload, { code: 'SLIDE_RUNTIME_ERROR' });
+});
+
+test('a hashbang remains the first characters of authored classic slide source', () => {
+  const source = '#!/usr/bin/env node\nwindow.hashbangRan = true;';
+  const srcdoc = composeSlideDocument({
+    master: baseMaster,
+    slide: { ...baseSlide, javascript: source },
+    assets,
+    policy,
+    nonce: NONCE,
+    previewMode: false,
+  });
+  const runtime = runComposedRuntime(srcdoc);
+
+  assert.equal(runtime.appendedScripts[0].startsWith(source), true);
+  assert.equal(runtime.window.hashbangRan, true);
+  assert.deepEqual(runtime.posted.map(entry => entry.message.type), ['runtime-ready']);
+});
+
+test('an actual synchronous preview throw reports its bounded location and never announces ready', () => {
+  const srcdoc = composeSlideDocument({
+    master: baseMaster,
+    slide: {
+      ...baseSlide,
+      javascript: 'window.beforeThrow = true;\nthrow new Error("PRIVATE_SYNC_THROW");',
+    },
+    assets,
+    policy,
+    nonce: NONCE,
+    previewMode: true,
+  });
+  const runtime = runComposedRuntime(srcdoc);
+
+  assert.equal(runtime.window.beforeThrow, true);
+  assert.deepEqual(runtime.posted.map(entry => entry.message.type), ['runtime-error']);
+  assert.deepEqual(runtime.posted[0].message.payload, {
+    code: 'SLIDE_RUNTIME_ERROR',
+    line: 2,
+    column: 7,
+  });
+  assert.doesNotMatch(JSON.stringify(runtime.posted), /PRIVATE_SYNC_THROW/);
 });
 
 test('the bootstrap accepts messages only from parent with exact version and nonce and dispatches fixed events', () => {
