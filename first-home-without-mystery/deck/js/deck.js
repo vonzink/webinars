@@ -19,6 +19,7 @@ import {
 import { formatMoney } from './cash-to-close-math.js';
 import { makeCard, makeCardGrid } from './card.js';
 import { FIGURES } from './figures.js';
+import { localBuildAction } from './build-navigation.js';
 import * as annotate from './annotate.js';
 import { createSurfaceController } from './surface-fit.js';
 
@@ -135,6 +136,7 @@ const layouts = {
         <div class="statement-prompts build">
           ${d.prompts.map(prompt => `<span>${prompt}</span>`).join('')}
         </div>
+        ${d.budgetUrl ? `<a class="budget-link build" href="${esc(d.budgetUrl)}" target="_blank" rel="noopener noreferrer">${esc(d.budgetLabel || 'Build your monthly budget')} <span aria-hidden="true">↗</span></a>` : ''}
       </div>`;
   },
 
@@ -160,7 +162,7 @@ const layouts = {
       <div class="slide-body" style="justify-content:center">
         <div class="credit-layers">
           ${d.layers.map((layer, index) => `
-            <article class="credit-layer build">
+            <article class="credit-layer ${d.manualBuild ? 'build-step' : 'build'}">
               <span>0${index + 1}</span>
               <h3>${layer.label}</h3>
               <p>${layer.body}</p>
@@ -174,36 +176,38 @@ const layouts = {
       <div class="slide-body" style="justify-content:center">
         <div class="ingredient-track">
           ${d.ingredients.map((ingredient, index) => `
-            <article class="ingredient build">
+            <article class="ingredient ${d.manualBuild ? 'build-step' : 'build'}">
               <span class="ingredient-number">${index + 1}</span>
               <h3>${ingredient.label}</h3>
               <p>${ingredient.body}</p>
             </article>`).join('')}
         </div>
-        <div class="callout build ingredient-callout">${d.callout}</div>
+        ${d.formula ? `<div class="cash-formula ${d.manualBuild ? 'build-step' : 'build'}">${d.formula}</div>` : ''}
+        ${d.callout ? `<div class="callout ${d.manualBuild ? 'build-step' : 'build'} ingredient-callout">${d.callout}</div>` : ''}
       </div>`;
   },
 
   cashExample(el, d) {
     el.innerHTML = header(d) + `
       <div class="slide-body cash-example">
-        <div class="cash-example-price build">
+        <div class="cash-example-price ${d.manualBuild ? 'build-step' : 'build'}">
           <span>Purchase price</span>
           <strong>${formatMoney(d.example.purchasePrice)}</strong>
           <small>Teaching scenario</small>
         </div>
         <div class="cash-example-equation">
           ${d.example.rows.map(row => `
-            <div class="cash-example-row build" data-tone="${row.tone}">
+            <div class="cash-example-row ${d.manualBuild ? 'build-step' : 'build'}" data-tone="${row.tone}">
               <span>${row.amount < 0 ? '−' : '+'}</span>
               <p>${row.label}</p>
               <strong>${formatMoney(Math.abs(row.amount))}</strong>
             </div>`).join('')}
-          <div class="cash-example-total build">
+          <div class="cash-example-total ${d.manualBuild ? 'build-step' : 'build'}">
             <span>Illustrative cash to close</span>
             <strong>${formatMoney(d.example.total)}</strong>
           </div>
         </div>
+        ${d.teaser ? `<div class="seller-teaser ${d.manualBuild ? 'build-step' : 'build'}">${d.teaser}</div>` : ''}
       </div>`;
   },
 
@@ -212,13 +216,13 @@ const layouts = {
       <div class="slide-body" style="justify-content:center">
         <div class="document-story">
           ${d.groups.map((group, index) => `
-            <article class="document-group build">
+            <article class="document-group ${d.manualBuild ? 'build-step' : 'build'}">
               <span>0${index + 1}</span>
               <h3>${group.label}</h3>
               <ul>${group.items.map(item => `<li>${item}</li>`).join('')}</ul>
             </article>`).join('')}
         </div>
-        <div class="callout build document-callout">${d.callout}</div>
+        <div class="callout ${d.manualBuild ? 'build-step' : 'build'} document-callout">${d.callout}</div>
       </div>`;
   },
 
@@ -252,8 +256,17 @@ const layouts = {
     const grid = makeCardGrid(d.cards, {
       cols: d.cols || 3, variant: d.cardVariant || 'default', dense: !!d.dense,
     });
-    grid.querySelectorAll('.card').forEach(c => c.classList.add('build'));
+    grid.querySelectorAll('.card').forEach(c => c.classList.add(d.manualBuild ? 'build-step' : 'build'));
     el.querySelector('.grid-slot').appendChild(grid);
+    if (d.marketStats) {
+      const snapshot = document.createElement('section');
+      snapshot.className = `market-snapshot ${d.manualBuild ? 'build-step' : 'build'}`;
+      snapshot.setAttribute('aria-label', '2025 Denver Metro loan mix');
+      snapshot.innerHTML = `
+        <p>2025 Denver Metro</p>
+        <div>${d.marketStats.map(stat => `<span><strong>${esc(stat.value)}</strong>${esc(stat.label)}</span>`).join('')}</div>`;
+      el.querySelector('.slide-body').appendChild(snapshot);
+    }
   },
 
   /* Interactive diagram slide: the SVG IS the slide. Nodes carrying data-modal
@@ -369,7 +382,7 @@ const layouts = {
   stepper(el, d) {
     el.innerHTML = header(d) + `
       <div class="slide-body" style="justify-content:center">
-        <div class="figure-wrap build" style="width:100%">${FIGURES.processStepper(d.steps)}</div>
+        <div class="figure-wrap ${d.manualBuild ? '' : 'build'}" style="width:100%">${FIGURES.processStepper(d.steps, { manualBuild: d.manualBuild })}</div>
       </div>`;
   },
 
@@ -597,11 +610,21 @@ function playBuild() {
 
 function runBuild(el) {
   clearBuildTimers();
-  buildPlayback.items = [...el.querySelectorAll('.build')];
+  if (PREVIEW) {
+    buildPlayback.items = [];
+    buildPlayback.revealed = 0;
+    buildPlayback.playing = false;
+    el.querySelectorAll('.build, .build-step').forEach(item => item.classList.add('is-in'));
+    return;
+  }
+  const manual = Boolean(SLIDES[current]?.manualBuild);
+  el.querySelectorAll('.build').forEach(item => item.classList.toggle('is-in', manual));
+  buildPlayback.items = [...el.querySelectorAll(manual ? '.build-step' : '.build')];
   buildPlayback.revealed = 0;
   buildPlayback.playing = false;
   buildPlayback.items.forEach(item => item.classList.remove('is-in'));
-  playBuild();
+  if (manual) broadcastAnimationState();
+  else playBuild();
 }
 
 function shell(d, i) {
@@ -630,8 +653,20 @@ function show(i) {
   if (location.hash.slice(1) !== SLIDES[current].id) location.hash = SLIDES[current].id;
   broadcast();
 }
-const next = () => show(current + 1);
-const prev = () => show(current - 1);
+const nextSlide = () => show(current + 1);
+const prevSlide = () => show(current - 1);
+function navigateLocal(direction) {
+  const action = localBuildAction({
+    direction,
+    manual: Boolean(SLIDES[current]?.manualBuild),
+    revealed: buildPlayback.revealed,
+    total: buildPlayback.items.length,
+  });
+  if (action.type === 'build') revealBuilds(action.count);
+  else show(current + action.delta);
+}
+const next = () => navigateLocal(1);
+const prev = () => navigateLocal(-1);
 
 function fit() {
   slideFit.fit();
@@ -647,8 +682,8 @@ function initChannel() {
   channel.onmessage = e => {
     const m = e.data;
     if (m.type === 'goto') show(m.index);
-    if (m.type === 'next') next();
-    if (m.type === 'prev') prev();
+    if (m.type === 'next') nextSlide();
+    if (m.type === 'prev') prevSlide();
     if (m.type === 'animation-prev') stepBuild(-1);
     if (m.type === 'animation-next') stepBuild(1);
     if (m.type === 'animation-play') playBuild();
@@ -807,7 +842,7 @@ export function initDeck() {
   const fromHash = SLIDES.findIndex(s => s.id === location.hash.slice(1));
   show(fromHash >= 0 ? fromHash : 0);
 
-  const ok = SLIDES.length === 15 && MODAL_COUNT === 4;
+  const ok = SLIDES.length === 12 && MODAL_COUNT === 4;
   console.log(
     `%c Your first home, without the mystery. · Ridgeline %c ${SLIDES.length} slides · ${MODAL_COUNT} popouts · ` +
     `${Math.round(TARGET_RUNTIME_SECONDS / 60)} min ${ok ? '✓' : '✗ count check'}`,

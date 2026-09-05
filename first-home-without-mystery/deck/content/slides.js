@@ -16,8 +16,10 @@ Ask for a show of hands: who thinks the down payment is the entire cash-to-close
   {
     id: 'confident-number', layout: 'statement', bg: 'dark', footer: true,
     eyebrow: 'Start here',
-    headline: 'Your first step is not finding a house. It is building a confident number.',
+    headline: 'Your first step is not finding a house. It is finding a monthly payment that keeps you comfortable.',
     prompts: ['Comfortable payment', 'Cash target', 'Loan option'],
+    budgetLabel: 'Build your monthly budget',
+    budgetUrl: 'https://files.consumerfinance.gov/f/documents/cfpb_well-being_monthly-budget.pdf',
     time: 75,
     notes: `Use this as the opening tension. Before browsing listings, a buyer needs three grounded numbers: a comfortable payment, a realistic cash target, and a loan option that fits.
 
@@ -39,48 +41,30 @@ Ask: Which of those three feels least clear today?`,
 Humor line: Think of this as the homebuying version of assembling IKEA furniture—we are going to look at the instructions before discovering three leftover screws.`,
   },
   {
-    id: 'credit-report', layout: 'layers', bg: 'mist', footer: true,
+    id: 'credit-report', layout: 'layers', bg: 'mist', footer: true, manualBuild: true,
     eyebrow: 'Key one · Credit',
     headline: 'A mortgage credit report is more than a score.',
     layers: [
-      { label: 'Score', body: 'A prediction based on information in your credit reports.' },
       { label: 'History', body: 'How accounts and payments have been handled over time.' },
       { label: 'Balances', body: 'What is owed and how much available credit is being used.' },
       { label: 'Activity', body: 'New applications, inquiries, collections, and public records.' },
     ],
-    time: 135,
-    notes: `Walk through the four parts. A mortgage score may differ from a consumer app because different scoring models and report data can be used. Avoid promising a score requirement before reviewing the actual program and lender.
+    time: 180,
+    notes: `Reveal History, Balances, and Activity one at a time. Explain how these pieces wrap into a score at the end. A mortgage score may differ from a consumer app because different scoring models and report data can be used. Avoid promising a score requirement before reviewing the actual program and lender.
+
+Practical habits to discuss here: pay every bill on time; keep revolving-card balances as low as practical; avoid opening accounts you do not need; review all three credit reports for accurate information; and call your lender before moving money or changing debt. Buyers can review reports through the federally authorized source, AnnualCreditReport.com. Encourage disputes only for information that is truly inaccurate and explain that updates can take time.
 
 Humor line: Your free app score and your mortgage score can be like two bathroom scales—same person, suspiciously different answer.
 
 [Sources]
 - https://www.consumerfinance.gov/ask-cfpb/what-is-a-credit-report-en-309/
 - https://www.consumerfinance.gov/ask-cfpb/what-is-a-credit-score-en-315/
-[/Sources]`,
-  },
-  {
-    id: 'credit-habits', layout: 'markers', bg: 'white', footer: true, tone: 'do', cols: 1,
-    eyebrow: 'Key one · Credit',
-    headline: 'Five habits help before you apply.',
-    items: [
-      'Pay every bill on time.',
-      'Keep revolving-card balances as low as practical.',
-      'Avoid opening accounts you do not need.',
-      'Review all three credit reports for accurate information.',
-      'Call your lender before moving money or changing debt.',
-    ],
-    time: 135,
-    notes: `Make this practical. Buyers can review reports through the federally authorized source, AnnualCreditReport.com. Encourage disputes only for information that is truly inaccurate and explain that updates can take time.
-
-Humor line: The week before closing is not the time to finance a bass boat, a sectional, or—somehow—the bass boat sitting on the sectional.
-
-[Sources]
 - https://www.annualcreditreport.com/
 - https://www.consumerfinance.gov/ask-cfpb/how-do-i-get-a-copy-of-my-credit-reports-en-5/
 [/Sources]`,
   },
   {
-    id: 'loan-programs', layout: 'grid', bg: 'white', footer: true, cols: 2,
+    id: 'loan-programs', layout: 'grid', bg: 'white', footer: true, cols: 2, manualBuild: true,
     eyebrow: 'Key two · Loan choice',
     headline: 'Four program families cover many first-home scenarios.',
     subhead: 'Tap a program to see what makes it different.',
@@ -91,8 +75,14 @@ Humor line: The week before closing is not the time to finance a bass boat, a se
       { modal: 'prog-va', title: 'VA', meta: 'For eligible service members and veterans', stat: 'Often 0%*' },
       { modal: 'prog-usda', title: 'USDA', meta: 'Income- and location-dependent', stat: 'Often 0%*' },
     ],
-    time: 165,
-    notes: `Introduce the major program families as starting points, not promises. Exact eligibility, pricing, mortgage insurance, occupancy, and property rules vary.
+    marketStats: [
+      { label: 'Conventional', value: '74%' },
+      { label: 'FHA', value: '19%' },
+      { label: 'VA', value: '8%' },
+      { label: 'USDA', value: 'Less than 1%' },
+    ],
+    time: 220,
+    notes: `Reveal each program separately, then reveal the 2025 Denver Metro snapshot. Introduce the major program families as starting points, not promises. Exact eligibility, pricing, mortgage insurance, occupancy, and property rules vary.
 
 For VA, eligibility generally begins with qualifying service and a Certificate of Eligibility. USDA depends on household income and property location.
 
@@ -104,40 +94,7 @@ For VA, eligibility generally begins with qualifying service and a Certificate o
 [/Sources]`,
   },
   {
-    id: 'low-down-payment', layout: 'compare', bg: 'dark', footer: true, footerTheme: 'split',
-    eyebrow: 'Key two · Loan choice',
-    left: {
-      label: 'Low down payment',
-      items: [
-        'Some conventional options begin at 3% for eligible borrowers.',
-        'FHA may begin at 3.5% for qualifying borrowers.',
-        'VA and USDA may offer no-down-payment financing when eligible.',
-      ],
-    },
-    right: {
-      label: 'Prepared buyer',
-      items: [
-        'Plans for closing costs and prepaid expenses.',
-        'Keeps money available for inspections, moving, and repairs.',
-        'Protects an emergency reserve after closing.',
-      ],
-    },
-    callout: 'A smaller down payment can be a strategy—not a shortcut.',
-    compliance: 'generalGuidelines',
-    time: 90,
-    notes: `Normalize low-down-payment options while stressing reserves and payment comfort. Down payment assistance may be available depending on income, location, and program; review repayment, pricing, or second-lien terms carefully.
-
-Humor line: A 20% down payment is not a Hogwarts letter—you do not have to wait for it to arrive before asking questions.
-
-[Sources]
-- https://singlefamily.fanniemae.com/originating-underwriting/mortgage-products/97-loan-value-options
-- https://www.hud.gov/helping-americans/loans
-- https://www.va.gov/housing-assistance/home-loans/loan-types/purchase-loan/
-- https://www.rd.usda.gov/programs-services/single-family-housing-programs/single-family-housing-guaranteed-loan-program
-[/Sources]`,
-  },
-  {
-    id: 'cash-ingredients', layout: 'ingredients', bg: 'dark', footer: true,
+    id: 'cash-ingredients', layout: 'ingredients', bg: 'dark', footer: true, manualBuild: true,
     eyebrow: 'Key three · Cash to close',
     headline: 'Cash to close has four main ingredients.',
     ingredients: [
@@ -146,37 +103,11 @@ Humor line: A 20% down payment is not a Hogwarts letter—you do not have to wai
       { label: 'Prepaids + escrows', body: 'Ownership expenses funded ahead.' },
       { label: 'Credits + deposits', body: 'Amounts that reduce what remains due.' },
     ],
-    callout: 'Earnest money is credited back into the calculation when properly documented.',
-    time: 120,
+    formula: '1 + 2 + 3 − 4 = Cash to close',
+    time: 150,
     notes: `Define each category. Cash to close is estimated on the Loan Estimate and reconciled on the Closing Disclosure. Earnest money is not an extra charge if it is properly credited—it is money already paid toward the transaction.
 
 Clarify that reserves are usually funds remaining after closing when required, not another closing charge.
-
-[Sources]
-- https://www.consumerfinance.gov/owning-a-home/loan-estimate/
-- https://www.consumerfinance.gov/owning-a-home/closing-disclosure/
-[/Sources]`,
-  },
-  {
-    id: 'cash-example', layout: 'cashExample', bg: 'white', footer: true,
-    eyebrow: 'Key three · Cash to close',
-    headline: 'A $350,000 purchase: build the estimate.',
-    hasNumbers: true,
-    calc: 'cashToClose',
-    example: {
-      purchasePrice: 350000,
-      rows: [
-        { label: '5% down payment', amount: 17500, tone: 'add' },
-        { label: 'Closing costs · 3% assumption', amount: 10500, tone: 'add' },
-        { label: 'Prepaids · 2% assumption', amount: 7000, tone: 'add' },
-        { label: 'Earnest money already paid', amount: -5000, tone: 'subtract' },
-      ],
-      total: 30000,
-    },
-    time: 180,
-    notes: `Walk slowly through the math and ask the room to calculate before revealing $30,000. The 3% closing-cost and 2% prepaid figures are teaching assumptions, not quotes. Seller or lender credits could reduce the number; points or other costs could increase it.
-
-Humor line: This is the slide where the down payment realizes it was not the only guest invited.
 
 [Sources]
 - https://www.consumerfinance.gov/owning-a-home/loan-estimate/
@@ -215,20 +146,28 @@ The Loan Estimate helps compare expected terms and costs. The Closing Disclosure
 [/Sources]`,
   },
   {
-    id: 'complete-payment', layout: 'payment', bg: 'white', footer: true,
-    eyebrow: 'Affordability',
-    headline: 'Your payment is bigger than principal and interest.',
-    subhead: 'Judge the all-in payment you will live with—not only the amount you can qualify for.',
-    fixed: ['Principal and interest on a fixed-rate loan', 'Loan term'],
-    moves: ['Property taxes', 'Homeowners insurance', 'Mortgage insurance', 'HOA dues'],
-    points: [
-      'Taxes, insurance, and HOA dues can change after closing.',
-      'Your comfortable payment may be lower than your maximum approval.',
-    ],
-    time: 120,
-    notes: `Connect cash-to-close planning to the ongoing payment. Taxes, insurance, and HOA dues can change, so buyers should judge comfort rather than merely maximum approval.
+    id: 'cash-example', layout: 'cashExample', bg: 'white', footer: true, manualBuild: true,
+    eyebrow: 'Key three · Cash to close',
+    headline: 'A $350,000 purchase: build the estimate.',
+    hasNumbers: true,
+    calc: 'cashToClose',
+    example: {
+      purchasePrice: 350000,
+      rows: [
+        { label: '5% down payment', amount: 17500, tone: 'add' },
+        { label: 'Closing costs · 3% assumption', amount: 10500, tone: 'add' },
+        { label: 'Prepaids · 2% assumption', amount: 7000, tone: 'add' },
+        { label: 'Earnest money already paid', amount: -5000, tone: 'subtract' },
+      ],
+      total: 30000,
+    },
+    teaser: 'Would you like to learn how closing costs and prepaids may be covered by someone else?',
+    time: 180,
+    notes: `Walk slowly through the math and ask the room to calculate before revealing $30,000. The 3% closing-cost and 2% prepaid figures are teaching assumptions, not quotes. Seller or lender credits could reduce the number; points or other costs could increase it.
 
-Humor line: The underwriter can approve a payment; they cannot approve whether you still want tacos on Friday.
+After the final prompt appears, discuss seller concessions and how they may cover eligible closing costs and prepaids within applicable program limits.
+
+Humor line: This is the slide where the down payment realizes it was not the only guest invited.
 
 [Sources]
 - https://www.consumerfinance.gov/owning-a-home/loan-estimate/
@@ -253,13 +192,13 @@ Humor line: The underwriter can approve a payment; they cannot approve whether y
 Suggested line: The lender does not hate sofas. The lender hates surprise monthly payments attached to sofas.`,
   },
   {
-    id: 'document-story', layout: 'documentStory', bg: 'white', footer: true,
+    id: 'document-story', layout: 'documentStory', bg: 'white', footer: true, manualBuild: true,
     eyebrow: 'Prepare',
-    headline: 'Bring the documents that tell your financial story.',
+    headline: 'What information do I need to provide?',
     groups: [
-      { label: 'Income', items: ['Paystubs', 'W-2s or tax returns', 'Employment history'] },
-      { label: 'Assets', items: ['Bank statements', 'Investment or retirement funds', 'Gift-fund details'] },
-      { label: 'Identity + property', items: ['Photo identification', 'Housing history', 'Purchase contract when available'] },
+      { label: 'Income', items: ['Paystubs', 'W-2s or tax returns'] },
+      { label: 'Assets', items: ['Bank statements', 'Investment or retirement funds'] },
+      { label: 'Identity + property', items: ['Photo identification', 'Purchase contract when available'] },
     ],
     callout: 'Self-employment, variable income, gifts, and assistance may require additional documentation.',
     time: 90,
@@ -268,7 +207,7 @@ Suggested line: The lender does not hate sofas. The lender hates surprise monthl
 Humor line: Underwriting does not ask for documents because it is building a scrapbook. Every page answers a risk question.`,
   },
   {
-    id: 'five-step-plan', layout: 'stepper', bg: 'dark', footer: true,
+    id: 'five-step-plan', layout: 'stepper', bg: 'dark', footer: true, manualBuild: true,
     eyebrow: 'Your plan',
     headline: 'Your homebuying plan fits on one line.',
     steps: [
@@ -278,7 +217,7 @@ Humor line: Underwriting does not ask for documents because it is building a scr
       { label: 'Shop', note: 'With a real range' },
       { label: 'Close', note: 'Review + sign' },
     ],
-    time: 90,
+    time: 120,
     notes: `Recap the sequence. Buyers do not need to solve everything before the first conversation. Encourage a document-supported preapproval before serious shopping, based on company practice.
 
 Bring the room back to the three keys: credit, loan choice, and cash to close.`,
