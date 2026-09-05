@@ -352,6 +352,64 @@ test('mount reservation parses attributes without false positives in text, comme
   assert.match(srcdoc, /title="data-slide-mount"/);
 });
 
+test('bogus declarations cannot quote-mask a mount after their first closing angle', () => {
+  const authoredFragments = [
+    '<!not-a-declaration "><div data-slide-mount>\">',
+    "<?processing-instruction '><section DATA-SLIDE-MOUNT='owned'>'>",
+  ];
+
+  for (const fragment of authoredFragments) {
+    assert.equal(errorCode(() => composeSlideDocument({
+      master: { html: `<main>${fragment}{{SLIDE_CONTENT}}</main>`, css: '' },
+      slide: { html: '<section>Slide</section>', css: '', javascript: '' },
+      assets: {},
+      policy,
+      nonce: NONCE,
+      previewMode: false,
+    })), 'RESERVED_MOUNT_ATTRIBUTE');
+
+    assert.equal(errorCode(() => composeSlideDocument({
+      master: { html: '<main>{{SLIDE_CONTENT}}</main>', css: '' },
+      slide: { html: fragment, css: '', javascript: '' },
+      assets: {},
+      policy,
+      nonce: NONCE,
+      previewMode: false,
+    })), 'RESERVED_MOUNT_ATTRIBUTE');
+  }
+});
+
+test('real comments and declaration text before the first closing angle do not claim the mount', () => {
+  const safeFragments = [
+    '<!-- "><div data-slide-mount>commented example</div>" -->',
+    '<!not-a-declaration "<div data-slide-mount>">',
+    '<?processing-instruction "<div data-slide-mount>">',
+    '<!DOCTYPE html PUBLIC "<div data-slide-mount>">',
+  ];
+
+  for (const fragment of safeFragments) {
+    const masterDocument = composeSlideDocument({
+      master: { html: `<main>${fragment}{{SLIDE_CONTENT}}</main>`, css: '' },
+      slide: { html: '<section>Slide</section>', css: '', javascript: '' },
+      assets: {},
+      policy,
+      nonce: NONCE,
+      previewMode: false,
+    });
+    const slideDocument = composeSlideDocument({
+      master: { html: '<main>{{SLIDE_CONTENT}}</main>', css: '' },
+      slide: { html: fragment, css: '', javascript: '' },
+      assets: {},
+      policy,
+      nonce: NONCE,
+      previewMode: false,
+    });
+
+    assert.match(masterDocument, /<body><div data-slide-mount><main>/);
+    assert.match(slideDocument, /<body><div data-slide-mount><main>/);
+  }
+});
+
 test('an asset resolved before the Master mount cannot shift the slide insertion point', () => {
   const srcdoc = composeSlideDocument({
     master: {

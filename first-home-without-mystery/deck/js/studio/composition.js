@@ -264,6 +264,11 @@ function skipHtmlComment(source, index) {
   return source.length;
 }
 
+function skipBogusComment(source, index) {
+  const end = source.indexOf('>', index);
+  return end < 0 ? source.length : end + 1;
+}
+
 function skipRawText(source, index, tagName) {
   let cursor = index;
   while (cursor < source.length) {
@@ -336,8 +341,11 @@ function containsReservedMountAttribute(source) {
       cursor = skipHtmlComment(source, tagOpen + 4);
       continue;
     }
-    if (source[tagOpen + 1] === '!' || source[tagOpen + 1] === '?'
-      || source[tagOpen + 1] === '/') {
+    if (source[tagOpen + 1] === '!' || source[tagOpen + 1] === '?') {
+      cursor = skipBogusComment(source, tagOpen + 2);
+      continue;
+    }
+    if (source[tagOpen + 1] === '/') {
       cursor = skipTagTail(source, tagOpen + 2);
       continue;
     }
