@@ -17,6 +17,16 @@
 
   <section class="viewer-state viewer-state--error" data-audience-fatal role="alert" hidden></section>
 
+  <main class="viewer-shell" data-preview-shell hidden>
+    <section class="viewer-stage" aria-label="Studio slide preview">
+      <div class="viewer-fit-shell">
+        <div class="viewer-fit-surface">
+          <div class="viewer-frame" data-preview-frame></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
   <main class="viewer-shell" data-audience-shell hidden>
     <section class="viewer-stage" data-stage aria-label="Presentation slide">
       <p class="viewer-version" data-live-version></p>
@@ -55,13 +65,26 @@
   </main>
 
   <script type="module">
+    import { initPreviewHost } from './js/studio/preview-host.js';
     import { initStudioAudience } from './js/studio/audience-controller.js';
 
-    initStudioAudience({
-      root: document,
-      slug: 'first-home-without-mystery',
-      apiBase: 'https://api.msfgco.com',
-    });
+    const mode = new URLSearchParams(window.location.search).get('mode');
+    if (mode === 'preview') {
+      document.querySelector('[data-audience-loading]').hidden = true;
+      document.querySelector('[data-preview-shell]').hidden = false;
+      initPreviewHost({
+        root: document,
+        allowedDashboardOrigins: [
+          'https://dashboard.msfgco.com',
+        ],
+      });
+    } else {
+      initStudioAudience({
+        root: document,
+        slug: 'first-home-without-mystery',
+        apiBase: 'https://api.msfgco.com',
+      });
+    }
   </script>
 </body>
 </html>
