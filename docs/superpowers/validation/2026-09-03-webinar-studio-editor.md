@@ -9,7 +9,7 @@ this deck, both on loopback origins.
 
 | Repository | Branch | Commit under test |
 | --- | --- | --- |
-| dashboard.msfgco.com | `codex/webinar-studio-complete` | `7ea9d79` (`fix(webinars): keep a reconnected audience on the presenter's slide`), the tip after `c766d80` and its review follow-ups |
+| dashboard.msfgco.com | `codex/webinar-studio-complete` | `893bcbb` (`fix(webinars): key audience adoption to the webinar, not the panel`), the tip after `c766d80` and its review follow-ups |
 | Webinars | `codex/webinar-studio` | `c0d8a61` (`fix(webinars): make audience surface control honest and idempotent`) plus the validation commits up to and including this one |
 
 Production feature flag `WEBINAR_STUDIO_ACCESS` remained disabled by default.
@@ -134,6 +134,13 @@ Covered, in order:
   cases (44 of 44).
 - The New webinar form (`POST /webinars`) is not exercised here; it is
   covered by the shell unit suite.
+- Presenter runbook note: if Reconnect is pressed while the audience's own
+  reload is still loading (more than about two seconds), the in-place
+  attempts lapse and the window is re-navigated once; if the outgoing page
+  answers first, the link binds to it until the heartbeat notices (about
+  twenty seconds), then the presenter pushes its slide again. Bounded and
+  self-healing; wait for the audience page to finish loading before
+  pressing Reconnect.
 - Delivery of the real preview host and audience page to
   `msfgmortgage.com/webinars/first-home-without-mystery/` is a deployment
   prerequisite that this audit does not perform.

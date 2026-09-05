@@ -210,7 +210,47 @@ ESLint, `node --check`, `git diff --check` clean; deck 129; Chromium
 insertion 27 of 27, presenter 32 of 32, bridge 44 of 44; acceptance
 **90 of 90**.
 
-## Final package review, round 2
+## Final package review, round 2: REJECT
+
+The package reviewer confirmed the three round-1 lifecycle findings
+resolved and browser-proven (the reload-then-reconnect scenario, the
+disconnect prompts on deck switch and New webinar, the relaunch position
+push), re-judged every exit-gate item PASS, and re-confirmed the
+non-negotiables, then rejected on one new blocker introduced by the
+position push: the "adopt on first ready" flag was reset only when the
+presenter panel rendered a different webinar, so a deck switched while
+another tab was open launched the new deck's audience and pushed the
+previous deck's slide onto it. Also noted: a second prompt spawned during
+`close()` could strand the guard (the shared `Utils.confirm` replaces an
+open dialog without resolving it); the header's audience button never
+re-navigated a foreign page while disconnected; the reconnect push was
+gated on the presenter's own slide range; a Reconnect pressed during an
+in-flight audience reload can bind briefly to the outgoing page (runbook
+note). Run counts: Studio 180, full suite 1,520 with the two accepted
+failures, deck 129, acceptance 90 of 90, bridge harness 44 of 44.
+
+## Round 4 fixes (Dashboard `893bcbb`)
+
+Each finding got a failing test first. Adoption is keyed to the webinar id
+the state belongs to (`audienceReadyFor`), so a newly selected webinar
+adopts its first ready even when the panel was deactivated during the
+switch, and a later ready for the same webinar pushes the presenter's slide
+regardless of the presenter's own range. The header's audience button uses
+reconnect when the link is disconnected. `close()` observes the request
+generation without invalidating in-flight loads and abandons itself when a
+newer selection overtook its prompt. The shared `Utils.confirm` dialog was
+left unchanged: it sits outside the Studio package and has no unit harness,
+so the stranded-prompt edge is mitigated on the Studio side only and noted
+for the Dashboard maintainers. The Reconnect-during-reload note is in the
+validation document.
+
+Round 4 evidence: Studio suites 184 passed across 9 files; full Dashboard
+suite 1,524 passed with only the two accepted Calendar failures; build,
+ESLint, `node --check`, `git diff --check` clean; deck 129; Chromium
+insertion 27 of 27, presenter 32 of 32, bridge 44 of 44; acceptance
+90 of 90.
+
+## Final package review, round 3
 
 Pending at the time of writing. The verdict is appended below when received.
 
