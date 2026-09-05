@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <link rel="icon" href="data:,">
+  <title>Your first home, without the mystery. — Mountain State Financial Group</title>
+  <meta name="description" content="A beginner first-time homebuyer class from Mountain State Financial Group.">
+  <link rel="stylesheet" href="./css/tokens.css">
+  <link rel="stylesheet" href="./css/studio-viewer.css">
+</head>
+<body>
+  <div class="viewer-state" data-audience-loading>
+    <span class="viewer-state-mark" aria-hidden="true"></span>
+    <p>Loading presentation…</p>
+  </div>
+
+  <section class="viewer-state viewer-state--error" data-audience-fatal role="alert" hidden></section>
+
+  <main class="viewer-shell" data-audience-shell hidden>
+    <section class="viewer-stage" data-stage aria-label="Presentation slide">
+      <p class="viewer-version" data-live-version></p>
+      <div class="viewer-fit-shell" data-fit-shell>
+        <div class="viewer-fit-surface" data-fit-surface>
+          <div class="viewer-frame" data-slide-frame></div>
+        </div>
+      </div>
+      <canvas class="viewer-annotation-anchor" data-annotation-surface
+        width="1920" height="1080" aria-hidden="true"></canvas>
+      <div class="viewer-unavailable" data-slide-unavailable hidden>Slide unavailable</div>
+    </section>
+
+    <footer class="viewer-dock">
+      <div class="viewer-animation" role="group" aria-label="Slide animation controls">
+        <button type="button" data-animation="back" aria-label="Previous animation" title="Previous animation" disabled>│‹</button>
+        <button type="button" data-animation="forward" aria-label="Next animation" title="Next animation" disabled>›│</button>
+        <button type="button" data-animation="play" aria-label="Play animations" title="Play animations" disabled>▶</button>
+        <button type="button" data-animation="pause" aria-label="Pause animations" title="Pause animations" disabled>Ⅱ</button>
+      </div>
+
+      <div class="viewer-position">
+        <progress data-progress max="1" value="0" aria-label="Presentation progress"></progress>
+        <output data-slide-count>1 / 1</output>
+      </div>
+
+      <nav class="viewer-nav" aria-label="Slide navigation">
+        <button type="button" data-nav="previous" aria-label="Previous slide">‹</button>
+        <button type="button" data-nav="next" aria-label="Next slide">›</button>
+        <button type="button" data-annotation-toggle aria-label="Toggle annotation pen" aria-pressed="false" title="Annotation pen">✎</button>
+        <button type="button" data-nav="fullscreen" aria-label="Enter fullscreen" aria-pressed="false" title="Fullscreen">⛶</button>
+      </nav>
+    </footer>
+
+    <p class="visually-hidden" data-runtime-status aria-live="polite"></p>
+  </main>
+
+  <script type="module">
+    import { initStudioAudience } from './js/studio/audience-controller.js';
+
+    initStudioAudience({
+      root: document,
+      slug: 'first-home-without-mystery',
+      apiBase: 'https://api.msfgco.com',
+    });
+  </script>
+</body>
+</html>
