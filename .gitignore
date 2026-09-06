@@ -5,3 +5,4 @@
 **/.playwright-cli/
 **/output/playwright/
 **/migration/runtime/
+dist/

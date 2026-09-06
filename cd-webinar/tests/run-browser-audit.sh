@@ -4,7 +4,9 @@ set -uo pipefail
 script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 webinar_dir=$(cd "$script_dir/.." && pwd)
 session="le-cd-audit-$$"
-pwcli=${PWCLI:-/Users/zacharyzink/.codex/skills/playwright/scripts/playwright_cli.sh}
+# Playwright CLI: set PWCLI, or put playwright_cli.sh on PATH; the last entry is
+# the historical local install path.
+pwcli=${PWCLI:-$(command -v playwright_cli.sh 2>/dev/null || echo /Users/zacharyzink/.codex/skills/playwright/scripts/playwright_cli.sh)}
 server_pid=''
 browser_opened=0
 cleanup_done=0
@@ -216,6 +218,8 @@ if [[ -z $failure_step ]]; then
         if ($0 !~ /=> \[(2[0-9][0-9]|304)\]/) bad += 1
       }
       /=> \[(FAILED|ERR)/ {
+        # Navigation cancels in-flight page images (ERR_ABORTED); not a failure.
+        if ($0 ~ /net::ERR_ABORTED$/) next
         count += 1
         if ($0 ~ /\/cd-page-5\.png => \[FAILED\] net::ERR_FAILED$/) expected += 1
         else bad += 1
