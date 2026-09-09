@@ -101,13 +101,13 @@ async (page) => {
 
     await presenter.locator('#p-next-btn').click();
     await page.waitForFunction(() => location.hash === '#three-questions');
-    check((await presenter.locator('#p-position').textContent())?.trim() === '3 / 12',
+    check((await presenter.locator('#p-position').textContent())?.trim() === '3 / 14',
       'slide navigation must remain separate and synchronized');
   }
 
   check(pageErrors.length === 0, `page errors: ${pageErrors.join(' | ')}`);
   await presenter.screenshot({
-    path: '/Users/zacharyzink/MSFG/Webinars/.worktrees/first-home-presenter-revisions/first-home-without-mystery/deck/output/playwright/presenter-animation-controls.png',
+    path: '/tmp/presenter-animation-controls-september.png',
     fullPage: false,
   });
   await presenter.close();

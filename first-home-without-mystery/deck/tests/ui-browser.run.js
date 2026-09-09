@@ -10,11 +10,11 @@ async (page) => {
     if (!condition) failures.push(message);
   };
 
-  check(await page.locator('.slide').count() === 15, 'all 15 slides must render');
+  check(await page.locator('.slide').count() === 14, 'all 14 slides must render');
   check(await page.locator('#slide-three-questions .clarity-keys').count() === 1,
     'the three-key clarity line must render');
-  check(await page.locator('#slide-credit-report .credit-layers').count() === 1,
-    'the credit-report layers must render');
+  check(await page.locator('#slide-credit-report .fico-chart').count() === 1,
+    'the FICO chart must render');
 
   await page.goto('http://127.0.0.1:4197/#cash-example');
   await page.waitForTimeout(200);
