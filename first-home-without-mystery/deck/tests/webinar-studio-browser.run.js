@@ -105,6 +105,21 @@ async (page) => {
   check('the preview host frame is un-sandboxed and points at the configured preview host', await page.evaluate(origin => { const f = document.querySelector('#wsPreviewHost iframe'); return f && f.getAttribute('sandbox') === null && f.src.startsWith(origin + '/webinars/first-home-without-mystery/studio-viewer.html'); }, audienceOrigin));
   check('the inner slide frame inside the host is sandboxed with exactly allow-scripts', await page.frames().some(frame => frame.url().includes('mode=preview')) && await page.frames().find(frame => frame.url().includes('mode=preview')).evaluate(() => { const inner = document.querySelector('[data-preview-frame] iframe'); return inner && inner.getAttribute('sandbox') === 'allow-scripts'; }));
   check('no candidate HTML leaked into the Dashboard document', !(await page.content()).includes('fixture-card'));
+  const previewHostFrame = page.frames().find(frame => frame.url().includes('mode=preview'));
+  const previewBox = previewHostFrame ? await previewHostFrame.evaluate(() => {
+    const inner = document.querySelector('[data-preview-frame] iframe');
+    const stage = document.querySelector('[data-preview-stage]');
+    if (!inner || !stage) return null;
+    const box = inner.getBoundingClientRect();
+    const bounds = stage.getBoundingClientRect();
+    return {
+      width: Math.round(box.width), height: Math.round(box.height),
+      ratio: box.height > 0 ? box.width / box.height : 0,
+      stageWidth: Math.round(bounds.width), stageHeight: Math.round(bounds.height),
+      inside: box.left >= bounds.left - 1 && box.top >= bounds.top - 1 && box.right <= bounds.right + 1 && box.bottom <= bounds.bottom + 1,
+    };
+  }) : null;
+  check('the inner slide frame renders at a visible 16:9 size that fits inside the preview stage', Boolean(previewBox) && previewBox.width > 100 && previewBox.height > 50 && previewBox.inside && Math.abs(previewBox.ratio - 16 / 9) < 16 / 9 * 0.01, JSON.stringify(previewBox));
 
   /* ---------------- 2. Code editing, preview, Save Live, validation, conflict ---------------- */
   await tab('code');

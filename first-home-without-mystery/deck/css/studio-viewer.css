@@ -113,6 +113,11 @@ button[aria-pressed="true"] {
   background: var(--viewer-black);
 }
 
+/* The preview host has no navigation dock, so the stage takes the whole shell. */
+.viewer-shell[data-preview-shell] {
+  grid-template-rows: minmax(0, 1fr);
+}
+
 .viewer-stage {
   position: relative;
   min-width: 0;

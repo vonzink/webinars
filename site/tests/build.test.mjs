@@ -29,7 +29,7 @@ test('the manifest names real sources and downloads with unique slugs', () => {
   const { webinars } = loadManifest();
   const slugs = webinars.map(w => w.slug);
   assert.equal(new Set(slugs).size, slugs.length);
-  assert.deepEqual(slugs, ['homebuyers-webinar', 'va', 'le-cd']);
+  assert.deepEqual(slugs, ['homebuyers-webinar', 'va', 'le-cd', 'first-home-without-mystery']);
   for (const webinar of webinars) assert.ok(existsSync(join(REPO_ROOT, webinar.source, 'index.html')), webinar.slug);
 });
 
@@ -46,7 +46,7 @@ test('the artifact root is the site shell', () => {
 
 test('every webinar lands at /webinars/<slug>/ with its runtime files and downloads', () => {
   withBuild(({ outRoot, webinars }) => {
-    assert.equal(webinars.length, 3);
+    assert.equal(webinars.length, 4);
     for (const slug of ['homebuyers-webinar', 'va']) {
       const deck = join(outRoot, 'webinars', slug);
       for (const file of ['index.html', 'presenter.html', 'css/tokens.css', 'js/deck.js', 'content/slides.js', 'content/presenters.js']) {
@@ -56,6 +56,11 @@ test('every webinar lands at /webinars/<slug>/ with its runtime files and downlo
     assert.ok(existsSync(join(outRoot, 'webinars/homebuyers-webinar/downloads/Homebuyers-Playbook.pptx')));
     assert.ok(existsSync(join(outRoot, 'webinars/homebuyers-webinar/downloads/dos-and-donts.pdf')), 'deck-owned downloads must survive');
     assert.ok(existsSync(join(outRoot, 'webinars/va/downloads/Understanding-VA-Loans.pptx')));
+
+    const studioDeck = join(outRoot, 'webinars/first-home-without-mystery');
+    for (const file of ['index.html', 'studio-viewer.html', 'css/tokens.css', 'css/studio-viewer.css', 'js/deck.js', 'js/surface-fit.js', 'js/studio/preview-host.js', 'js/studio/presenter-bridge.js', 'js/studio/audience-controller.js', 'js/studio/slide-frame.js', 'content/slides.js']) {
+      assert.ok(existsSync(join(studioDeck, file)), `first-home-without-mystery missing ${file}`);
+    }
 
     const viewer = join(outRoot, 'webinars/le-cd');
     for (const file of ['index.html', 'js/app.js', 'content/index.js', 'assets/documents/le-page-1.png', 'assets/documents/cd3-page-5.png', 'references/loan-estimate-H24B.pdf']) {
@@ -67,7 +72,7 @@ test('every webinar lands at /webinars/<slug>/ with its runtime files and downlo
 test('development-only files never reach the artifact', () => {
   withBuild(({ outRoot }) => {
     const names = new Set(walk(outRoot).map(file => file.slice(outRoot.length + 1).split('/')).flat());
-    for (const banned of ['.DS_Store', '.playwright-cli', '__pycache__', 'tests', 'scripts', 'output', 'build_pptx.py', 'content.json', 'package.json', 'README.md', 'DEPLOY.md', 'SLIDE_DESIGN_SPEC.md', 'CONTENT-REVIEW.md', 'CONTENT-APPROVAL.json', 'CD Webinar']) {
+    for (const banned of ['.DS_Store', '.playwright-cli', '__pycache__', 'tests', 'scripts', 'output', 'build_pptx.py', 'content.json', 'package.json', 'package-lock.json', 'node_modules', 'README.md', 'DEPLOY.md', 'SLIDE_DESIGN_SPEC.md', 'CONTENT-REVIEW.md', 'CONTENT-APPROVAL.json', 'CD Webinar']) {
       assert.ok(!names.has(banned), `${banned} shipped`);
     }
   });

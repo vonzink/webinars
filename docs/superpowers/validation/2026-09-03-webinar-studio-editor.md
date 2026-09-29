@@ -48,7 +48,7 @@ and writes screenshots to `output/playwright/webinar-studio/`.
 
 ## Result
 
-`90 of 90` checks passed at 1440×900, then the responsive pass at 1440×900,
+`91 of 91` checks passed at 1440×900, then the responsive pass at 1440×900,
 1024×768, 390×844, and 844×390. Zero page errors in the Dashboard or audience
 windows; zero requests outside the fulfilled fixtures.
 
@@ -59,7 +59,9 @@ Covered, in order:
    real exact-origin host frame answers the up-next boot; the host frame is
    un-sandboxed on the configured preview origin; the inner slide frame it
    creates carries exactly `sandbox="allow-scripts"`; no candidate HTML
-   appears in the Dashboard document.
+   appears in the Dashboard document. The inner slide frame is also
+   measured: its rendered box must be non-zero and lie inside the preview
+   stage, which is what catches a preview that boots but paints nothing.
 2. Code: one box per live slide plus Master; Save Live disabled until a
    ready preview; editing boots through the real sandbox host and reports
    ready; Save Live advances the version exactly once with the expected
@@ -145,6 +147,24 @@ Covered, in order:
   merely throttled audience tab that comes back is reloaded and loses any
   on-screen annotations; use the panel only when you know the page is
   alive and just slow.
-- Delivery of the real preview host and audience page to
-  `msfgmortgage.com/webinars/first-home-without-mystery/` is a deployment
-  prerequisite that this audit does not perform.
+- The site build (`site/build.mjs`) publishes this deck, including
+  `studio-viewer.html` and `js/studio/`, at
+  `/webinars/first-home-without-mystery/`; uploading that artifact to
+  Amplify is a deployment step this audit does not perform.
+
+## Audit follow-up (2026-09-29)
+
+A code audit after the package review found that the preview host, in
+`?mode=preview`, never sized its fit shell: the audience page sizes the
+same shell through `createSurfaceController`, but the preview path did
+not, so the 1920×1080 sandbox sat inside a 0×0 clipped box and the live
+preview rendered as an empty stage. The 90 acceptance checks passed
+because they asserted the `ready` status and the sandbox attribute, not
+the rendered geometry. The preview host now sizes the stage through the
+shared surface controller, the viewer page carries `data-preview-stage`,
+`data-preview-fit-shell`, and `data-preview-fit-surface`, and the
+acceptance measures the inner frame's box (check 91). The same follow-up
+added the deck to `site/webinars.json` with a hub card so the build ships
+it, gave the Dashboard editor's "Copy my changes" a working clipboard
+default with a visible result, and made the Studio backend log the
+underlying error on every generic 500 or 503.

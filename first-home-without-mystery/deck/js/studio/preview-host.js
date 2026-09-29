@@ -1,10 +1,16 @@
 import { createSlideFrame } from './slide-frame.js';
+import { createSurfaceController } from '../surface-fit.js';
 
 const PROTOCOL_VERSION = 1;
 const NONCE = /^[A-Za-z0-9_-]{16,128}$/;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 const ANCHOR = /^[a-z][a-z0-9-]{0,189}$/;
 const RUNTIME_ERROR_CODES = new Set(['SLIDE_RUNTIME_ERROR', 'SLIDE_STARTUP_TIMEOUT']);
+/* The slide sandbox renders at the deck's design size and is scaled to the
+   stage, exactly as the audience page does; without that fit the absolutely
+   positioned shell has no size and the preview is invisible. */
+const DESIGN_WIDTH = 1920;
+const DESIGN_HEIGHT = 1080;
 
 function invalid() {
   throw new TypeError('Invalid preview input');
@@ -126,13 +132,15 @@ export function initPreviewHost({
   root = globalThis.document,
   windowObject = globalThis.window,
   createFrame = createSlideFrame,
+  createSurface = createSurfaceController,
 } = {}) {
   if (!Array.isArray(allowedDashboardOrigins) || allowedDashboardOrigins.length < 1
     || allowedDashboardOrigins.length > 32 || !root || typeof root.querySelector !== 'function'
     || !windowObject || typeof windowObject.addEventListener !== 'function'
     || typeof windowObject.removeEventListener !== 'function'
     || !windowObject.parent || typeof windowObject.parent.postMessage !== 'function'
-    || typeof createFrame !== 'function') throw new TypeError('Preview host configuration is invalid');
+    || typeof createFrame !== 'function'
+    || typeof createSurface !== 'function') throw new TypeError('Preview host configuration is invalid');
   const origins = new Set(allowedDashboardOrigins.map(validOrigin));
   if (origins.has(null) || origins.size !== allowedDashboardOrigins.length) {
     throw new TypeError('Preview host origin configuration is invalid');
@@ -141,6 +149,20 @@ export function initPreviewHost({
   if (!container || typeof container.replaceChildren !== 'function') {
     throw new TypeError('Preview host frame container is missing');
   }
+  const stage = root.querySelector('[data-preview-stage]');
+  const fitShell = root.querySelector('[data-preview-fit-shell]');
+  const fitSurface = root.querySelector('[data-preview-fit-surface]');
+  if (!stage || !fitShell || !fitSurface) {
+    throw new TypeError('Preview host preview stage is missing');
+  }
+  const surface = createSurface({
+    viewport: stage,
+    shell: fitShell,
+    surface: fitSurface,
+    getDesignSize: () => ({ width: DESIGN_WIDTH, height: DESIGN_HEIGHT }),
+    margin: 0,
+  });
+  surface.setActive(true);
 
   let active = null;
   let destroyed = false;
@@ -206,6 +228,7 @@ export function initPreviewHost({
       windowObject.removeEventListener('message', receive);
       try { active?.frame?.destroy(); } catch { /* best-effort sandbox cleanup */ }
       active = null;
+      try { surface.destroy(); } catch { /* the stage is going away with the page */ }
     },
   });
 }

@@ -54,7 +54,22 @@ function harness() {
   };
   const windowObject = new FakeWindow(parent);
   const container = { replaceChildren() {} };
-  const root = { querySelector: selector => selector === '[data-preview-frame]' ? container : null };
+  const stage = { name: 'stage' };
+  const fitShell = { name: 'fit-shell' };
+  const fitSurface = { name: 'fit-surface' };
+  const elements = {
+    '[data-preview-frame]': container,
+    '[data-preview-stage]': stage,
+    '[data-preview-fit-shell]': fitShell,
+    '[data-preview-fit-surface]': fitSurface,
+  };
+  const root = { querySelector: selector => elements[selector] || null };
+  const surfaces = [];
+  const createSurface = options => {
+    const surface = { options, active: null, destroyed: false, setActive(next) { this.active = next; }, destroy() { this.destroyed = true; } };
+    surfaces.push(surface);
+    return surface;
+  };
   const frames = [];
   const createFrame = options => {
     const frame = {
@@ -70,11 +85,40 @@ function harness() {
   const host = initPreviewHost({
     allowedDashboardOrigins: [DASHBOARD_ORIGIN],
     createFrame,
+    createSurface,
     root,
     windowObject,
   });
-  return { createFrame, frames, host, parent, posts, windowObject };
+  return { createFrame, frames, host, parent, posts, windowObject, surfaces, stage, fitShell, fitSurface, elements };
 }
+
+test('sizes the preview stage through the shared surface controller and tears it down on destroy', () => {
+  const testHarness = harness();
+  assert.equal(testHarness.surfaces.length, 1);
+  const [surface] = testHarness.surfaces;
+  assert.equal(surface.options.viewport, testHarness.stage);
+  assert.equal(surface.options.shell, testHarness.fitShell);
+  assert.equal(surface.options.surface, testHarness.fitSurface);
+  assert.deepEqual(surface.options.getDesignSize(), { width: 1920, height: 1080 });
+  assert.equal(surface.options.margin, 0);
+  assert.equal(surface.active, true);
+
+  testHarness.host.destroy();
+  assert.equal(surface.destroyed, true);
+});
+
+test('refuses a viewer page whose preview stage cannot be sized', () => {
+  const testHarness = harness();
+  testHarness.host.destroy();
+  delete testHarness.elements['[data-preview-fit-shell]'];
+  assert.throws(() => initPreviewHost({
+    allowedDashboardOrigins: [DASHBOARD_ORIGIN],
+    createFrame: testHarness.createFrame,
+    createSurface: () => ({ setActive() {}, destroy() {} }),
+    root: { querySelector: selector => testHarness.elements[selector] || null },
+    windowObject: testHarness.windowObject,
+  }), /preview stage/i);
+});
 
 function envelope(payload = candidate(), overrides = {}) {
   return { v: 1, nonce: NONCE, type: 'preview-candidate', payload, ...overrides };
@@ -175,6 +219,9 @@ test('replaces stale frames and exposes only bounded canonical runtime failure c
 test('studio viewer selects preview mode without changing the default public audience path', async () => {
   const html = await readFile(new URL('../studio-viewer.html', import.meta.url), 'utf8');
   assert.match(html, /data-preview-frame/);
+  assert.match(html, /data-preview-stage/);
+  assert.match(html, /data-preview-fit-shell/);
+  assert.match(html, /data-preview-fit-surface/);
   assert.match(html, /mode.*preview/);
   assert.match(html, /initPreviewHost/);
   assert.match(html, /initStudioAudience/);
