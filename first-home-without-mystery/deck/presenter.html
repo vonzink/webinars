@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:,">
+  <title>Presenter View — Your first home, without the mystery.</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800;900&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./css/tokens.css">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #0C3335; color: #EAF0EA; font-family: var(--font-body);
+      min-height: 100vh; display: flex; flex-direction: column; }
+    h1,h2,p,ul { margin: 0; } ul { list-style: none; padding: 0; }
+    button, textarea { font: inherit; }
+    button { color: inherit; cursor: pointer; background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.16); padding: 9px 14px; }
+    button:hover { background: rgba(255,255,255,.16); }
+    :focus-visible { outline: 3px solid #8cc63E; outline-offset: 2px; }
+    .p-bar { display: flex; align-items: center; gap: 20px; padding: 12px 22px;
+      border-bottom: 1px solid rgba(255,255,255,.12); flex-wrap: wrap; }
+    .p-brand { font-family: var(--font-display); font-size: 13px; letter-spacing: .1em;
+      text-transform: uppercase; color: #8cc63E; font-weight: 700; }
+    .p-sub { font-size: 13px; color: rgba(255,255,255,.6); }
+    .p-spacer { flex: 1 1 auto; }
+    .p-clocks { display: flex; gap: 20px; }
+    .p-clock { text-align: right; }
+    .p-clock-label { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: rgba(255,255,255,.45); }
+    .p-clock-value { font-family: var(--font-display); font-size: 28px; font-weight: 800; line-height: 1.1; }
+    .p-clock-value[data-state="behind"] { color: #E4B84A; }
+    .p-clock-value[data-state="ahead"] { color: #8cc63E; }
+    .p-main { flex: 1 1 auto; display: grid; grid-template-columns: 1.4fr 1fr; min-height: 0; }
+    .p-left { padding: 24px 26px; overflow-y: auto; }
+    .p-right { padding: 24px 26px; overflow-y: auto; border-left: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.02); container-type: inline-size; }
+    .p-eyebrow { font-family: var(--font-display); font-size: 12px; letter-spacing: .14em;
+      text-transform: uppercase; color: #8cc63E; font-weight: 700; }
+    .p-headline { font-family: var(--font-display); font-size: 38px; font-weight: 800;
+      line-height: 1.1; margin-top: 8px; color: #fff; letter-spacing: -.02em; }
+    .p-h { margin: 22px 0 10px; font-size: 11px; letter-spacing: .14em; text-transform: uppercase;
+      color: rgba(255,255,255,.45); font-weight: 700; font-family: var(--font-display); }
+    .p-notes { font-size: 20px; line-height: 1.5; } .p-notes p { margin-bottom: 14px; }
+
+    /* mini next-slide preview */
+    .p-preview-wrap { display: flex; gap: 14px; align-items: flex-start; }
+    .p-preview { width: 300px; height: 169px; flex: none; overflow: hidden;
+      border: 1px solid rgba(255,255,255,.18); background: #000; position: relative; }
+    .p-preview iframe { width: 1280px; height: 720px; border: 0; transform: scale(.234375);
+      transform-origin: top left; }
+    .p-next-label { font-size: 16px; color: rgba(255,255,255,.82); align-self: center; }
+
+    /* annotate controls */
+    /* Compact toolbar — slim buttons, tight spacing. */
+    .p-tools { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; }
+    .p-tools button { padding: 5px 9px; font-size: 12px; height: 30px; border-radius: 3px; }
+    .p-tools button.on { background: #8cc63E; color: #0C3335; border-color: #8cc63E; }
+    .p-tools .ic { font-size: 16px; min-width: 32px; height: 30px; padding: 0; line-height: 1; }
+    .p-tools .csw { width: 22px; height: 22px; min-width: 22px; padding: 0; border: 2px solid rgba(255,255,255,.35); }
+    .p-tools .csw.on { border-color: #fff; }
+    .p-tools .sep { width: 1px; height: 22px; background: rgba(255,255,255,.2); margin: 0 3px; }
+    #p-annon { display: inline-flex; align-items: center; gap: 8px; }
+    #p-annon kbd { min-width: 20px; padding: 1px 5px; border: 1px solid currentColor;
+      border-radius: 3px; font: 700 10px/1.5 var(--font-display); text-align: center; }
+    .p-utility-icon { width: 36px; height: 36px; flex: 0 0 36px; display: grid; place-items: center;
+      padding: 0; border-radius: 4px; }
+    .p-utility-icon svg { width: 19px; height: 19px; fill: none; stroke: currentColor;
+      stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .p-utility-icon.on { color: #0C3335; background: #8cc63E; border-color: #8cc63E; }
+    .p-presenter-pick { display: flex; flex-direction: column; gap: 3px; margin-left: 26px; }
+    .p-presenter-pick label { font: 700 10px/1 var(--font-display); letter-spacing: .12em;
+      text-transform: uppercase; color: rgba(255,255,255,.55); }
+    .p-presenter-pick select { min-width: 190px; padding: 7px 10px; border-radius: 8px;
+      border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.06); color: #fff;
+      font: 600 14px/1.2 var(--font-body); }
+    .p-presenter-pick select:focus { outline: none; border-color: #8cc63E; }
+
+    /* notes */
+    .p-note-add { position: relative; }
+    .p-note-add textarea { width: 100%; min-height: 64px; resize: vertical; background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.16); color: #fff; padding: 10px 48px 10px 10px; }
+    .p-note-list { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+    .p-note { position: relative; min-height: 52px; background: rgba(255,255,255,.05);
+      border-left: 4px solid #8cc63E; padding: 11px 78px 11px 12px; font-size: 15px; }
+    .p-note-body { line-height: 1.45; overflow-wrap: anywhere; }
+    .p-note-actions { position: absolute; top: 7px; right: 7px; display: flex; gap: 4px; }
+    .p-note-icon { display: grid; width: 30px; min-width: 30px; height: 30px; place-items: center;
+      padding: 0; border-radius: 3px; }
+    .p-note-icon svg { width: 15px; height: 15px; fill: none; stroke: currentColor;
+      stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+    .p-note-icon:hover { border-color: #8cc63E; color: #8cc63E; }
+    .p-note-icon.is-delete:hover { border-color: #ff8b96; color: #ff8b96; }
+    .p-note-icon:disabled { cursor: default; opacity: .45; }
+    #p-note-save { position: absolute; top: 8px; right: 8px; }
+    .p-note-none { font-size: 13px; color: rgba(255,255,255,.4); }
+
+    .p-library-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px; align-items: start; margin-top: 14px; }
+    .p-library-grid.is-single { grid-template-columns: 1fr; }
+    .p-library-column { min-width: 0; }
+    .p-library-column .p-h { margin-top: 0; }
+    .p-action-list { display: grid; gap: 6px; }
+    .p-action-list button { width: 100%; min-height: 38px; padding: 8px 11px;
+      border-left: 3px solid rgba(140,198,62,.45); border-radius: 3px;
+      text-align: left; font-size: 14px; line-height: 1.25; }
+    .p-action-list button:hover { border-left-color: #8cc63E; }
+    .p-none { font-size: 14px; color: rgba(255,255,255,.4); }
+    .p-animation-row { display: flex; align-items: center; gap: 9px; min-height: 30px;
+      margin-top: 18px; }
+    .p-animation-label { color: rgba(255,255,255,.5); font: 700 10px/1 var(--font-display);
+      letter-spacing: .11em; text-transform: uppercase; }
+    .p-animation-tools { flex-wrap: nowrap; }
+    .p-animation-tools .ic { display: grid; width: 32px; min-width: 32px; height: 30px;
+      place-items: center; padding: 0; }
+    .p-animation-tools .ic svg { width: 16px; height: 16px; fill: none; stroke: currentColor;
+      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .p-animation-tools .ic.on { border-color: #8cc63E; background: #8cc63E; color: #0C3335; }
+    .p-animation-tools .ic:disabled { cursor: default; opacity: .32; }
+    .p-animation-status { min-width: 44px; color: rgba(255,255,255,.58);
+      font: 700 11px/1 var(--font-display); text-align: right; }
+    .p-controls { display: flex; gap: 10px; margin-top: 8px; }
+    .p-controls button { flex: 1 1 auto; font-weight: 600; font-family: var(--font-display); }
+    .p-hint { margin-top: 16px; font-size: 12px; line-height: 1.6; color: rgba(255,255,255,.42);
+      border-top: 1px solid rgba(255,255,255,.1); padding-top: 12px; }
+
+    /* keyboard settings — a compact presenter control board */
+    .p-shortcut-dialog { width: min(620px, calc(100vw - 32px)); max-height: calc(100vh - 32px);
+      padding: 0; color: #EAF0EA; border: 1px solid rgba(140,198,62,.48); border-radius: 8px;
+      background: #103B3D; box-shadow: 0 28px 80px rgba(0,0,0,.55); overflow: auto; }
+    .p-shortcut-dialog::backdrop { background: rgba(3,18,19,.74); backdrop-filter: blur(3px); }
+    .p-shortcut-shell { padding: 22px; }
+    .p-shortcut-head { position: relative; padding-right: 44px; }
+    .p-shortcut-kicker { color: #8cc63E; font: 700 10px/1 var(--font-display);
+      letter-spacing: .15em; text-transform: uppercase; }
+    .p-shortcut-title { margin-top: 6px; color: #fff; font: 800 28px/1.1 var(--font-display);
+      letter-spacing: -.02em; }
+    .p-shortcut-intro { margin-top: 8px; color: rgba(255,255,255,.62); font-size: 13px; line-height: 1.5; }
+    .p-dialog-close { position: absolute; top: -3px; right: 0; width: 34px; height: 34px;
+      padding: 0; border-radius: 4px; font-size: 22px; line-height: 1; }
+    .p-shortcut-list { display: grid; margin-top: 18px; border-top: 1px solid rgba(255,255,255,.12); }
+    .p-shortcut-row { display: grid; grid-template-columns: minmax(160px, 1fr) minmax(210px, auto);
+      align-items: center; gap: 18px; min-height: 54px; border-bottom: 1px solid rgba(255,255,255,.1); }
+    .p-shortcut-name { font: 700 13px/1.25 var(--font-display); color: rgba(255,255,255,.88); }
+    .p-key-bindings { display: flex; justify-content: flex-end; align-items: center; gap: 7px; }
+    .p-key-binding { display: inline-flex; align-items: stretch; }
+    .p-key-capture { min-width: 66px; height: 32px; padding: 0 11px; border-color: rgba(255,255,255,.28);
+      border-radius: 4px 0 0 4px; background: rgba(0,0,0,.16); color: #fff;
+      font: 800 11px/1 var(--font-display); white-space: nowrap; }
+    .p-key-binding.is-single .p-key-capture { border-radius: 4px; }
+    .p-key-capture.is-listening, .p-key-add.is-listening { border-color: #8cc63E;
+      background: rgba(140,198,62,.16); color: #B9E47D; }
+    .p-key-remove { width: 28px; height: 32px; padding: 0; border-left: 0; border-radius: 0 4px 4px 0;
+      color: rgba(255,255,255,.48); font-size: 16px; }
+    .p-key-remove:hover { color: #ff9ca5; }
+    .p-key-add { width: 32px; height: 32px; padding: 0; border-radius: 4px; color: #8cc63E;
+      font: 800 16px/1 var(--font-display); }
+    .p-shortcut-status { min-height: 20px; margin-top: 13px; color: rgba(255,255,255,.55);
+      font-size: 12px; line-height: 1.45; }
+    .p-shortcut-status[data-state="error"] { color: #ffabb2; }
+    .p-shortcut-status[data-state="saved"] { color: #B9E47D; }
+    .p-shortcut-status[data-state="offline"] { color: #E4B84A; }
+    .p-shortcut-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 17px; }
+    .p-shortcut-actions button { border-radius: 4px; font: 700 12px/1 var(--font-display); }
+    .p-shortcut-actions .is-primary { color: #0C3335; background: #8cc63E; border-color: #8cc63E; }
+    .p-shortcut-actions .is-primary:hover { background: #A2D85A; }
+    @container (max-width: 420px) {
+      .p-library-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 560px) {
+      .p-shortcut-shell { padding: 18px; }
+      .p-shortcut-row { grid-template-columns: 1fr; gap: 7px; padding: 12px 0; }
+      .p-key-bindings { justify-content: flex-start; flex-wrap: wrap; }
+      .p-shortcut-actions { justify-content: stretch; }
+      .p-shortcut-actions button { flex: 1 1 auto; }
+    }
+    @media (max-width: 860px) { .p-main { grid-template-columns: 1fr; } .p-right { border-left: 0; } }
+  </style>
+</head>
+<body>
+  <header class="p-bar">
+    <div>
+      <div class="p-brand">Presenter View</div>
+      <div class="p-sub"><span id="p-who"></span> · <span id="p-company"></span></div>
+    </div>
+    <div class="p-presenter-pick">
+      <label for="p-presenter">Presenting as</label>
+      <select id="p-presenter" aria-label="Select the presenter"></select>
+    </div>
+    <div class="p-spacer"></div>
+    <div class="p-clocks">
+      <div class="p-clock"><div class="p-clock-label">Slide</div><div class="p-clock-value" id="p-slide-elapsed" data-state="ok">00:00</div></div>
+      <div class="p-clock"><div class="p-clock-label">Target</div><div class="p-clock-value" id="p-slide-target" style="color:rgba(255,255,255,.5)">00:00</div></div>
+      <div class="p-clock"><div class="p-clock-label">Pace</div><div class="p-clock-value" id="p-drift" data-state="ok">+00:00</div></div>
+      <div class="p-clock"><div class="p-clock-label">Elapsed / <span id="p-total">00:00</span></div><div class="p-clock-value" id="p-elapsed">00:00</div></div>
+    </div>
+    <button class="p-utility-icon" id="p-cash-to-close" type="button"
+      aria-label="Show cash-to-close calculator" title="Show cash-to-close calculator" aria-pressed="false">
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <rect x="5" y="3" width="14" height="18" rx="2"></rect>
+        <path d="M8 7h8M8 11h2M12 11h2M16 11h1M8 15h2M12 15h2M16 15h1M8 18h2M12 18h5"></path>
+      </svg>
+    </button>
+    <button class="p-utility-icon" id="p-shortcut-settings" type="button"
+      aria-label="Keyboard shortcut settings" title="Keyboard shortcut settings">
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <circle cx="12" cy="12" r="3"></circle>
+        <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6v.2h-4V21a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9A1.7 1.7 0 0 0 3 14H2.8v-4H3a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.6v-.2h4V3a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.2v4H21a1.7 1.7 0 0 0-1.6 1z"></path>
+      </svg>
+    </button>
+  </header>
+
+  <main class="p-main">
+    <div class="p-left">
+      <div class="p-eyebrow" id="p-eyebrow"></div>
+      <h1 class="p-headline" id="p-headline"></h1>
+      <div class="p-h">Speaker notes</div>
+      <div class="p-notes" id="p-notes"></div>
+
+      <div class="p-h">My notes — this slide</div>
+      <div class="p-note-add">
+        <textarea id="p-note-input" placeholder="Add a note for this slide…"></textarea>
+        <button class="p-note-icon" type="button" id="p-note-save" aria-label="Save note" title="Save note">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M5 4h12l2 2v14H5zM8 4v6h8V4M8 20v-6h8v6"></path>
+          </svg>
+        </button>
+      </div>
+      <div class="p-note-list" id="p-note-list"></div>
+    </div>
+
+    <aside class="p-right">
+      <div class="p-h">Position</div>
+      <div style="font-family:var(--font-display);font-size:26px;font-weight:800" id="p-position">1 / 15</div>
+
+      <div class="p-h">Up next</div>
+      <div class="p-preview-wrap">
+        <div class="p-preview"><iframe id="p-preview-frame" src="./index.html?preview" title="Next slide preview" tabindex="-1"></iframe></div>
+        <div class="p-next-label" id="p-next"></div>
+      </div>
+      <div class="p-tools" style="margin-top:8px">
+        <button id="p-fs" data-fs title="Fullscreen the shared slide window">⛶ Fullscreen slide: Off</button>
+        <button id="p-nav-visibility" title="Show or hide the navigation bar on the shared slide">Slide navigation: Shown</button>
+      </div>
+
+      <div class="p-h">Annotate the live slide</div>
+      <div class="p-tools" id="p-tools">
+        <button id="p-annon" data-annon title="Toggle drawing on the shared slide" aria-pressed="false">
+          <span>Draw: <span id="p-ann-state">Off</span></span><kbd id="p-draw-shortcut">D</kbd>
+        </button>
+        <button class="ic" data-tool="pen" title="Pen" aria-label="Pen">✎</button>
+        <button class="ic" data-tool="highlight" title="Highlighter" aria-label="Highlighter">▤</button>
+        <button class="ic" data-tool="box" title="Box" aria-label="Box">▭</button>
+        <button class="ic" data-tool="text" title="Text" aria-label="Text">T</button>
+        <button class="ic" data-tool="laser" title="Laser" aria-label="Laser">◉</button>
+        <span class="sep"></span>
+        <button class="ic" data-annundo title="Undo" aria-label="Undo">↶</button>
+        <button class="ic" data-annredo title="Redo" aria-label="Redo">↷</button>
+      </div>
+      <div class="p-tools" style="margin-top:6px">
+        <button class="csw" data-color="green"  style="background:#8cc63E" title="Green"></button>
+        <button class="csw" data-color="yellow" style="background:#FFEA00" title="Yellow"></button>
+        <button class="csw" data-color="blue"   style="background:#2979FF" title="Blue"></button>
+        <button class="csw" data-color="red"    style="background:#FF1744" title="Red"></button>
+        <button class="csw" data-color="black"  style="background:#111111" title="Black"></button>
+        <button class="csw" data-color="white"  style="background:#ffffff" title="White"></button>
+        <button class="ic" data-annclear title="Clear all" aria-label="Clear">⌫</button>
+      </div>
+      <div class="p-tools" style="margin-top:6px">
+        <button id="p-autooff" data-autooff title="Drawing turns off automatically after each mark">Auto-off: Off</button>
+        <button id="p-anntoolbar" data-anntoolbar title="Show the tool bar on the shared slide too">On-slide tools: Off</button>
+      </div>
+
+      <div class="p-library-grid" id="p-library-grid">
+        <section class="p-library-column" id="p-popout-section">
+          <div class="p-h">Popouts (<span id="p-popout-count">0</span>)</div>
+          <ul class="p-action-list" id="p-popouts"></ul>
+        </section>
+        <section class="p-library-column" id="p-media-section" hidden>
+          <div class="p-h">Graphics (<span id="p-media-count">0</span>)</div>
+          <ul class="p-action-list" id="p-media-list"></ul>
+        </section>
+      </div>
+
+      <div class="p-animation-row" role="group" aria-label="Animation controls">
+        <span class="p-animation-label">Animations</span>
+        <div class="p-tools p-animation-tools">
+          <button class="ic" type="button" id="p-animation-prev"
+            aria-label="Previous animation build" title="Previous animation build">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="M7 6v12M17 7l-7 5 7 5z"></path>
+            </svg>
+          </button>
+          <button class="ic" type="button" id="p-animation-play"
+            aria-label="Play animations" title="Play animations">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="M8 6l10 6-10 6z"></path>
+            </svg>
+          </button>
+          <button class="ic" type="button" id="p-animation-pause"
+            aria-label="Pause animations" title="Pause animations">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="M9 6v12M15 6v12"></path>
+            </svg>
+          </button>
+          <button class="ic" type="button" id="p-animation-next"
+            aria-label="Next animation build" title="Next animation build">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="M17 6v12M7 7l7 5-7 5z"></path>
+            </svg>
+          </button>
+        </div>
+        <output class="p-animation-status" id="p-animation-status" aria-live="polite">0 / 0</output>
+      </div>
+
+      <div class="p-controls">
+        <button type="button" id="p-prev">‹ Back</button>
+        <button type="button" id="p-next-btn">Next ›</button>
+        <button type="button" id="p-start">Start timer</button>
+      </div>
+      <div class="p-hint">Share the <strong>main window</strong>, keep this one on your own screen.<br>
+        Arrow keys and popout buttons work from either window. Draw controls the shared slide.</div>
+    </aside>
+  </main>
+  <dialog class="p-shortcut-dialog" id="p-shortcut-dialog" aria-labelledby="p-shortcut-title"
+    aria-describedby="p-shortcut-intro">
+    <div class="p-shortcut-shell">
+      <header class="p-shortcut-head">
+        <div class="p-shortcut-kicker">Presenter controls</div>
+        <h2 class="p-shortcut-title" id="p-shortcut-title">Keyboard shortcuts</h2>
+        <p class="p-shortcut-intro" id="p-shortcut-intro">Choose the keys that feel natural while you present.</p>
+        <button class="p-dialog-close" id="p-shortcut-close" type="button"
+          aria-label="Close keyboard shortcuts" title="Close">×</button>
+      </header>
+      <div class="p-shortcut-list" id="p-shortcut-list"></div>
+      <p class="p-shortcut-status" id="p-shortcut-status" role="status" aria-live="polite"></p>
+      <footer class="p-shortcut-actions">
+        <button type="button" id="p-shortcut-reset">Reset defaults</button>
+        <button class="is-primary" type="button" id="p-shortcut-save">Save changes</button>
+      </footer>
+    </div>
+  </dialog>
+  <script type="module">
+    import { initPresenter } from './js/presenter.js';
+    initPresenter();
+  </script>
+</body>
+</html>

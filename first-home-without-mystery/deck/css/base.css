@@ -1,0 +1,322 @@
+/* ============================================================================
+   BASE — reset, the 1920×1080 stage, footer/compliance, photo placeholders
+   ========================================================================= */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
+  margin: 0; padding: 0; height: 100%;
+  background: #000;
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+body { font-variant-numeric: tabular-nums; }
+
+h1,h2,h3,h4,p,ul,ol,dl,dd,figure,blockquote { margin: 0; }
+ul, ol { padding: 0; list-style: none; }
+button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+img, svg { display: block; max-width: 100%; }
+em, i { font-style: normal; font-weight: var(--fw-800); }
+
+:focus-visible { outline: 3px solid var(--green); outline-offset: 3px; }
+
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+/* ---------------------------------------------------------------------------
+   STAGE — fixed 1920×1080 canvas, scaled to fit the viewport.
+   Authoring at native size keeps the spec's px = the rendered px, so the
+   "nothing below 21px" floor is a real guarantee.
+   ------------------------------------------------------------------------ */
+.stage { position: fixed; inset: 0; background: #000; overflow: hidden; }
+.slide-fit-shell { position: absolute; overflow: visible; }
+.slide-scaler {
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: var(--slide-w);
+  height: var(--slide-h);
+  transform-origin: top left;
+}
+
+.slide {
+  position: absolute; inset: 0;
+  display: none;
+  flex-direction: column;
+  padding: var(--pad-y) var(--pad-x);
+  background: var(--bg-light);
+  color: var(--text-on-light);
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  overflow: hidden;
+}
+.slide.is-active { display: flex; }
+
+.slide[data-bg="dark"]  { background: var(--bg-dark);  color: var(--text-body-dark); }
+.slide[data-bg="white"] { background: var(--bg-white); color: var(--text-on-light); }
+.slide[data-bg="mist"]  { background: var(--bg-light); color: var(--text-on-light); }
+
+/* Full-bleed slides let the photo/wash reach the edges; text keeps the gutter */
+.slide[data-bleed] { padding: 0; }
+
+/* ---------------------------------------------------------------------------
+   EYEBROW + HEADLINE + ACCENT BAR
+   ------------------------------------------------------------------------ */
+.eyebrow {
+  font-family: var(--font-display);
+  font-weight: var(--fw-700);
+  font-size: var(--fs-eyebrow);
+  letter-spacing: var(--ls-eyebrow);
+  text-transform: uppercase;
+  color: var(--sage);
+}
+.slide[data-bg="dark"] .eyebrow { color: var(--green); }
+
+.accent-bar {
+  width: var(--accent-bar-w); height: var(--accent-bar-h);
+  background: var(--green);
+  flex: none;
+}
+
+.headline {
+  font-family: var(--font-display);
+  font-weight: var(--fw-800);
+  font-size: var(--fs-headline);
+  line-height: var(--lh-head);
+  letter-spacing: var(--ls-head);
+  color: var(--text-head-light);
+  text-wrap: balance;
+}
+.slide[data-bg="dark"] .headline { color: var(--white); }
+.headline.is-long { font-size: 60px; }
+
+.subhead {
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  color: var(--text-meta-light);
+  text-wrap: pretty;
+  max-width: 1100px;
+}
+.slide[data-bg="dark"] .subhead { color: var(--text-body-dark); }
+
+/* Standard content header block: eyebrow · headline · accent bar */
+.slide-header { flex: none; margin-bottom: 44px; }
+.slide-header .eyebrow { display: block; margin-bottom: 18px; }
+.slide-header .accent-bar { margin-top: 22px; }
+
+.slide-body { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+
+/* Body paragraphs cap their measure — never a full 1728px line. */
+.measure { max-width: 900px; }
+
+/* ---------------------------------------------------------------------------
+   PHOTOGRAPHY — full-bleed within container, always washed, drop-placeholders
+   where an image isn't supplied yet (labeled, never a silent gray box).
+   ------------------------------------------------------------------------ */
+.photo {
+  position: absolute; inset: 0;
+  overflow: hidden;
+  background: var(--forest);
+}
+.photo img { width: 100%; height: 100%; object-fit: cover; }
+.photo .wash { position: absolute; inset: 0; pointer-events: none; }
+.photo .wash[data-dir="v"] { background: var(--wash-vertical); }
+.photo .wash[data-dir="h"] { background: var(--wash-horizontal); }
+
+.photo-placeholder {
+  position: absolute; inset: 0;
+  display: grid; place-items: center;
+  background:
+    repeating-linear-gradient(-45deg,
+      rgba(255,255,255,0.03) 0 22px, rgba(255,255,255,0.06) 22px 44px),
+    var(--forest);
+}
+.photo-placeholder span {
+  font-family: var(--font-display);
+  font-weight: var(--fw-700);
+  font-size: 26px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.5);
+  border: 2px dashed rgba(255,255,255,0.35);
+  padding: 16px 30px;
+  text-align: center;
+  max-width: 70%;
+}
+
+/* ---------------------------------------------------------------------------
+   FOOTER + COMPLIANCE (§6)
+   Logo sits on a white plate on dark backgrounds. NMLS + license lines right.
+   Rendered from data so it can't be forgotten.
+   ------------------------------------------------------------------------ */
+.slide-footer {
+  position: absolute;
+  left: var(--pad-x); right: var(--pad-x); bottom: 46px;
+  display: flex; align-items: center; justify-content: space-between; gap: 30px;
+  padding-top: 26px;
+  border-top: 2px solid rgba(255,255,255,0.18);
+  z-index: 3;
+}
+.slide[data-bg="white"] .slide-footer,
+.slide[data-bg="mist"] .slide-footer { border-top-color: rgba(12,51,53,0.16); }
+
+/* Logo sits directly on the background — vector, no plate. Larger. */
+.footer-logo { flex: none; display: flex; align-items: center; }
+.footer-logo img { height: 68px; width: auto; }
+
+/* Slide 1's knockout logo keeps a stable safe area on every screen size. */
+#slide-opening .footer-logo { width: 300px; max-width: 100%; }
+#slide-opening .footer-logo img {
+  width: 100%; height: auto; max-height: 68px;
+  object-fit: contain; object-position: left center;
+}
+
+.footer-meta {
+  min-width: 0;
+  display: flex; align-items: center; justify-content: flex-end; gap: 18px;
+}
+
+.footer-lines {
+  text-align: right;
+  font-family: var(--font-body);
+  font-size: var(--fs-footer);
+  line-height: 1.45;
+  color: var(--text-meta-dark);
+}
+.slide[data-bg="white"] .footer-lines,
+.slide[data-bg="mist"] .footer-lines { color: var(--text-meta-light); }
+
+.equal-housing-logo {
+  flex: none;
+  width: auto; height: 64px;
+  background: var(--white);
+}
+
+/* Hypothetical / results disclaimer — italic, 21px */
+.disclaimer {
+  position: absolute;
+  left: var(--pad-x); right: var(--pad-x); bottom: 150px;
+  font-family: var(--font-body);
+  font-style: italic;
+  font-size: var(--fs-min);
+  color: var(--text-meta-dark);
+  z-index: 3;
+}
+.slide[data-bg="white"] .disclaimer,
+.slide[data-bg="mist"] .disclaimer { color: var(--text-meta-light); }
+
+/* When footer OR disclaimer is present, reserve their space. */
+.slide[data-footer] { padding-bottom: 150px; }
+.slide[data-footer][data-disclaimer] { padding-bottom: 196px; }
+
+/* Placeholder chips for contact/link fields not yet supplied */
+.ph {
+  display: inline-flex; align-items: center;
+  padding: 2px 14px;
+  border: 2px dashed var(--green);
+  color: inherit;
+  font-family: var(--font-display);
+  font-weight: var(--fw-700);
+  font-size: 22px;
+  letter-spacing: 0.08em;
+}
+
+/* ---------------------------------------------------------------------------
+   BUILD ANIMATION
+   ------------------------------------------------------------------------ */
+.build { opacity: 0; transform: translateY(16px);
+  transition: opacity var(--dur-base) var(--ease-out),
+              transform var(--dur-base) var(--ease-out); }
+.slide.is-active .build.is-in { opacity: 1; transform: none; }
+
+/* ---------------------------------------------------------------------------
+   NAV + PROGRESS
+   ------------------------------------------------------------------------ */
+.deck-progress {
+  position: fixed; top: 0; left: 0; height: 4px;
+  background: var(--green); z-index: 45;
+  transition: width var(--dur-base) var(--ease-out);
+}
+.deck-nav {
+  position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 14px;
+  padding: 8px 14px;
+  background: rgba(12,51,53,0.9);
+  border: 1px solid rgba(255,255,255,0.16);
+  z-index: 40; opacity: 0;
+  transition: opacity var(--dur-base) var(--ease-out);
+}
+.deck-nav-hidden .deck-nav { display: none; }
+.deck-nav:hover, .deck-nav:focus-within, body.nav-visible .deck-nav { opacity: 1; }
+.deck-nav button {
+  width: 34px; height: 34px; display: grid; place-items: center;
+  color: rgba(255,255,255,0.9); font-size: 16px;
+}
+.deck-nav button:hover { background: rgba(255,255,255,0.14); }
+.deck-nav .nav-count {
+  font-family: var(--font-display); font-size: 14px; letter-spacing: 0.06em;
+  color: rgba(255,255,255,0.75); padding: 0 6px; min-width: 70px; text-align: center;
+}
+
+/* ---------------------------------------------------------------------------
+   ANNOTATION overlay + toolbar
+   ------------------------------------------------------------------------ */
+/* Above the modal (z 100) so you can draw over popouts too. Off = no pointer
+   events, so popouts stay interactive; On = captures the whole screen. */
+#annotate-layer { position: fixed; inset: 0; z-index: 200; pointer-events: none; }
+#annotate-layer.is-on { pointer-events: auto; cursor: crosshair; }
+#annotate-layer svg { width: 100%; height: 100%; overflow: visible; }
+.annotate-text {
+  position: absolute; min-width: 24px; min-height: 42px; padding: 2px 4px;
+  font-family: var(--font-display); font-weight: 700; font-size: 34px;
+  outline: none; white-space: nowrap; caret-color: currentColor;
+  text-shadow: 0 2px 10px rgba(0,0,0,.35);
+}
+.annotate-text:empty::before { content: "Type…"; opacity: .5; }
+/* Fluorescent laser dot with a bright core + glowing halo in the current colour. */
+.laser-dot { position: fixed; width: 18px; height: 18px; border-radius: 50%;
+  transform: translate(-50%, -50%); pointer-events: none;
+  background: var(--laser, #FF1744);
+  box-shadow: 0 0 6px 2px #fff, 0 0 20px 8px var(--laser, #FF1744), 0 0 40px 16px var(--laser, #FF1744);
+}
+
+#annotate-bar {
+  position: fixed; bottom: 74px; left: 50%; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 6px; padding: 8px 10px; z-index: 210;
+  background: rgba(12,51,53,.95); border: 1px solid rgba(255,255,255,.16);
+}
+#annotate-bar[hidden] { display: none; }
+
+/* Transient hint (e.g. when a remote fullscreen request is blocked) */
+#deck-toast {
+  position: fixed; bottom: 78px; left: 50%; transform: translateX(-50%) translateY(8px);
+  background: rgba(12,51,53,.96); color: #fff; border: 1px solid rgba(255,255,255,.16);
+  font-family: var(--font-display); font-weight: 700; font-size: 16px;
+  padding: 12px 20px; z-index: 220; opacity: 0; pointer-events: none;
+  transition: opacity var(--dur-base) var(--ease-out), transform var(--dur-base) var(--ease-out);
+}
+#deck-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+#annotate-bar button {
+  min-width: 40px; height: 40px; padding: 0 10px; color: #fff;
+  font-family: var(--font-display); font-weight: 700; font-size: 18px;
+  border: 1px solid transparent;
+}
+#annotate-bar button:hover { background: rgba(255,255,255,.12); }
+#annotate-bar button.is-active { background: var(--green); color: var(--forest); }
+#annotate-bar button.col { width: 30px; min-width: 30px; height: 30px; padding: 0; border: 2px solid rgba(255,255,255,.4); }
+#annotate-bar button.col.is-active { border-color: #fff; }
+#annotate-bar .sep { width: 1px; height: 26px; background: rgba(255,255,255,.2); margin: 0 4px; }
+
+/* Preview iframe (mini next-slide in presenter view): hide chrome */
+body.is-preview .deck-nav, body.is-preview .deck-progress { display: none; }
+body.is-preview { pointer-events: none; }
+
+/* Dev guide: webcam/safe visualization off by default */
+body.show-guides .slide::after {
+  content: ""; position: absolute; top: 0; right: 0;
+  width: 460px; height: 300px;
+  outline: 2px dashed rgba(140,198,62,0.6); pointer-events: none; z-index: 2;
+}

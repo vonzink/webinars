@@ -10,6 +10,8 @@
     "build_pptx.py",
     "content.json",
     "package.json",
+    "package-lock.json",
+    "node_modules",
     "README.md",
     "DEPLOY.md",
     "SLIDE_DESIGN_SPEC.md",
@@ -38,6 +40,12 @@
       "title": "Understand Your Loan Estimate and Closing Disclosure",
       "source": "cd-webinar",
       "exclude": ["CD Webinar"],
+      "downloads": []
+    },
+    {
+      "slug": "first-home-without-mystery",
+      "title": "Your first home, without the mystery.",
+      "source": "first-home-without-mystery/deck",
       "downloads": []
     }
   ]
