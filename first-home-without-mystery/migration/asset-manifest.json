@@ -1,0 +1,75 @@
+{
+  "assets": [
+    {
+      "byteSize": 1930,
+      "key": "brand-equal-housing-lender-png",
+      "mimeType": "image/png",
+      "path": "assets/brand/EQUAL HOUSING LENDER.png",
+      "sha256": "4caa51dfb7949f87105953ebf64de8537fe6d9cf2d8cf44429f4c71e340ede52",
+      "usedBy": [
+        "cash-example.html",
+        "cash-example.javascript",
+        "cash-ingredients.html",
+        "complete-payment.html",
+        "confident-number.html",
+        "costs-vs-prepaids.html",
+        "credit-habits.html",
+        "credit-report.html",
+        "document-story.html",
+        "five-step-plan.html",
+        "loan-programs.html",
+        "low-down-payment.html",
+        "opening.html",
+        "protect-preapproval.html",
+        "three-questions.html",
+        "wrap.html"
+      ]
+    },
+    {
+      "byteSize": 1222,
+      "key": "brand-logo-horizontal-knockout-svg",
+      "mimeType": "image/svg+xml",
+      "path": "assets/brand/logo-horizontal-knockout.svg",
+      "sha256": "5393005156a5ffe1b2143943402c5f6ed216b7518be8024633e53a1ea4d09856",
+      "usedBy": [
+        "cash-ingredients.html",
+        "confident-number.html",
+        "five-step-plan.html",
+        "opening.html",
+        "wrap.html"
+      ]
+    },
+    {
+      "byteSize": 1210,
+      "key": "brand-logo-horizontal-svg",
+      "mimeType": "image/svg+xml",
+      "path": "assets/brand/logo-horizontal.svg",
+      "sha256": "f4c0c5a30020b5d18a278385188679345b5dfb34b27862fb7a5acf38d252cac2",
+      "usedBy": [
+        "cash-example.html",
+        "complete-payment.html",
+        "costs-vs-prepaids.html",
+        "credit-habits.html",
+        "credit-report.html",
+        "document-story.html",
+        "loan-programs.html",
+        "low-down-payment.html",
+        "protect-preapproval.html",
+        "three-questions.html"
+      ]
+    },
+    {
+      "byteSize": 1027938,
+      "key": "portraits-seth-angell-png",
+      "mimeType": "image/png",
+      "path": "assets/portraits/seth-angell.png",
+      "sha256": "3501daf1b48693d709fb091eaccfcd218d42d9c7424b463800348c75696db1cf",
+      "usedBy": [
+        "opening.html"
+      ]
+    }
+  ],
+  "root": "first-home-without-mystery/deck",
+  "schemaVersion": 1,
+  "slug": "first-home-without-mystery"
+}
