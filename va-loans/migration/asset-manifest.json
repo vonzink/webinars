@@ -1,0 +1,80 @@
+{
+  "assets": [
+    {
+      "byteSize": 1930,
+      "key": "brand-equal-housing-lender-png",
+      "mimeType": "image/png",
+      "path": "assets/brand/EQUAL HOUSING LENDER.png",
+      "sha256": "4caa51dfb7949f87105953ebf64de8537fe6d9cf2d8cf44429f4c71e340ede52",
+      "usedBy": [
+        "cash-to-close.html",
+        "compare-programs.html",
+        "eligibility.html",
+        "mistakes-donts.html",
+        "mistakes-dos.html",
+        "myths.html",
+        "opening.html",
+        "process-players.html",
+        "process-steps.html",
+        "property.html",
+        "questions.html",
+        "va-payment.html",
+        "wrap.html"
+      ]
+    },
+    {
+      "byteSize": 1222,
+      "key": "brand-logo-horizontal-knockout-svg",
+      "mimeType": "image/svg+xml",
+      "path": "assets/brand/logo-horizontal-knockout.svg",
+      "sha256": "5393005156a5ffe1b2143943402c5f6ed216b7518be8024633e53a1ea4d09856",
+      "usedBy": [
+        "opening.html",
+        "process-steps.html",
+        "property.html",
+        "questions.html",
+        "wrap.html"
+      ]
+    },
+    {
+      "byteSize": 1112,
+      "key": "brand-logo-horizontal-svg",
+      "mimeType": "image/svg+xml",
+      "path": "assets/brand/logo-horizontal.svg",
+      "sha256": "65c576231e1ad91cecdf7533459302dc78356e31ccee14e4930dd5f3a098665e",
+      "usedBy": [
+        "cash-to-close.html",
+        "compare-programs.html",
+        "eligibility.html",
+        "mistakes-donts.html",
+        "mistakes-dos.html",
+        "myths.html",
+        "process-players.html",
+        "va-payment.html"
+      ]
+    },
+    {
+      "byteSize": 46839,
+      "key": "brand-qr-seth-png",
+      "mimeType": "image/png",
+      "path": "assets/brand/qr-seth.png",
+      "sha256": "a1699a57eff4af6f2d77c4fe0e70df874c76c4164eb1654f0dcefdd2a894818a",
+      "usedBy": [
+        "wrap.html"
+      ]
+    },
+    {
+      "byteSize": 386194,
+      "key": "portraits-seth-angell-png",
+      "mimeType": "image/png",
+      "path": "assets/portraits/seth-angell.png",
+      "sha256": "03dabadeb02369575ef99d67ffc39ddedfbd25543e97b5412058766d638e835e",
+      "usedBy": [
+        "opening.html"
+      ]
+    }
+  ],
+  "root": "va-loans/deck",
+  "schemaVersion": 1,
+  "slug": "va"
+}
