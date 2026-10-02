@@ -22,6 +22,8 @@ import { makeCard, makeCardGrid } from './card.js';
 import { FIGURES } from './figures.js';
 import * as annotate from './annotate.js';
 import { createSurfaceController } from './surface-fit.js';
+import { WEBINAR } from '../content/webinar-config.js';
+import { createSlideEditClient, createSlideEditStage } from './slide-edits.js';
 
 let P = activePresenter();
 const PREVIEW = new URLSearchParams(location.search).has('preview');
@@ -30,7 +32,7 @@ const DECK_SESSION_ID = globalThis.crypto?.randomUUID?.() ||
   `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
 const DECK_CHANNEL_NAME = `${DECK_CHANNEL_PREFIX}${DECK_SESSION_ID}`;
 if (!PREVIEW) window.__msfgDeckSessionId = DECK_SESSION_ID;
-let current = 0, scaler, stage, slideFit, channel;
+let current = 0, scaler, stage, slideFit, channel, slideEdits;
 let presenterWindow = null, presenterClosedWatch = null, navHidden = false;
 const buildPlayback = {
   items: [],
@@ -737,6 +739,33 @@ function runBuild(el) {
   }
 }
 
+/* A slide's markup was replaced by a slide edit: pick up its build items again
+   and show them all, so nothing stays hidden while it is being edited. */
+function refreshBuild(el) {
+  clearBuildTimers();
+  buildPlayback.items = [...el.querySelectorAll('.build')];
+  buildPlayback.playing = false;
+  revealBuilds(buildPlayback.items.length);
+}
+
+/* Saved edits (Slide settings: a slide's HTML, CSS and JS, plus the Master CSS)
+   apply for everyone. The slides stay hidden for a moment so an edited first
+   slide does not flash its original; if the server is slow or unreachable the
+   originals show instead. */
+async function loadSavedEdits() {
+  if (!WEBINAR.slideEditsApi) return;
+  let holding = true;
+  const reveal = () => { holding = false; scaler.style.visibility = ''; };
+  scaler.style.visibility = 'hidden';
+  const timer = setTimeout(reveal, 600);
+  const edits = await createSlideEditClient({ base: WEBINAR.slideEditsApi, slug: WEBINAR.slug }).list();
+  clearTimeout(timer);
+  const held = holding;
+  slideEdits.load(edits);
+  reveal();
+  if (held || slideEdits.isEdited(SLIDES[current].id)) runBuild(document.getElementById(`slide-${SLIDES[current].id}`));
+}
+
 function shell(d, i) {
   const el = document.createElement('section');
   el.className = 'slide';
@@ -756,6 +785,7 @@ function show(i) {
   const slides = document.querySelectorAll('.slide');
   slides.forEach((s, idx) => s.classList.toggle('is-active', idx === current));
   runBuild(slides[current]);
+  slideEdits.shown(SLIDES[current].id);          // a slide's own JS runs each time it is shown
   const nav = document.querySelector('.nav-count');
   if (nav) nav.textContent = `${current + 1} / ${SLIDES.length}`;
   const prog = document.querySelector('.deck-progress');
@@ -857,6 +887,7 @@ function applyPresenter(p) {
     if (!d) return;
     (layouts[d.layout] || layouts.grid)(el, d);   // re-render with new P
     furniture(el, d);                              // innerHTML reset dropped the footer
+    slideEdits.rerendered(id);                     // a saved edit goes back on top
     if (el.classList.contains('is-active')) runBuild(el);
   });
 }
@@ -903,6 +934,11 @@ export function initDeck() {
     furniture(el, d);
     scaler.appendChild(el);
   });
+  slideEdits = createSlideEditStage({
+    document,
+    onChange: el => { if (el.classList.contains('is-active')) refreshBuild(el); },
+  });
+  SLIDES.forEach(d => slideEdits.capture(d.id));
 
   if (!PREVIEW) {
     document.querySelector('[data-nav="next"]').addEventListener('click', next);
@@ -945,6 +981,9 @@ export function initDeck() {
 
   const fromHash = SLIDES.findIndex(s => s.id === location.hash.slice(1));
   show(fromHash >= 0 ? fromHash : 0);
+  /* The Slide settings screen embeds this deck and drives its slides directly. */
+  slideEdits.ready = loadSavedEdits();
+  window.__deckSlideEdits = slideEdits;
 
   const ok = SLIDES.length === 21 && MODAL_COUNT === 0;
   console.log(

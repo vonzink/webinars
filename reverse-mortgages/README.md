@@ -16,6 +16,14 @@ Right and left arrows advance or reverse reveals on the myths, eligibility, scen
 
 Personal notes and shortcuts save in the current browser only. They do not sync with the webinar database. Internet is used for Google Fonts, with fallback fonts if unavailable.
 
+## Editing a slide
+
+In Presenter View, **Slide settings** opens `editor.html` on the slide being presented. The list on the left has the **Master CSS** and every slide. The selected slide comes up in the view in the middle, where its text can be changed right on the slide. The window on the right holds the slide's **HTML**, **Slide CSS** (that slide only) and **Slide JS** (runs each time the slide is shown, with `slide` as the slide's element). The Master CSS applies to every slide on top of the deck's built-in stylesheets, which are listed beside it for reference.
+
+**Save for everyone** stores the change, so every visitor sees it; it asks for the shared edit password. **Reset to original** removes the saved edit and the slide in this repository comes back. **Discard changes** drops a draft that has not been saved.
+
+Saved edits live in the Dashboard API (`/api/public/webinar-slide-edits`, table `webinar_slide_edits`), keyed by `reverse-mortgages` and the slide id (`_master` for the Master CSS). The password is the server's `WEBINAR_EDIT_PASSWORD` setting and is never stored in this repository. A slide whose HTML was edited no longer follows later changes to `content/slides.js` or the presenter picker until it is reset; a slide with only CSS or JS edits still does. Anyone with the password can put JS on the public deck, so share the password only with people who should be able to do that.
+
 ## Local review
 
 From `/Users/zacharyzink/MSFG/Webinars`:

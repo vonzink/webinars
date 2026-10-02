@@ -376,6 +376,10 @@ export function initPresenter() {
     channel.postMessage({ type: 'cash-to-close-visibility', visible: !cashToCloseVisible });
   });
   $('#p-shortcut-settings').addEventListener('click', () => shortcutPanel.open());
+  /* Slide settings opens on the slide being presented, in its own tab. */
+  $('#p-slide-settings').addEventListener('click', () => {
+    window.open(`./editor.html#${SLIDES[index].id}`, 'msfg-reverse-slide-settings');
+  });
 
   $('#p-animation-prev').addEventListener('click', () => animationCommand('prev'));
   $('#p-animation-play').addEventListener('click', () => animationCommand('play'));
