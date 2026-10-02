@@ -110,14 +110,15 @@ test('a presentation that is incomplete or malformed is refused with useful erro
   assert.ok(bad({ slides: [] }).errors.length >= 3);
 });
 
-test('prose around a presentation is refused, never searched for JSON', () => {
+test('a presentation pasted with sentences around it is read as it is', () => {
   const json = JSON.stringify(presentation(), null, 2);
   for (const answer of [`Here is your presentation:\n${json}`, `${json}\n\nLet me know if you want changes!`,
     `Sure!\n\`\`\`json\n${json}\n\`\`\``, `\`\`\`json\n${json}\n\`\`\`\nHope this helps.`]) {
     const read = parsePresentation(answer);
-    assert.equal(read.presentation, undefined);
-    assert.match(read.error, /text (before|after)/);
+    assert.equal(read.error, undefined, answer.slice(0, 30));
+    assert.equal(read.presentation.title, 'Down payment help in Colorado');
   }
+  assert.match(parsePresentation(`Version A:\n${json}\nVersion B:\n${json}`).error, /more than one block of JSON/);
 });
 
 test('Master CSS that could reach outside the slides is refused; .slide rules are accepted', () => {
@@ -395,7 +396,7 @@ test('preparing a presentation in Webinar Suite checks it, puts on the presenter
     assert.deepEqual(edits.webinarDetails(edits.planFeed(ready.plan)).presenter.name, 'Robert Hoff');
     const withSeth = home.preparePresentation(answer, { presenter: people.find(p => p.name === 'Seth Angell'), links });
     assert.ok(withSeth.plan.slides[0].edit.html.includes('Seth Angell • NMLS #912881'));
-    assert.match(home.preparePresentation(`Here:\n${answer}`, { links }).error, /text before the JSON/);
+    assert.equal(home.preparePresentation(`Here you go:\n${answer}\nEnjoy!`, { links }).error, undefined, 'a straight copy-paste works');
   } finally {
     globalThis.fetch = realFetch;
   }

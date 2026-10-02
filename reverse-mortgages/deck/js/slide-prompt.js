@@ -292,13 +292,15 @@ export function buildPresentationPrompt({ links = {}, format, presenter, request
 /* ---- reading the answers ------------------------------------------------- */
 
 const COPY_ALL = 'Copy the complete response from ChatGPT or Claude and paste it here.';
+const CUT_OFF = `The response looks cut off: it stops before the JSON is finished. ${COPY_ALL} If it stopped partway, ask for fewer slides at a time.`;
+const MAX_SCAN_STARTS = 200;
 
-/* Where the object opening `text` closes, skipping braces inside strings; -1
-   if it never does. Only used to say why an answer could not be read. */
-function closingIndex(text) {
+/* Where the JSON value opening at `start` closes, skipping brackets inside
+   strings; -1 if it never does. */
+function closingIndex(text, start = 0) {
   let depth = 0;
   let inString = false;
-  for (let i = 0; i < text.length; i += 1) {
+  for (let i = start; i < text.length; i += 1) {
     const char = text[i];
     if (inString) {
       if (char === '\\') i += 1;
@@ -312,44 +314,93 @@ function closingIndex(text) {
   }
   return -1;
 }
-const JSON_ONLY = 'If it added a sentence before or after the JSON, ask it to reply with the JSON only.';
 
-/* The JSON object in an answer, read strictly: the answer is the JSON alone,
-   or the JSON inside one ```json (or plain ```) code block. Text around it is
-   not searched for JSON. Returns { data } or { error }. */
+/* { data } for a JSON object, { list: true } for a JSON array, else null. */
+function parseObject(text) {
+  try {
+    const data = JSON.parse(text);
+    if (Array.isArray(data)) return { list: true };
+    return data && typeof data === 'object' ? { data } : null;
+  } catch {
+    return null;
+  }
+}
+
+/* The Markdown code blocks in `text`: { language, body, closed }. A block the
+   answer never closes runs to the end. */
+function codeBlocks(text) {
+  const blocks = [];
+  const lines = text.split(/\r?\n/);
+  let open = null;
+  lines.forEach((line, index) => {
+    const fence = /^[ \t]*```[ \t]*([\w-]*)[ \t]*$/.exec(line);
+    if (!fence) return;
+    if (!open) { open = { language: fence[1].toLowerCase(), at: index }; return; }
+    blocks.push({ language: open.language, body: lines.slice(open.at + 1, index).join('\n'), closed: true });
+    open = null;
+  });
+  if (open) blocks.push({ language: open.language, body: lines.slice(open.at + 1).join('\n'), closed: false });
+  return blocks;
+}
+
+/* Each complete { } in the text (never one inside another), and whether one
+   was left unfinished. */
+function objectsIn(text) {
+  const found = [];
+  let from = 0;
+  for (let tries = 0; tries < MAX_SCAN_STARTS; tries += 1) {
+    const start = text.indexOf('{', from);
+    if (start < 0) return { found, unfinished: false };
+    const end = closingIndex(text, start);
+    if (end < 0) return { found, unfinished: true };
+    found.push(text.slice(start, end + 1));
+    from = end + 1;
+  }
+  return { found, unfinished: false };
+}
+
+const LIST = 'The response is a list, not the expected object. Ask ChatGPT or Claude to answer in the shape the prompt shows, starting with {.';
+const SEVERAL = 'The response has more than one block of JSON, so it is not clear which one to use. Ask ChatGPT or Claude for the whole answer as one JSON block.';
+const INVALID = `The JSON in the response is not valid, so it cannot be read. ${COPY_ALL} If it is complete, ask ChatGPT or Claude to check that it is valid JSON.`;
+
+/* The JSON object in an answer, so the whole response can be copied and
+   pasted as it is: the JSON alone, the JSON in a code block, or the JSON with
+   sentences before or after it. Exactly one JSON object must be found (one
+   that has "slides" wins over stray examples). Returns { data } or { error }. */
 export function readJsonAnswer(answer) {
   const text = String(answer || '').trim();
   if (!text) return { error: `Nothing was pasted. ${COPY_ALL}` };
-  let body = text;
-  if (text.startsWith('```')) {
-    const fenced = /^```[ \t]*([\w-]*)[ \t]*\r?\n([\s\S]*?)\r?\n[ \t]*```$/.exec(text);
-    if (!fenced) {
-      return /```[\s\S]*```/.test(text)
-        ? { error: `The response has text after its code block. ${COPY_ALL} ${JSON_ONLY}` }
-        : { error: `The response looks cut off: its code block never closes. ${COPY_ALL}` };
-    }
-    if (fenced[1] && fenced[1].toLowerCase() !== 'json') return { error: `The response is a ${fenced[1]} code block, not JSON. ${JSON_ONLY}` };
-    if (/^[ \t]*```/m.test(fenced[2])) return { error: `The response has more than one code block. ${JSON_ONLY}` };
-    body = fenced[2].trim();
-  } else if (/^[ \t]*```/m.test(text)) {
-    return { error: `The response has text before its code block. ${COPY_ALL} ${JSON_ONLY}` };
+  const whole = parseObject(text);
+  if (whole?.data) return whole;
+  if (whole?.list) return { error: LIST };
+
+  const blocks = codeBlocks(text).filter(block => block.language === '' || block.language === 'json');
+  const labelled = blocks.filter(block => block.language === 'json');
+  const candidates = labelled.length ? labelled : blocks;
+  if (candidates.length === 1) {
+    const body = candidates[0].body.trim();
+    const read = parseObject(body);
+    if (read?.data) return read;
+    if (read?.list) return { error: LIST };
+    if (!body.startsWith('{') && !candidates[0].closed) return { error: CUT_OFF };
+    return { error: body.startsWith('{') && closingIndex(body) < 0 ? CUT_OFF : INVALID };
   }
-  if (!body.startsWith('{')) {
-    return { error: body.startsWith('[')
-      ? 'The response is a list, not the expected object. It should start with { and end with }.'
-      : `The response has text before the JSON. It should start with {. ${JSON_ONLY}` };
+  if (candidates.length > 1) {
+    const read = candidates.map(block => parseObject(block.body.trim())).filter(result => result?.data);
+    const withSlides = read.filter(result => Array.isArray(result.data.slides));
+    if (withSlides.length === 1) return withSlides[0];
+    return { error: SEVERAL };
   }
-  let data;
-  try {
-    data = JSON.parse(body);
-  } catch {
-    const end = closingIndex(body);
-    if (end < 0) return { error: `The response looks cut off: it does not end with }. ${COPY_ALL} If it stopped partway, ask for fewer slides at a time.` };
-    if (body.slice(end + 1).trim()) return { error: `The response has text after the JSON. It should end with }. ${JSON_ONLY}` };
-    return { error: `The response is not valid JSON, so it cannot be read. ${COPY_ALL} If it is complete, ask ChatGPT or Claude to check that it is valid JSON.` };
-  }
-  if (!data || typeof data !== 'object' || Array.isArray(data)) return { error: 'The response is not the expected object. It should start with { and end with }.' };
-  return { data };
+
+  const { found, unfinished } = objectsIn(text);
+  const objects = found.map(parseObject).filter(result => result?.data);
+  const withSlides = objects.filter(result => Array.isArray(result.data.slides));
+  if (withSlides.length === 1) return withSlides[0];
+  if (objects.length === 1 && !withSlides.length) return objects[0];
+  if (objects.length > 1) return { error: SEVERAL };
+  if (unfinished) return { error: CUT_OFF };
+  if (found.length) return { error: INVALID };
+  return { error: `No JSON was found in what was pasted. ${COPY_ALL}` };
 }
 
 const failed = errors => ({ error: errors[0], errors: errors.slice(0, MAX_ERRORS) });
