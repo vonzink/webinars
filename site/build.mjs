@@ -47,6 +47,9 @@ export function loadManifest(path = MANIFEST_PATH) {
     for (const download of webinar.downloads ?? []) {
       if (!existsSync(join(REPO_ROOT, download.from))) throw new BuildError(`"${webinar.slug}" download not found: ${download.from}`);
     }
+    if (webinar.overlay !== undefined && !(typeof webinar.overlay === 'string' && existsSync(join(REPO_ROOT, webinar.overlay)))) {
+      throw new BuildError(`"${webinar.slug}" overlay folder not found: ${webinar.overlay}`);
+    }
   }
   return { exclude: manifest.exclude ?? [], webinars: manifest.webinars };
 }
@@ -66,6 +69,13 @@ function copyWebinar(webinar, globalExclude, outRoot) {
   const sourceRoot = join(REPO_ROOT, webinar.source);
   const target = join(outRoot, 'webinars', webinar.slug);
   cpSync(sourceRoot, target, { recursive: true, filter: makeFilter(sourceRoot, [...globalExclude, ...(webinar.exclude ?? [])]) });
+  /* An overlay folder is laid over the source: its files are added, and replace
+     the source's where the paths match. Webinar Studio is one deck's pages and
+     engine with its own content and home page laid on top. */
+  if (webinar.overlay) {
+    const overlayRoot = join(REPO_ROOT, webinar.overlay);
+    cpSync(overlayRoot, target, { recursive: true, force: true, filter: makeFilter(overlayRoot, [...globalExclude, ...(webinar.exclude ?? [])]) });
+  }
   for (const download of webinar.downloads ?? []) {
     const dest = join(target, download.to);
     mkdirSync(dirname(dest), { recursive: true });
@@ -75,7 +85,8 @@ function copyWebinar(webinar, globalExclude, outRoot) {
 }
 
 /* Every root-relative href/src in the shell pages must resolve to a real file
-   in the artifact, and every manifest slug must be linked from the hub. */
+   in the artifact, and every manifest slug must be linked from the hub unless
+   it is marked "unlisted". */
 function verifyShellLinks(outRoot, webinars) {
   const problems = [];
   const pages = ['index.html', posix.join('webinars', 'index.html')];
@@ -93,6 +104,7 @@ function verifyShellLinks(outRoot, webinars) {
     }
   }
   for (const webinar of webinars) {
+    if (webinar.unlisted) continue;               // reached by its own link, not from the library page
     if (!linked.has(webinar.slug)) problems.push(`webinars/index.html has no card linking to /webinars/${webinar.slug}/`);
   }
   return problems;

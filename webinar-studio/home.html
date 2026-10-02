@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="data:,">
+  <title>Webinar Studio — Mountain State Financial Group</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800;900&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./css/tokens.css">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; background: #0C3335; color: #EAF0EA; font-family: var(--font-body); }
+    h1, h2, h3, p { margin: 0; }
+    button, input { font: inherit; }
+    a { color: inherit; }
+    button, .s-button { display: inline-flex; align-items: center; justify-content: center; height: 36px; padding: 0 14px;
+      color: inherit; cursor: pointer; text-decoration: none; background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.16); border-radius: 4px; font: 700 12px/1 var(--font-display); }
+    button:hover:not(:disabled), .s-button:hover { background: rgba(255,255,255,.16); }
+    button:disabled { cursor: default; opacity: .4; }
+    .s-primary { color: #0C3335; background: #8cc63E; border-color: #8cc63E; }
+    .s-primary:hover:not(:disabled) { background: #A2D85A; }
+    :focus-visible { outline: 3px solid #8cc63E; outline-offset: 2px; }
+    input { height: 40px; padding: 0 12px; border-radius: 4px; border: 1px solid rgba(255,255,255,.25);
+      background: rgba(255,255,255,.06); color: #fff; font-size: 15px; }
+    input:focus { outline: none; border-color: #8cc63E; }
+
+    .s-bar { display: flex; align-items: center; gap: 14px; padding: 14px 28px;
+      border-bottom: 1px solid rgba(255,255,255,.12); }
+    .s-brand { font: 700 13px/1.2 var(--font-display); letter-spacing: .1em; text-transform: uppercase; color: #8cc63E; }
+    .s-sub { margin-top: 3px; font-size: 13px; color: rgba(255,255,255,.6); }
+    .s-spacer { flex: 1 1 auto; }
+    .s-bar input { width: 200px; height: 36px; font-size: 14px; }
+
+    .s-main { max-width: 1040px; margin: 0 auto; padding: 34px 28px 60px; }
+    .s-title { color: #fff; font: 800 34px/1.1 var(--font-display); letter-spacing: -.02em; }
+    .s-intro { margin-top: 10px; max-width: 680px; color: rgba(255,255,255,.72); font-size: 16px; line-height: 1.55; }
+    .s-section { margin-top: 36px; }
+    .s-h { color: rgba(255,255,255,.5); font: 700 11px/1 var(--font-display); letter-spacing: .14em; text-transform: uppercase; }
+
+    .s-create { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; padding: 20px;
+      border: 1px solid rgba(140,198,62,.4); border-radius: 8px; background: rgba(140,198,62,.07); }
+    .s-create input { flex: 1 1 320px; }
+    .s-create button { height: 40px; font-size: 13px; }
+    .s-status { min-height: 21px; margin-top: 12px; color: rgba(255,255,255,.7); font-size: 14px; line-height: 1.5; }
+    .s-status[data-state="error"] { color: #ffabb2; }
+    .s-status[data-state="saved"] { color: #B9E47D; }
+
+    .s-list { display: grid; gap: 10px; margin-top: 14px; }
+    .s-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 14px 16px;
+      border: 1px solid rgba(255,255,255,.12); border-radius: 6px; background: rgba(255,255,255,.04); }
+    .s-row-text { flex: 1 1 260px; min-width: 0; }
+    .s-row-title { color: #fff; font: 700 17px/1.3 var(--font-display); }
+    .s-row-meta { margin-top: 4px; color: rgba(255,255,255,.55); font-size: 13px; overflow-wrap: anywhere; }
+    .s-row-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+    .s-danger:hover:not(:disabled) { border-color: #ff8b96; color: #ffabb2; }
+    .s-empty { padding: 18px; border: 1px dashed rgba(255,255,255,.2); border-radius: 6px;
+      color: rgba(255,255,255,.6); font-size: 14px; }
+  </style>
+</head>
+<body>
+  <header class="s-bar">
+    <div>
+      <div class="s-brand">Webinar Studio</div>
+      <div class="s-sub">Mountain State Financial Group</div>
+    </div>
+    <div class="s-spacer"></div>
+    <input type="password" id="s-password" placeholder="Edit password" aria-label="Edit password" autocomplete="off">
+  </header>
+
+  <main class="s-main">
+    <h1 class="s-title">Webinars</h1>
+    <p class="s-intro">Present a webinar, change its slides, or start a new one in the MSFG style. Opening and
+      presenting need no password; creating, editing and deleting use the edit password at the top right.</p>
+
+    <section class="s-section" aria-labelledby="s-create-title">
+      <h2 class="s-h" id="s-create-title">Start a new webinar</h2>
+      <form class="s-create" id="s-create">
+        <input type="text" id="s-new-title" maxlength="120" placeholder="Webinar title, for example: Down payment help in Colorado"
+          aria-label="Title of the new webinar" autocomplete="off">
+        <button class="s-primary" type="submit" id="s-new-create">Create and open the editor</button>
+      </form>
+      <p class="s-status" id="s-status" role="status" aria-live="polite"></p>
+    </section>
+
+    <section class="s-section" aria-labelledby="s-made-title">
+      <h2 class="s-h" id="s-made-title">Made in Webinar Studio</h2>
+      <div class="s-list" id="s-made"><div class="s-empty">Loading…</div></div>
+    </section>
+
+    <section class="s-section" aria-labelledby="s-site-title">
+      <h2 class="s-h" id="s-site-title">Built into the site</h2>
+      <div class="s-list" id="s-site"></div>
+    </section>
+  </main>
+
+  <script type="module">
+    import { initStudioHome } from './js/studio-home.js';
+    initStudioHome();
+  </script>
+</body>
+</html>

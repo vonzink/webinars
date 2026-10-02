@@ -1,12 +1,114 @@
 /* ============================================================================
    SLIDE EDITS — what the Slide settings screen saves.
    Per slide: its HTML, CSS for that slide only, and JS that runs when the slide
-   is shown. Deck-wide: one Master CSS. A saved edit applies for everyone who
-   opens the deck; resetting removes it and the original returns.
+   is shown. Deck-wide: one Master CSS, and the slide list (slides added to or
+   deleted from the deck). A saved edit applies for everyone who opens the
+   deck; resetting removes it and the original returns.
    Edits live on the server, keyed by this deck's slug and the slide's id.
    ========================================================================= */
 
 export const MASTER_ID = '_master';      // the server's name for the Master CSS
+export const SLIDE_LIST_ID = '_slides';  // ...and for the deck's slide list
+export const WEBINAR_ID = '_webinar';    // ...and for a Webinar Studio webinar's details
+
+/* The title a webinar was given in Webinar Studio, if it was made there. */
+export function webinarTitle(edits) {
+  const details = edits.find(edit => edit.slideId === WEBINAR_ID);
+  try {
+    const title = JSON.parse(details.html).title;
+    return typeof title === 'string' ? title.trim() : '';
+  } catch {
+    return '';
+  }
+}
+
+/* ---- the slide list ------------------------------------------------------
+   { order: [slide ids], added: { id: { from, title } }, removed: [slide ids] }
+   An added slide is a second copy of the deck slide named in `from`; its own
+   content is an ordinary saved edit under its id. A deck slide in `removed` is
+   left out. A deck slide the list has never heard of keeps its usual place. */
+
+const isId = value => typeof value === 'string' && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value);
+
+export function parseSlideList(text) {
+  let data = null;
+  try { data = JSON.parse(text); } catch { /* no list saved, or not readable */ }
+  const added = {};
+  if (data && typeof data.added === 'object' && data.added) {
+    Object.entries(data.added).forEach(([id, slide]) => {
+      if (isId(id) && slide && isId(slide.from)) added[id] = { from: slide.from, title: typeof slide.title === 'string' ? slide.title : '' };
+    });
+  }
+  const ids = value => (Array.isArray(value) ? [...new Set(value.filter(isId))] : []);
+  return { order: ids(data?.order), added, removed: ids(data?.removed) };
+}
+
+/* The deck's slides (from content/slides.js) arranged as the list says. */
+export function arrangeSlides(originals, list) {
+  const byId = new Map(originals.map(slide => [slide.id, slide]));
+  const removed = new Set(list.removed);
+  const out = [];
+  list.order.forEach(id => {
+    if (out.some(slide => slide.id === id)) return;
+    const extra = list.added[id];
+    if (byId.has(id)) { if (!removed.has(id)) out.push(byId.get(id)); }
+    else if (extra && byId.has(extra.from)) {
+      out.push({ ...byId.get(extra.from), id, headline: extra.title || byId.get(extra.from).headline, notes: '', added: true, from: extra.from });
+    }
+  });
+  originals.forEach((slide, index) => {
+    if (removed.has(slide.id) || out.includes(slide)) return;
+    const before = originals.slice(0, index).reverse().find(earlier => out.includes(earlier));
+    out.splice(before ? out.indexOf(before) + 1 : 0, 0, slide);
+  });
+  return out.length ? out : originals.slice();
+}
+
+const idsOf = (originals, list) => arrangeSlides(originals, list).map(slide => slide.id);
+
+/* A new slide right after `afterId`. It is a copy of that slide unless `basedOn`
+   names the deck slide whose frame (background, layout family) it should use. */
+export function listAfterAdd(originals, list, afterId, id, title, basedOn) {
+  const order = idsOf(originals, list);
+  const from = basedOn || list.added[afterId]?.from || afterId;
+  order.splice(order.indexOf(afterId) + 1, 0, id);
+  return { order, added: { ...list.added, [id]: { from, title } }, removed: [...list.removed] };
+}
+
+/* Deleting an added slide forgets it; deleting a deck slide only leaves it out. */
+export function listAfterRemove(originals, list, id) {
+  const order = idsOf(originals, list).filter(other => other !== id);
+  const added = { ...list.added };
+  const wasAdded = Boolean(added[id]);
+  delete added[id];
+  return { order, added, removed: wasAdded ? [...list.removed] : [...new Set([...list.removed, id])] };
+}
+
+/* A deleted deck slide comes back in its usual place. */
+export function listAfterRestore(originals, list, id) {
+  const next = { order: idsOf(originals, list), added: { ...list.added }, removed: list.removed.filter(other => other !== id) };
+  return { ...next, order: idsOf(originals, next) };
+}
+
+/* Move a slide so it sits at `position` (0 = first) among the slides shown. */
+export function listAfterMove(originals, list, id, position) {
+  const order = idsOf(originals, list).filter(other => other !== id);
+  order.splice(Math.max(0, Math.min(order.length, position)), 0, id);
+  return { order, added: { ...list.added }, removed: [...list.removed] };
+}
+
+/* The title a slide's saved HTML gives it: the text of its first h1 or h2. The
+   slide list and Presenter View name an edited slide by it. */
+export function headingOf(html) {
+  const match = /<h[12]\b[^>]*>([\s\S]*?)<\/h[12]>/i.exec(String(html || ''));
+  if (!match) return '';
+  const entities = { amp: '&', lt: '<', gt: '>', quot: '"', '#39': '\'', nbsp: ' ' };
+  return match[1]
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/&(amp|lt|gt|quot|#39|nbsp);/g, (_, name) => entities[name])
+    .replace(/\s+/g, ' ')
+    .trim();
+}
 
 const BLOCK_TAGS = new Set([
   'article', 'aside', 'blockquote', 'dd', 'details', 'div', 'dl', 'dt', 'figcaption', 'figure',
@@ -64,6 +166,19 @@ export function formatCssRule(cssText) {
     .replace(/\s*\{\s*/, ' {\n  ')
     .replace(/;\s*(?=\S)(?!\})/g, ';\n  ')
     .replace(/\s*\}\s*$/, '\n}');
+}
+
+/* The edit password is typed once (Presenter settings, or Slide settings) and
+   kept in this browser. The server is what checks it. */
+const PASSWORD_KEY = 'msfg-slide-edit-password';
+export function rememberedEditPassword() {
+  try { return globalThis.localStorage?.getItem(PASSWORD_KEY) || ''; } catch { return ''; }
+}
+export function rememberEditPassword(password) {
+  try {
+    if (password) globalThis.localStorage?.setItem(PASSWORD_KEY, password);
+    else globalThis.localStorage?.removeItem(PASSWORD_KEY);
+  } catch { /* storage unavailable: it is asked for again next time */ }
 }
 
 const text = value => (typeof value === 'string' ? value : '');
@@ -230,6 +345,7 @@ export function createSlideEditStage({ document, onChange = () => {} }) {
       });
     },
     isEdited: id => (id === MASTER_ID ? Boolean(savedMaster.trim()) : saved.has(id)),
+    heading: id => headingOf(saved.get(id)?.html),
     shown: run,
     source(id) {
       const el = slideEl(id);
@@ -243,6 +359,8 @@ export function createSlideEditStage({ document, onChange = () => {} }) {
         css: edit ? edit.css : '',
         js: edit ? edit.js : '',
         edited: Boolean(edit),
+        /* The slide's own element, which the HTML sits inside; the deck sets it. */
+        wrapper: `<section class="${Array.from(el.classList || []).filter(name => name !== 'is-active').join(' ')}" data-bg="${el.dataset?.bg || ''}">`,
         reference: reference(el),
       };
     },

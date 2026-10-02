@@ -59,6 +59,20 @@
         "qr-seth.png", "webinar-qr.png"
       ],
       "downloads": []
+    },
+    {
+      "$comment": "Webinar Studio: the Reverse Mortgages deck's pages and engine, with webinar-studio/ laid over it (its own starter slides, a config that reads the webinar's name from the address, and home.html, the list of webinars). Staff reach it from the Dashboard, so it has no card on the library page.",
+      "slug": "studio",
+      "title": "Webinar Studio",
+      "source": "reverse-mortgages/deck",
+      "overlay": "webinar-studio",
+      "unlisted": true,
+      "exclude": [
+        "logo-horizontal.png", "logo-knockout.svg", "logo-mark-only-knockout.svg", "logo-mark-only.svg",
+        "logo-stacked.png", "logo-stacked.svg", "presentation-qr.png", "presentation-qr.svg",
+        "qr-seth.png", "webinar-qr.png"
+      ],
+      "downloads": []
     }
   ]
 }
