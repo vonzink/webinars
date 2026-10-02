@@ -59,12 +59,13 @@ async page => {
   check(homePrompt.includes('Name: Robert Hoff') && homePrompt.includes('A three-slide check of the AI workflow.') && !homePrompt.includes('Seth Angell'),
     'presentation prompt carries the request and Robert, not Seth');
 
-  await page.fill('#s-ai-answer', `Sure! Here it is:\n${JSON.stringify(PRESENTATION)}`);
+  await page.fill('#s-ai-answer', `Option A:\n${JSON.stringify(PRESENTATION)}\nOption B:\n${JSON.stringify(PRESENTATION)}`);
   await page.click('#s-ai-preview');
-  check(/text before the JSON/.test(await page.textContent('#s-ai-errors')), 'prose before the JSON is refused');
+  check(/more than one block of JSON/.test(await page.textContent('#s-ai-errors')), 'two JSON answers are refused');
   check(await page.isHidden('#s-ai-review'), 'no preview for a refused response');
 
-  await page.fill('#s-ai-answer', `\`\`\`json\n${JSON.stringify(PRESENTATION, null, 2)}\n\`\`\``);
+  /* a straight copy-paste of the whole response, sentences and all */
+  await page.fill('#s-ai-answer', `Sure! Here is your presentation:\n\n\`\`\`json\n${JSON.stringify(PRESENTATION, null, 2)}\n\`\`\`\n\nLet me know if you want changes.`);
   await page.click('#s-ai-preview');
   await page.waitForSelector('#s-ai-review', { state: 'visible' });
   const preview = page.frameLocator('#s-ai-frame');

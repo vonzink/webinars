@@ -180,29 +180,43 @@ test('a pasted multi-slide answer is read raw, with whitespace, or in one json o
   assert.deepEqual(parseSlideProject(`\`\`\`json\n${JSON.stringify({ slides: tricky }, null, 2)}\n\`\`\``).slides, tricky);
 });
 
-test('prose around the JSON is refused, never searched for JSON', () => {
-  const pretty = JSON.stringify({ slides: [{ title: 'A', html: '<p>a</p>' }] }, null, 2);
+test('the whole response can be copied and pasted, whatever is written around the JSON', () => {
+  const slides = [{ title: 'A', html: '<p>a {curly} [1]</p>', css: '', js: '' }];
+  const pretty = JSON.stringify({ slides }, null, 2);
+  for (const answer of [
+    `Here you go:\n${pretty}`,
+    `${pretty}\nEnjoy! Let me know about {changes}.`,
+    `Here you go:\n\`\`\`json\n${pretty}\n\`\`\``,
+    `Sure!\n\`\`\`json\n${pretty}\n\`\`\`\nHope this helps.`,
+    `Here:\n\`\`\`\n${pretty}\n\`\`\`\nDone.`,
+    `\`\`\`css\n.x { color: red; }\n\`\`\`\n\`\`\`json\n${pretty}\n\`\`\``,
+    `Use braces like {this} and an example {"a": 1}.\n${pretty}`,
+    `\`\`\`json\n${pretty}`,
+  ]) {
+    assert.deepEqual(parseSlideProject(answer).slides, slides, answer.slice(0, 30));
+  }
+});
+
+test('a response that is still unclear is refused, not guessed at', () => {
+  const one = JSON.stringify({ slides: [{ html: '<p>a</p>' }] });
+  const two = JSON.stringify({ slides: [{ html: '<p>b</p>' }] });
   for (const [answer, reason] of [
-    [`Here you go:\n${pretty}`, /text before the JSON/],
-    [`${pretty}\nEnjoy!`, /text after the JSON/],
-    [`Here you go:\n\`\`\`json\n${pretty}\n\`\`\``, /text before its code block/],
-    [`\`\`\`json\n${pretty}\n\`\`\`\nEnjoy!`, /text after its code block/],
-    [`\`\`\`css\n.x { color: red; }\n\`\`\`\n\`\`\`json\n${pretty}\n\`\`\``, /more than one code block|not JSON/],
-    [`\`\`\`javascript\n${pretty}\n\`\`\``, /javascript code block, not JSON/],
+    [`Option 1:\n${one}\nOption 2:\n${two}`, /more than one block of JSON/],
+    [`\`\`\`json\n${one}\n\`\`\`\n\`\`\`json\n${two}\n\`\`\``, /more than one block of JSON/],
+    [`Here you go:\n{"slides": [{"html": "<p>a</p>"`, /cut off/],
     [JSON.stringify([{ html: '<p>a</p>' }]), /is a list/],
   ]) {
     const read = parseSlideProject(answer);
     assert.equal(read.slides, undefined, answer.slice(0, 30));
     assert.match(read.error, reason);
   }
-  assert.match(parseSlideProject(`Here you go:\n${pretty}`).error, /Copy the complete response|JSON only/);
 });
 
 test('an answer that cannot be used says why', () => {
   assert.match(parseSlideProject('').error, /Nothing was pasted/);
   assert.match(parseSlideProject('{"slides": [').error, /cut off/);
-  assert.match(parseSlideProject('{"slides": [{"html": "<p>a</p>"}],}').error, /not valid JSON/);
-  assert.match(parseSlideProject('Sure! Here are your slides.').error, /text before the JSON/);
+  assert.match(parseSlideProject('{"slides": [{"html": "<p>a</p>"}],}').error, /not valid/);
+  assert.match(parseSlideProject('Sure! Here are your slides.').error, /No JSON was found/);
   assert.match(parseSlideProject('{"slides": []}').error, /empty/);
   assert.match(parseSlideProject('{"pages": [{}]}').error, /"slides" is missing/);
   assert.match(parseSlideProject(JSON.stringify({ slides: [{ html: '<p>a</p>' }, { html: '  ' }] })).error, /Slide 2 has no "html"/);
