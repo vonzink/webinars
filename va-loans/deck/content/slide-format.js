@@ -25,6 +25,8 @@ export function footerHtml(links, { dark = false } = {}) {
 }
 
 export const SLIDE_FORMAT = Object.freeze({
+  /* The footer every imported slide is given (js/slide-prompt.js, normalizeFooter). */
+  footer: Object.freeze({ className: 'slide-footer', html: links => footerHtml(links) }),
   logos: Object.freeze({
     logo: './assets/brand/logo-horizontal.svg',
     logoOnDark: './assets/brand/logo-horizontal-knockout.svg',

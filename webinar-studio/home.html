@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex">
   <link rel="icon" href="data:,">
-  <title>Webinar Studio — Mountain State Financial Group</title>
+  <title>Webinar Suite — Mountain State Financial Group</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800;900&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
@@ -59,12 +59,46 @@
     .s-danger:hover:not(:disabled) { border-color: #ff8b96; color: #ffabb2; }
     .s-empty { padding: 18px; border: 1px dashed rgba(255,255,255,.2); border-radius: 6px;
       color: rgba(255,255,255,.6); font-size: 14px; }
+
+    /* Create with AI: numbered steps, then a preview before anything is saved */
+    .s-ai { margin-top: 14px; padding: 22px; border: 1px solid rgba(140,198,62,.4); border-radius: 8px; background: rgba(140,198,62,.07); }
+    .s-step + .s-step { margin-top: 20px; }
+    .s-step-label { display: flex; align-items: baseline; gap: 10px; color: #fff; font: 800 16px/1.3 var(--font-display); }
+    .s-step-label span { flex: none; display: inline-grid; place-items: center; width: 24px; height: 24px; border-radius: 50%;
+      color: #0C3335; background: #8cc63E; font-size: 12px; }
+    .s-step-note { margin: 6px 0 0 34px; color: rgba(255,255,255,.65); font-size: 14px; line-height: 1.5; }
+    .s-step-body { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin: 10px 0 0 34px; }
+    textarea, select { font: inherit; }
+    .s-ai textarea { width: 100%; padding: 10px 12px; border-radius: 4px; border: 1px solid rgba(255,255,255,.25);
+      background: rgba(0,0,0,.2); color: #fff; font-size: 15px; line-height: 1.5; resize: vertical; }
+    .s-ai textarea:focus, .s-ai select:focus { outline: none; border-color: #8cc63E; }
+    #s-ai-request { height: 110px; }
+    #s-ai-answer { height: 130px; font: 12px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .s-ai select { height: 40px; min-width: 280px; padding: 0 10px; border-radius: 4px; border: 1px solid rgba(255,255,255,.25);
+      background: #0F3D3F; color: #fff; font-size: 15px; }
+    .s-note { color: #B9E47D; font-size: 14px; line-height: 1.4; }
+    .s-note[data-state="error"] { color: #ffabb2; }
+    .s-errors { width: 100%; margin: 0; padding: 10px 12px 10px 30px; border-left: 3px solid #ff8b96; background: rgba(255,139,150,.08); }
+    .s-errors li { color: #ffcdd2; font-size: 14px; line-height: 1.5; }
+    .s-errors[hidden], .s-review[hidden] { display: none; }
+    .s-review { width: 100%; padding: 14px; border: 1px solid rgba(140,198,62,.4); border-radius: 6px; background: rgba(0,0,0,.18); }
+    .s-review-head { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+    .s-review-head strong { flex: 1 1 260px; color: #fff; font: 700 16px/1.3 var(--font-display); }
+    .s-review-frame { position: relative; margin-top: 10px; overflow: hidden; aspect-ratio: 16 / 9; background: #000;
+      border: 1px solid rgba(255,255,255,.18); }
+    .s-review-frame iframe { position: absolute; top: 0; left: 0; width: 1280px; height: 720px; border: 0; transform-origin: top left;
+      pointer-events: none; }
+    .s-review-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 12px; }
+    .s-review-actions button { height: 40px; font-size: 13px; }
+    .s-advanced { margin: 18px 0 0 34px; }
+    .s-advanced summary { cursor: pointer; color: rgba(255,255,255,.6); font-size: 13px; }
+    .s-advanced textarea { height: 180px; margin-top: 8px; font: 12px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
   </style>
 </head>
 <body>
   <header class="s-bar">
     <div>
-      <div class="s-brand">Webinar Studio</div>
+      <div class="s-brand">Webinar Suite</div>
       <div class="s-sub">Mountain State Financial Group</div>
     </div>
     <div class="s-spacer"></div>
@@ -72,12 +106,73 @@
   </header>
 
   <main class="s-main">
-    <h1 class="s-title">Webinars</h1>
-    <p class="s-intro">Present a webinar, change its slides, or start a new one in the MSFG style. Opening and
+    <h1 class="s-title">Webinar Suite</h1>
+    <p class="s-intro">Present a webinar, change its slides, or create a new one in the MSFG style. Opening and
       presenting need no password; creating, editing and deleting use the edit password at the top right.</p>
 
+    <section class="s-section" aria-labelledby="s-ai-title">
+      <h2 class="s-h" id="s-ai-title">Create with AI</h2>
+      <div class="s-ai">
+        <div class="s-step">
+          <div class="s-step-label"><span>1</span>Describe what you want</div>
+          <p class="s-step-note">The topic, who it is for, about how many slides, and the points to cover.</p>
+          <div class="s-step-body">
+            <textarea id="s-ai-request" spellcheck="true" aria-label="Describe the presentation"
+              placeholder="For example: A 10-slide webinar for first-time buyers on how down payment assistance works in Colorado: who qualifies, the main programs, common myths, the steps, and next steps."></textarea>
+          </div>
+        </div>
+        <div class="s-step">
+          <div class="s-step-label"><span>2</span>Choose the presenter</div>
+          <p class="s-step-note">Their name and contact details go on the slides and in every footer.</p>
+          <div class="s-step-body"><select id="s-ai-presenter" aria-label="Presenter"></select></div>
+        </div>
+        <div class="s-step">
+          <div class="s-step-label"><span>3</span>Copy prompt</div>
+          <p class="s-step-note">Then paste it into ChatGPT or Claude.</p>
+          <div class="s-step-body">
+            <button class="s-primary" type="button" id="s-ai-copy">Copy prompt</button>
+            <span class="s-note" id="s-ai-copied" role="status" aria-live="polite"></span>
+          </div>
+        </div>
+        <div class="s-step">
+          <div class="s-step-label"><span>4</span>Paste ChatGPT or Claude's response</div>
+          <p class="s-step-note">Copy its whole response and paste it here.</p>
+          <div class="s-step-body">
+            <textarea id="s-ai-answer" spellcheck="false" aria-label="ChatGPT or Claude's response"
+              placeholder="Paste the whole response here. It starts with {"></textarea>
+          </div>
+        </div>
+        <div class="s-step">
+          <div class="s-step-label"><span>5</span>Preview</div>
+          <p class="s-step-note">See every slide before anything is saved.</p>
+          <div class="s-step-body">
+            <button class="s-primary" type="button" id="s-ai-preview">Preview</button>
+            <span class="s-note" id="s-ai-status" role="status" aria-live="polite"></span>
+            <ul class="s-errors" id="s-ai-errors" hidden></ul>
+            <div class="s-review" id="s-ai-review" hidden>
+              <div class="s-review-head">
+                <strong id="s-ai-summary"></strong>
+                <button type="button" id="s-ai-prev">‹ Previous</button>
+                <span id="s-ai-place"></span>
+                <button type="button" id="s-ai-next">Next ›</button>
+              </div>
+              <div class="s-review-frame" id="s-ai-box"><iframe id="s-ai-frame" title="Preview of the new presentation" src="about:blank"></iframe></div>
+              <div class="s-review-actions">
+                <button class="s-primary" type="button" id="s-ai-create">Create presentation</button>
+                <span class="s-note" id="s-ai-saving" role="status" aria-live="polite"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <details class="s-advanced">
+          <summary>Advanced: show the prompt</summary>
+          <textarea id="s-ai-prompt" readonly spellcheck="false" aria-label="The prompt"></textarea>
+        </details>
+      </div>
+    </section>
+
     <section class="s-section" aria-labelledby="s-create-title">
-      <h2 class="s-h" id="s-create-title">Start a new webinar</h2>
+      <h2 class="s-h" id="s-create-title">Start with a blank webinar</h2>
       <form class="s-create" id="s-create">
         <input type="text" id="s-new-title" maxlength="120" placeholder="Webinar title, for example: Down payment help in Colorado"
           aria-label="Title of the new webinar" autocomplete="off">
@@ -87,7 +182,7 @@
     </section>
 
     <section class="s-section" aria-labelledby="s-made-title">
-      <h2 class="s-h" id="s-made-title">Made in Webinar Studio</h2>
+      <h2 class="s-h" id="s-made-title">Made in Webinar Suite</h2>
       <div class="s-list" id="s-made"><div class="s-empty">Loading…</div></div>
     </section>
 

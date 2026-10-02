@@ -5,16 +5,20 @@
    and its own JS (or the Master CSS). Save stores the change for everyone.
    Slides can be added (a copy of the current one) and deleted. The bars between
    the three sections drag to resize them.
+   "with AI": prompts for ChatGPT or Claude, and their responses read back,
+   previewed, and only saved when asked.
    The view is this deck in an iframe; the editor drives its slides directly.
    ========================================================================= */
 
 import { WEBINAR } from '../content/webinar-config.js';
 import {
-  MASTER_ID, SLIDE_LIST_ID, createSlideEditClient, listAfterAdd, listAfterMove, listAfterRemove, listAfterRestore,
-  rememberEditPassword, rememberedEditPassword,
+  MASTER_ID, SLIDE_LIST_ID, createSlideEditClient, headingOf, listAfterAdd, listAfterMove, listAfterRemove, listAfterRestore,
+  overlayEdits, rememberEditPassword, rememberedEditPassword, webinarDetails,
 } from './slide-edits.js';
 import { SLIDE_FORMAT } from '../content/slide-format.js';
-import { brandLinks, buildProjectPrompt, buildSlidePrompt, parseSlideProject } from './slide-prompt.js';
+import {
+  brandLinks, buildProjectPrompt, buildSlidePrompt, classNamesIn, footerSpec, normalizeFooter, parseSlideAnswer, parseSlideProject,
+} from './slide-prompt.js';
 import { pageUrl } from './pages.js';
 
 const COLUMNS_KEY = 'msfg-slide-settings-columns';
@@ -45,12 +49,14 @@ export function initSlideEditor() {
   let previewTimer = null;
   let confirming = '';              // 'reset' or 'delete' while waiting for the second click
   let busy = false;
+  let madeWithAi = false;           // a Webinar Suite presentation made with AI (see webinarDetails)
 
   /* One copy of the saved edits for the view and every preview in the list
      (the embedded decks ask for it instead of loading their own). It is read
      again after each change that is saved. */
   let feed = client.list();
-  window.__slideEditsFeed = () => feed;
+  let aiPreview = null;             // { frame, edits }: the AI preview is shown edits not saved yet
+  window.__slideEditsFeed = from => (aiPreview && from && from === aiPreview.frame.contentWindow ? aiPreview.edits : feed);
   const refreshFeed = () => { feed = client.list(); };
 
   const setStatus = (message, state = '') => { status.textContent = message; status.dataset.state = state; };
@@ -110,7 +116,8 @@ export function initSlideEditor() {
     });
 
     const here = new Set(shown().map(slide => slide.id));
-    const deleted = slides.deck().filter(slide => !here.has(slide.id));
+    /* A presentation made with AI never had the starter slides as its own. */
+    const deleted = madeWithAi ? [] : slides.deck().filter(slide => !here.has(slide.id));
     if (deleted.length) {
       const section = document.createElement('div');
       section.className = 'e-deleted';
@@ -159,6 +166,8 @@ export function initSlideEditor() {
     resetButton.disabled = busy || !stage.isEdited(selected);
     resetButton.textContent = confirming === 'reset' ? 'Click again to reset' : 'Reset to original';
     addButton.disabled = busy;
+    $('#e-ai-slide-open').disabled = busy;
+    $('#e-ai-many-open').disabled = busy;
     deleteButton.disabled = busy || !onSlide || shown().length < 2;
     deleteButton.textContent = confirming === 'delete' ? 'Click again to delete' : 'Delete this slide';
     const place = shown().findIndex(slide => slide.id === selected);
@@ -474,90 +483,279 @@ export function initSlideEditor() {
     if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 's') { event.preventDefault(); save(); }
   }
 
-  /* ---- instructions: how to edit, plus prompts for Claude or ChatGPT ---- */
+  /* ---- instructions, and working with ChatGPT or Claude ---- */
   const deckTitle = () => deck?.__deckTitle || WEBINAR.title;
   const links = brandLinks(new URL('./index.html', location.href).href, SLIDE_FORMAT.logos);
   const note = (selector, message, state = '') => { $(selector).textContent = message; $(selector).dataset.state = state; };
+  /* A webinar made in Webinar Suite with AI keeps the presenter chosen there,
+     whose details its footer carries; every other deck uses its own footer. */
+  let presenter;
+  let footer = footerSpec(SLIDE_FORMAT, links);
+  const hasFooter = html => Boolean(footer) && normalizeFooter(html, footer, { required: false }).action !== 'none';
+  const plural = (count, word) => `${count} ${word}${count === 1 ? '' : 's'}`;
 
   function openHelp() {
-    const id = isSlide(selected) ? selected : viewed;
-    const values = fields(id);
-    $('#e-help-prompt').value = buildSlidePrompt({
-      deckTitle: deckTitle(),
-      links,
-      format: SLIDE_FORMAT,
-      slide: { title: titleOf(id), wrapper: source(id).wrapper, html: values.html, css: values.css, js: values.js, reference: source(id).reference },
-    });
     [['#e-help-logo', links.logo], ['#e-help-logo-dark', links.logoOnDark], ['#e-help-housing', links.equalHousing]]
       .forEach(([selector, href]) => {
         $(selector).closest('li').hidden = !href;
         if (href) { $(selector).href = href; $(selector).textContent = href; }
       });
-    note('#e-help-copied', '');
-    note('#e-project-copied', '');
-    note('#e-project-status', '');
     $('#e-help').showModal();
   }
 
-  async function copy(value, selector) {
+  /* Copy a prompt; `box` shows it too (Advanced), and is the fallback copy. */
+  async function copy(value, selector, box) {
+    $(box).value = value;
     try {
       await navigator.clipboard.writeText(value);
     } catch {
-      const box = $('#e-help-prompt');
-      const kept = box.value;
-      box.value = value;
-      box.select();
+      $(box).closest('details').open = true;
+      $(box).select();
       document.execCommand('copy');
-      box.value = kept;
     }
-    note(selector, 'Copied. Paste it into Claude or ChatGPT.');
+    note(selector, 'Copied. Paste it into ChatGPT or Claude.');
   }
 
-  /* Several slides from one pasted answer: each becomes a new slide after the
-     one that is open, saved for everyone straight away. */
-  async function addProject() {
-    if (busy) return;
-    const project = parseSlideProject($('#e-project-answer').value);
-    if (project.error) return note('#e-project-status', project.error, 'error');
-    const pass = passwordBox.value;
-    if (!pass) return note('#e-project-status', 'Close this, enter the edit password at the top right, then try again.', 'error');
+  /* -- Edit this slide with AI: the answer goes into the boxes as a draft -- */
+  const aiSlideId = () => (isSlide(selected) ? selected : viewed);
 
-    const after = isSlide(selected) ? selected : viewed;
+  function slidePrompt() {
+    const id = aiSlideId();
+    const values = fields(id);
+    return buildSlidePrompt({
+      deckTitle: deckTitle(),
+      links,
+      format: SLIDE_FORMAT,
+      presenter,
+      slide: {
+        title: titleOf(id), wrapper: source(id).wrapper, html: values.html, css: values.css, js: values.js,
+        reference: source(id).reference, master: stage.masterReference(id),
+      },
+      request: $('#e-ai-slide-request').value,
+    });
+  }
+
+  function openAiSlide() {
+    if (!isSlide(selected)) select(viewed);
+    $('#e-ai-slide-title').textContent = titleOf(aiSlideId());
+    $('#e-ai-slide-prompt').value = slidePrompt();
+    ['#e-ai-slide-copied', '#e-ai-slide-status'].forEach(selector => note(selector, ''));
+    $('#e-ai-slide').showModal();
+  }
+
+  function previewAiSlide() {
+    const answer = parseSlideAnswer($('#e-ai-slide-answer').value);
+    if (answer.error) return note('#e-ai-slide-status', answer.error, 'error');
+    const id = aiSlideId();
+    if (selected !== id) select(id);
+    const fitted = normalizeFooter(answer.html, footer, { required: hasFooter(fields(id).html) });
+    boxes.html.value = fitted.html;
+    boxes.css.value = answer.css;
+    boxes.js.value = answer.js;
+    typed();                                       // a draft, painted on the slide
+    showTab('html');
+    $('#e-ai-slide-answer').value = '';
+    $('#e-ai-slide').close();
+    return setStatus(`Preview from ChatGPT or Claude${['added', 'replaced'].includes(fitted.action) ? ', with the deck\'s footer' : ''}. Not saved yet: check the slide, then press Save for everyone (or Discard changes).`);
+  }
+
+  /* -- Add or edit several slides with AI: preview, then save when asked -- */
+  const aiMode = () => document.querySelector('input[name="e-ai-mode"]:checked').value;
+  const picked = () => [...document.querySelectorAll('#e-ai-pick input:checked')].map(box => box.value);
+  let aiPlan = null;                // what Preview read: { replace, slides: [{ id, title, edit }], list, after }
+  let aiPlace = 0;
+
+  function manyPrompt() {
+    const replace = aiMode() === 'replace';
+    /* New slides are framed like the deck's plain slide, so that is the one to model them on. */
+    const plain = stage.source(slides.plain());
+    return buildProjectPrompt({
+      deckTitle: deckTitle(),
+      links,
+      format: SLIDE_FORMAT,
+      presenter,
+      mode: aiMode(),
+      outline: shown().map(slide => ({ id: slide.id, title: titleOf(slide.id) })),
+      insertAfter: aiSlideId(),
+      selected: replace ? picked().map(id => ({ id, title: titleOf(id), ...fields(id) })) : [],
+      masterClasses: classNamesIn(stage.masterSource().css),
+      example: plain ? { html: plain.originalHtml, reference: plain.reference } : null,
+      request: $('#e-ai-many-request').value,
+    });
+  }
+
+  function refreshManyPrompt() {
+    $('#e-ai-pick').hidden = aiMode() !== 'replace';
+    $('#e-ai-many-prompt').value = manyPrompt();
+  }
+
+  function buildPick() {
+    const box = $('#e-ai-pick');
+    box.textContent = '';
+    shown().forEach((slide, index) => {
+      const label = document.createElement('label');
+      const input = document.createElement('input');
+      input.type = 'checkbox';
+      input.value = slide.id;
+      input.checked = slide.id === aiSlideId();
+      input.addEventListener('change', () => { clearManyPreview(); refreshManyPrompt(); });
+      label.append(input, document.createTextNode(`${index + 1}. ${titleOf(slide.id)}`));
+      box.appendChild(label);
+    });
+  }
+
+  function showErrors(list = []) {
+    const box = $('#e-ai-many-errors');
+    box.textContent = '';
+    list.forEach(message => {
+      const item = document.createElement('li');
+      item.textContent = message;
+      box.appendChild(item);
+    });
+    box.hidden = !list.length;
+  }
+
+  function clearManyPreview() {
+    aiPlan = null;
+    aiPreview = null;
+    showErrors();
+    $('#e-ai-many-review').hidden = true;
+    $('#e-ai-many-frame').src = 'about:blank';
+    note('#e-ai-many-saving', '');
+  }
+
+  function openAiMany() {
+    if (!isSlide(selected)) select(viewed);
+    $('#e-ai-mode-add').textContent = `Add new slides after "${titleOf(aiSlideId())}"`;
+    buildPick();
+    clearManyPreview();
+    refreshManyPrompt();
+    ['#e-ai-many-copied', '#e-ai-many-status'].forEach(selector => note(selector, ''));
+    $('#e-ai-many').showModal();
+  }
+
+  function fitManyFrame() {
+    const box = $('#e-ai-many-box');
+    $('#e-ai-many-frame').style.transform = `scale(${box.clientWidth / 1280})`;
+  }
+
+  function showManyPlace() {
+    const slide = aiPlan.slides[aiPlace];
+    $('#e-ai-many-place').textContent = `${aiPlace + 1} of ${aiPlan.slides.length}: ${slide.title}`;
+    $('#e-ai-many-prev').disabled = aiPlace === 0;
+    $('#e-ai-many-next').disabled = aiPlace >= aiPlan.slides.length - 1;
+    try { $('#e-ai-many-frame').contentWindow.location.hash = slide.id; } catch { /* still loading */ }
+  }
+
+  function stepMany(step) {
+    if (!aiPlan) return;
+    aiPlace = Math.max(0, Math.min(aiPlan.slides.length - 1, aiPlace + step));
+    showManyPlace();
+  }
+
+  /* Read, check and fit the response, then show it in a preview of the deck
+     that is given these slides as if they were saved. Nothing is saved. */
+  function previewAiMany() {
+    clearManyPreview();
+    const replace = aiMode() === 'replace';
+    const read = parseSlideProject($('#e-ai-many-answer').value, { mode: aiMode(), selectedIds: picked(), headingOf });
+    if (read.error) {
+      note('#e-ai-many-status', 'That response cannot be used yet:', 'error');
+      return showErrors(read.errors);
+    }
+    const after = aiSlideId();
     let list = slides.list();
     let previous = after;
-    const added = project.slides.map((slide, index) => {
-      const id = `added-${Date.now().toString(36)}${index.toString(36)}${Math.random().toString(36).slice(2, 5)}`;
-      list = listAfterAdd(slides.deck(), list, previous, id, slide.title, slides.plain());
-      previous = id;
-      return { id, edit: { html: slide.html, css: slide.css, js: slide.js } };
+    const changed = read.slides.map((slide, index) => {
+      const id = replace ? slide.id : `added-${Date.now().toString(36)}${index.toString(36)}${Math.random().toString(36).slice(2, 5)}`;
+      const html = normalizeFooter(slide.html, footer, { required: replace ? hasFooter(source(id).html) : true }).html;
+      if (!replace) {
+        list = listAfterAdd(slides.deck(), list, previous, id, slide.title, slides.plain());
+        previous = id;
+      }
+      return { id, title: slide.title, edit: { html, css: slide.css, js: slide.js } };
     });
+    aiPlan = { replace, slides: changed, list: replace ? null : list, after };
+    const records = changed.map(slide => ({ slideId: slide.id, ...slide.edit }));
+    if (!replace) records.push({ slideId: SLIDE_LIST_ID, html: JSON.stringify(list), css: '', js: '' });
+    const frame = $('#e-ai-many-frame');
+    aiPreview = { frame, edits: feed.then(edits => overlayEdits(edits, records)) };
 
+    const count = changed.length;
+    $('#e-ai-many-summary').textContent = replace
+      ? `${plural(count, 'slide')} will change`
+      : `${plural(count, 'new slide')} after "${titleOf(after)}"`;
+    $('#e-ai-many-apply').textContent = replace
+      ? `Save changes to ${plural(count, 'slide')} for everyone`
+      : `Add ${plural(count, 'slide')} for everyone`;
+    note('#e-ai-many-status', read.ignored.length
+      ? `Ready. Not used from the response: ${read.ignored.join(', ')} (the Master CSS is not changed here).`
+      : 'Ready. Check each slide below.');
+    $('#e-ai-many-review').hidden = false;
+    aiPlace = 0;
+    frame.src = pageUrl('index.html', `preview&ai=${Date.now().toString(36)}`, changed[0].id);
+    fitManyFrame();
+    return showManyPlace();
+  }
+
+  /* Changed slides are saved one by one; those saved before a failure stay saved. */
+  function commitChanged(changed) {
+    changed.forEach(slide => {
+      stage.commit(slide.id, slide.edit);
+      drafts.delete(slide.id);
+      sources.delete(slide.id);
+      refreshThumbs(slide.id);
+    });
+  }
+
+  async function applyAiMany() {
+    if (!aiPlan || busy) return;
+    const pass = passwordBox.value;
+    if (!pass) return note('#e-ai-many-saving', 'Close this, enter the edit password at the top right, then try again. Your preview is kept.', 'error');
+    const plan = aiPlan;
+    const count = plan.slides.length;
     busy = true;
     refreshState();
-    $('#e-project-add').disabled = true;
+    $('#e-ai-many-apply').disabled = true;
     let failure = null;
-    for (const [index, slide] of added.entries()) {
-      note('#e-project-status', `Saving slide ${index + 1} of ${added.length}…`);
+    let saved = 0;
+    for (const slide of plan.slides) {
+      note('#e-ai-many-saving', `Saving slide ${saved + 1} of ${count}…`);
       const result = await client.save(slide.id, slide.edit, pass);
       if (!result.ok) { failure = result; break; }
+      saved += 1;
     }
-    if (!failure) {
-      const result = await client.save(SLIDE_LIST_ID, { html: JSON.stringify(list) }, pass);
+    if (!failure && !plan.replace) {
+      const result = await client.save(SLIDE_LIST_ID, { html: JSON.stringify(plan.list) }, pass);
       if (!result.ok) failure = result;
     }
     busy = false;
-    $('#e-project-add').disabled = false;
+    $('#e-ai-many-apply').disabled = false;
     if (failure) {
       if (failure.wrongPassword) rememberEditPassword('');
+      if (plan.replace && saved) {
+        refreshFeed();
+        commitChanged(plan.slides.slice(0, saved));
+        select(selected);               // the boxes show what is now saved
+      }
       refreshState();
-      return note('#e-project-status', `${failure.message} No slides were added.`, 'error');
+      return note('#e-ai-many-saving', plan.replace
+        ? `${failure.message} ${saved} of ${plural(count, 'slide')} were saved; the others were not changed.`
+        : `${failure.message} No slides were added. You can try again.`, 'error');
     }
     rememberEditPassword(pass);
     refreshFeed();
-    $('#e-project-answer').value = '';
-    $('#e-help').close();
-    return applyList(list, added[0].id, `${added.length} ${added.length === 1 ? 'slide' : 'slides'} added after "${titleOf(after)}".`, added);
+    $('#e-ai-many-answer').value = '';
+    $('#e-ai-many').close();
+    if (plan.replace) {
+      commitChanged(plan.slides);
+      select(plan.slides[0].id);
+      return setStatus(`${plural(count, 'slide')} changed for everyone.`, 'saved');
+    }
+    return applyList(plan.list, plan.slides[0].id, `${plural(count, 'slide')} added after "${titleOf(plan.after)}" for everyone.`,
+      plan.slides.map(slide => ({ id: slide.id, edit: slide.edit })));
   }
+
 
   /* ---- the three sections: drag the bars between them ---- */
   function fitView() {
@@ -663,6 +861,11 @@ export function initSlideEditor() {
     deck.document.addEventListener('keydown', saveShortcut);
     deck.document.addEventListener('click', event => { if (event.target.closest('a')) event.preventDefault(); });
 
+    const details = webinarDetails(await feed);
+    presenter = details.presenter || undefined;
+    madeWithAi = details.madeWithAi;
+    footer = footerSpec(SLIDE_FORMAT, links, presenter);
+
     document.title = `Slide settings — ${deckTitle()}`;
     $('#e-deck-title').textContent = deckTitle();
     buildList();
@@ -690,18 +893,29 @@ export function initSlideEditor() {
   $('#e-move-down').addEventListener('click', () => nudge(1));
   $('#e-help-open').addEventListener('click', openHelp);
   $('#e-help-close').addEventListener('click', () => $('#e-help').close());
-  $('#e-help-copy').addEventListener('click', () => copy($('#e-help-prompt').value, '#e-help-copied'));
-  $('#e-project-copy').addEventListener('click', () => {
-    /* New slides are framed like the deck's plain slide, so that is the one to model them on. */
-    const plain = stage.source(slides.plain());
-    copy(buildProjectPrompt({
-      deckTitle: deckTitle(),
-      links,
-      format: SLIDE_FORMAT,
-      example: plain ? { html: plain.originalHtml, reference: plain.reference } : null,
-    }), '#e-project-copied');
+  document.querySelectorAll('dialog [data-close]').forEach(button => button.addEventListener('click', () => button.closest('dialog').close()));
+  $('#e-ai-slide-open').addEventListener('click', openAiSlide);
+  $('#e-ai-slide-request').addEventListener('input', () => { $('#e-ai-slide-prompt').value = slidePrompt(); });
+  $('#e-ai-slide-copy').addEventListener('click', () => copy(slidePrompt(), '#e-ai-slide-copied', '#e-ai-slide-prompt'));
+  $('#e-ai-slide-preview').addEventListener('click', previewAiSlide);
+  $('#e-ai-many-open').addEventListener('click', openAiMany);
+  document.querySelectorAll('input[name="e-ai-mode"]').forEach(radio => radio.addEventListener('change', () => {
+    clearManyPreview();
+    refreshManyPrompt();
+  }));
+  $('#e-ai-many-request').addEventListener('input', refreshManyPrompt);
+  $('#e-ai-many-answer').addEventListener('input', clearManyPreview);   // a changed response needs a new preview
+  $('#e-ai-many-copy').addEventListener('click', () => {
+    if (aiMode() === 'replace' && !picked().length) return note('#e-ai-many-copied', 'Choose the slides to change first.', 'error');
+    return copy(manyPrompt(), '#e-ai-many-copied', '#e-ai-many-prompt');
   });
-  $('#e-project-add').addEventListener('click', addProject);
+  $('#e-ai-many-preview').addEventListener('click', previewAiMany);
+  $('#e-ai-many-prev').addEventListener('click', () => stepMany(-1));
+  $('#e-ai-many-next').addEventListener('click', () => stepMany(1));
+  $('#e-ai-many-frame').addEventListener('load', () => { if (aiPlan) showManyPlace(); });
+  $('#e-ai-many-apply').addEventListener('click', applyAiMany);
+  $('#e-ai-many').addEventListener('close', clearManyPreview);
+  new ResizeObserver(fitManyFrame).observe($('#e-ai-many-box'));
   document.addEventListener('keydown', saveShortcut);
   window.addEventListener('beforeunload', event => { if (drafts.size) event.preventDefault(); });
   initColumns();
