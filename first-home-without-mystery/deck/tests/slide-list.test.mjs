@@ -4,7 +4,7 @@ import { existsSync } from 'node:fs';
 import {
   arrangeSlides, headingOf, listAfterAdd, listAfterMove, listAfterRemove, listAfterRestore, parseSlideList, webinarTitle,
 } from '../js/slide-edits.js';
-import { MAX_PROJECT_SLIDES, brandLinks, buildProjectPrompt, buildSlidePrompt, parseSlideProject } from '../js/slide-prompt.js';
+import { MAX_PROJECT_SLIDES, PROJECT_SHAPE, brandLinks, buildProjectPrompt, buildSlidePrompt, parseSlideProject } from '../js/slide-prompt.js';
 import { SLIDE_FORMAT, footerHtml } from '../content/slide-format.js';
 
 const deck = [
@@ -151,11 +151,16 @@ test('the one-slide prompt carries the format, the footer and the slide that is 
 test('the multi-slide prompt asks for one JSON block the editor can read back', () => {
   const prompt = buildProjectPrompt({ deckTitle: 'Your first home, without the mystery.', links, format: SLIDE_FORMAT, example: { html: '<h2 class="headline">Plain</h2>', reference: '' } });
   assert.ok(prompt.includes('A SLIDE FROM THIS DECK TO MODEL YOURS ON') && prompt.includes('<h2 class="headline">Plain</h2>'));
-  for (const expected of ['ONE code block labelled json', '"slides"', `At most ${MAX_PROJECT_SLIDES} slides`, links.equalHousing, 'WHAT I WANT']) {
+  for (const expected of ['Return raw, valid JSON only', 'Do NOT wrap the response in Markdown code fences', 'Do NOT write ```json',
+    'Do NOT include commentary', 'The first character of the response must be {', 'The final character must be }', 'JSON.parse()',
+    PROJECT_SHAPE, `At most ${MAX_PROJECT_SLIDES} slides`, links.equalHousing, 'WHAT I WANT']) {
     assert.ok(prompt.includes(expected), `missing: ${expected}`);
   }
-  const example = prompt.slice(prompt.indexOf('```json') + 7, prompt.indexOf('```', prompt.indexOf('```json') + 7));
-  assert.equal(parseSlideProject(example).slides.length, 1);
+  assert.ok(!/^```json$/m.test(prompt), 'the shape must not be shown inside a json code fence');
+  assert.ok(!prompt.includes('ONE code block'));
+  assert.equal(parseSlideProject(PROJECT_SHAPE).slides.length, 1);
+  /* the one-slide prompt keeps its three code blocks */
+  assert.ok(!buildSlidePrompt({ links, format: SLIDE_FORMAT }).includes('raw, valid JSON'));
 });
 
 test('a pasted multi-slide answer is read with or without its wrapping', () => {
@@ -165,14 +170,43 @@ test('a pasted multi-slide answer is read with or without its wrapping', () => {
     { title: 'One', html: '<h2>One "quoted"</h2>\n<p>x</p>', css: '', js: '' },
     { title: 'Slide 2', html: '<h2>Two</h2>', css: 'h2 { color: red; }', js: '' },
   ];
-  assert.deepEqual(parseSlideProject(json).slides, expected);
-  assert.deepEqual(parseSlideProject(`Here you go:\n\`\`\`json\n${json}\n\`\`\`\nEnjoy!`).slides, expected);
-  assert.deepEqual(parseSlideProject(JSON.stringify(slides)).slides, expected);
+  const pretty = JSON.stringify({ slides }, null, 2);
+  for (const answer of [
+    json,
+    pretty,
+    `  \n\n${pretty}\n\n  `,
+    `\`\`\`json\n${pretty}\n\`\`\``,
+    `\`\`\`JSON\r\n${pretty}\r\n\`\`\`\r\n`,
+    `\`\`\`\n${pretty}\n\`\`\``,
+    `Here you go:\n\`\`\`json\n${json}\n\`\`\`\nEnjoy!`,
+    `Here you go:\n${pretty}\nEnjoy!`,
+    JSON.stringify(slides),
+  ]) {
+    assert.deepEqual(parseSlideProject(answer).slides, expected, answer.slice(0, 40));
+  }
+});
+
+test('braces and fences outside the JSON do not throw the reading off', () => {
+  const slides = [{ title: 'A', html: '<div class="x-a">{ not json } [1]</div>', css: '& { color: #fff; }', js: 'if (a) { b(); }' }];
+  const pretty = JSON.stringify({ slides }, null, 2);
+  const read = answer => parseSlideProject(answer).slides;
+  /* commentary with braces before and after: first-{ to last-} would have broken this */
+  assert.deepEqual(read(`Use {curly} braces like [this].\n${pretty}\nThe CSS uses & { }.`), slides);
+  /* another code block before the json one */
+  assert.deepEqual(read(`\`\`\`css\n.x { color: red; }\n\`\`\`\n\`\`\`json\n${pretty}\n\`\`\``), slides);
+  /* a stray array in the commentary does not stand in for the slides */
+  assert.deepEqual(read(`Step [1] first.\n${pretty}`), slides);
+  /* fences and brackets inside the slide strings are left alone */
+  const tricky = [{ title: 'T', html: '<pre>```json\n{ "a": [1, 2] }\n```</pre>', css: '', js: 'const s = "\\"}";' }];
+  assert.deepEqual(read(JSON.stringify({ slides: tricky }, null, 2)), tricky);
+  assert.deepEqual(read(`\`\`\`json\n${JSON.stringify({ slides: tricky }, null, 2)}\n\`\`\``), tricky);
 });
 
 test('an answer that cannot be used says why', () => {
   assert.match(parseSlideProject('').error, /Paste the whole answer/);
-  assert.match(parseSlideProject('{"slides": [').error, /could not be read|Paste the whole answer/);
+  assert.match(parseSlideProject('{"slides": [').error, /could not be read.*cut off/);
+  assert.match(parseSlideProject('{"slides": [{"html": "<p>a</p>"}],}').error, /could not be read as JSON/);
+  assert.match(parseSlideProject('Sure! Here are your slides.').error, /Paste the whole answer/);
   assert.match(parseSlideProject('{"slides": []}').error, /No slides/);
   assert.match(parseSlideProject('{"pages": [{}]}').error, /No slides/);
   assert.match(parseSlideProject(JSON.stringify({ slides: [{ html: '<p>a</p>' }, { html: '  ' }] })).error, /Slide 2 has no HTML/);
