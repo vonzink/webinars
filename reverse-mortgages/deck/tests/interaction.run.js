@@ -16,10 +16,13 @@ async page => {
  const pending=page.waitForEvent('popup');await page.keyboard.press('p');const presenter=await pending;
  presenter.on('pageerror',e=>errors.push(e.message));await presenter.waitForLoadState();
  await presenter.locator('#p-notes').filter({hasText:'124%'}).waitFor();
+ if(await presenter.locator('.p-appendix').isVisible())throw Error('Pacing guide shown away from the opening slide');
+ await page.evaluate(()=>{location.hash='opening';});await presenter.locator('.p-appendix summary').waitFor({state:'visible'});
  await presenter.locator('.p-appendix summary').click();
  const appendix=await presenter.locator('#p-source-appendix p').allTextContents();
  const expected=await page.evaluate(async()=>(await import('./content/slides.js')).SOURCE_APPENDIX.blocks);
  if(JSON.stringify(appendix)!==JSON.stringify(expected))throw Error('Appendix content differs');
+ await page.evaluate(()=>{location.hash='retirement-bridge';});await presenter.locator('#p-notes').filter({hasText:'124%'}).waitFor();
  await presenter.screenshot({path:'/Users/zacharyzink/MSFG/Webinars/output/reverse-seth-round2/presenter.png',fullPage:true});
  await presenter.locator('#p-next-btn').click();await page.waitForURL('**/#growing-balance');
  await presenter.locator('#p-prev').click();await page.waitForURL('**/#retirement-bridge');

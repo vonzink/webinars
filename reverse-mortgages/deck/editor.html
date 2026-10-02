@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="data:,">
+  <title>Slide settings — Reverse Mortgages</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800;900&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./css/tokens.css">
+  <style>
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body { margin: 0; background: #0C3335; color: #EAF0EA; font-family: var(--font-body);
+      display: flex; flex-direction: column; overflow: hidden; }
+    h1, h2, p { margin: 0; }
+    button, input, textarea { font: inherit; }
+    button { color: inherit; cursor: pointer; background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.16); border-radius: 4px; padding: 8px 14px; }
+    button:hover:not(:disabled) { background: rgba(255,255,255,.16); }
+    button:disabled { cursor: default; opacity: .4; }
+    :focus-visible { outline: 3px solid #8cc63E; outline-offset: 2px; }
+
+    .e-bar { flex: none; display: flex; align-items: center; gap: 14px; padding: 12px 20px;
+      border-bottom: 1px solid rgba(255,255,255,.12); }
+    .e-brand { font: 700 13px/1.2 var(--font-display); letter-spacing: .1em; text-transform: uppercase; color: #8cc63E; }
+    .e-sub { margin-top: 3px; font-size: 13px; color: rgba(255,255,255,.6); }
+    .e-spacer { flex: 1 1 auto; }
+    .e-bar input { width: 190px; height: 36px; padding: 0 10px; border-radius: 4px;
+      border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.06); color: #fff; font-size: 14px; }
+    .e-bar input:focus { outline: none; border-color: #8cc63E; }
+    .e-primary { height: 36px; color: #0C3335; background: #8cc63E; border-color: #8cc63E;
+      font: 700 13px/1 var(--font-display); }
+    .e-primary:hover:not(:disabled) { background: #A2D85A; }
+
+    .e-main { flex: 1 1 auto; min-height: 0; display: grid;
+      grid-template-columns: 272px minmax(0, 1fr) minmax(0, 1.05fr); }
+
+    /* slide list — Master CSS first, then every slide with a small live preview */
+    .e-list { overflow-y: auto; padding: 14px 12px; border-right: 1px solid rgba(255,255,255,.12);
+      display: flex; flex-direction: column; gap: 8px; }
+    .e-item { flex: none; display: block; width: 100%; padding: 8px; text-align: left; border-radius: 6px;
+      border: 1px solid transparent; background: rgba(255,255,255,.04); }
+    .e-item[aria-current="true"] { border-color: #8cc63E; background: rgba(140,198,62,.12); }
+    .e-item-head { display: flex; align-items: baseline; gap: 8px; }
+    .e-item-number { flex: none; color: #8cc63E; font: 800 12px/1.3 var(--font-display); }
+    .e-item-title { flex: 1 1 auto; min-width: 0; font: 600 13px/1.3 var(--font-body);
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .e-badge { flex: none; padding: 2px 6px; border-radius: 3px; font: 700 9px/1.3 var(--font-display);
+      letter-spacing: .08em; text-transform: uppercase; }
+    .e-badge[data-kind="edited"] { color: #0C3335; background: #8cc63E; }
+    .e-badge[data-kind="unsaved"] { color: #0C3335; background: #E4B84A; }
+    .e-thumb { display: block; position: relative; width: 230px; height: 129.375px; margin-top: 7px;
+      overflow: hidden; border: 1px solid rgba(255,255,255,.18); background: #000; pointer-events: none; }
+    .e-thumb iframe { display: block; position: absolute; top: 0; left: 0; width: 1280px; height: 720px; border: 0;
+      transform: scale(.1796875); transform-origin: top left; }
+    .e-item-note { display: block; margin-top: 5px; color: rgba(255,255,255,.55); font-size: 12px; line-height: 1.4; }
+
+    /* the view — the selected slide, live, and editable in place */
+    .e-view { min-width: 0; overflow-y: auto; padding: 18px 20px; }
+    .e-kicker { color: #8cc63E; font: 700 10px/1 var(--font-display); letter-spacing: .15em; text-transform: uppercase; }
+    .e-title { margin-top: 6px; color: #fff; font: 800 24px/1.15 var(--font-display); letter-spacing: -.02em; }
+    .e-frame { position: relative; margin-top: 14px; overflow: hidden; background: #000;
+      border: 1px solid rgba(255,255,255,.18); }
+    .e-frame iframe { position: absolute; top: 0; left: 0; width: 1280px; height: 720px; border: 0;
+      transform-origin: top left; }
+    .e-hint { margin-top: 10px; color: rgba(255,255,255,.6); font-size: 13px; line-height: 1.5; }
+    .e-status { min-height: 21px; margin-top: 12px; color: rgba(255,255,255,.7); font-size: 13px; line-height: 1.5; }
+    .e-status[data-state="error"] { color: #ffabb2; }
+    .e-status[data-state="saved"] { color: #B9E47D; }
+    .e-actions { display: flex; gap: 8px; margin-top: 12px; }
+    .e-actions button { font: 700 12px/1 var(--font-display); }
+
+    /* the code window — HTML, slide CSS and slide JS, or the Master CSS */
+    .e-code { min-width: 0; min-height: 0; display: flex; flex-direction: column;
+      border-left: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.02); }
+    .e-tabs { flex: none; display: flex; gap: 4px; padding: 12px 16px 0; border-bottom: 1px solid rgba(255,255,255,.12); }
+    .e-tabs button { padding: 9px 14px; border-radius: 4px 4px 0 0; border-bottom: 0; background: transparent;
+      border-color: transparent; color: rgba(255,255,255,.6); font: 700 12px/1 var(--font-display); }
+    .e-tabs button[aria-selected="true"] { color: #0C3335; background: #8cc63E; border-color: #8cc63E; }
+    .e-tabs button[hidden] { display: none; }
+    .e-pane { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; gap: 10px; padding: 14px 16px 16px; }
+    .e-pane[hidden] { display: none; }
+    .e-note { flex: none; color: rgba(255,255,255,.6); font-size: 13px; line-height: 1.5; }
+    .e-note code { padding: 1px 5px; border-radius: 3px; background: rgba(0,0,0,.3); font-size: 12px; }
+    .e-pane textarea, .e-pane pre { width: 100%; margin: 0; padding: 12px; border-radius: 4px;
+      border: 1px solid rgba(255,255,255,.18); background: rgba(0,0,0,.24); color: #EAF0EA;
+      font: 13px/1.55 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; tab-size: 2; }
+    .e-pane textarea { flex: 1 1 auto; min-height: 120px; resize: none; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .e-pane textarea:focus { outline: none; border-color: #8cc63E; }
+    .e-pane pre { flex: 1 1 auto; min-height: 0; overflow: auto; white-space: pre; color: rgba(234,240,234,.8); }
+    .e-reference { flex: none; }
+    .e-reference summary { cursor: pointer; color: #B9E47D; font-size: 13px; }
+    .e-reference pre { margin-top: 8px; max-height: 30vh; }
+
+    @media (max-width: 1100px) {
+      body { overflow: auto; }
+      .e-main { grid-template-columns: 1fr; }
+      .e-list { max-height: 260px; border-right: 0; border-bottom: 1px solid rgba(255,255,255,.12); }
+      .e-code { border-left: 0; border-top: 1px solid rgba(255,255,255,.12); min-height: 70vh; }
+    }
+  </style>
+</head>
+<body>
+  <header class="e-bar">
+    <div>
+      <div class="e-brand">Slide settings</div>
+      <div class="e-sub">Reverse Mortgages · changes you save are what everyone sees</div>
+    </div>
+    <div class="e-spacer"></div>
+    <input type="password" id="e-password" placeholder="Edit password" aria-label="Edit password" autocomplete="off">
+    <button class="e-primary" type="button" id="e-save" disabled>Save for everyone</button>
+  </header>
+
+  <main class="e-main">
+    <nav class="e-list" id="e-list" aria-label="Slides"></nav>
+
+    <section class="e-view" aria-label="Slide view">
+      <div class="e-kicker" id="e-kicker"></div>
+      <h1 class="e-title" id="e-title">Loading the slides…</h1>
+      <div class="e-frame" id="e-frame">
+        <iframe id="e-preview" title="Slide view" src="about:blank"></iframe>
+      </div>
+      <p class="e-hint" id="e-hint">Click any text on the slide to change it right there, or use the boxes on the right.
+        Nothing is saved until you press Save.</p>
+      <p class="e-status" id="e-status" role="status" aria-live="polite"></p>
+      <div class="e-actions">
+        <button type="button" id="e-discard" disabled>Discard changes</button>
+        <button type="button" id="e-reset" disabled>Reset to original</button>
+      </div>
+    </section>
+
+    <section class="e-code" aria-label="Code">
+      <div class="e-tabs" role="tablist" id="e-tabs">
+        <button type="button" role="tab" data-tab="html" data-for="slide">HTML</button>
+        <button type="button" role="tab" data-tab="css" data-for="slide">Slide CSS</button>
+        <button type="button" role="tab" data-tab="js" data-for="slide">Slide JS</button>
+        <button type="button" role="tab" data-tab="master" data-for="master">Master CSS</button>
+        <button type="button" role="tab" data-tab="builtin" data-for="master">Built-in styles</button>
+      </div>
+      <div class="e-pane" data-pane="html">
+        <textarea id="e-html" aria-label="Slide HTML" spellcheck="false" autocapitalize="off" autocomplete="off"></textarea>
+      </div>
+      <div class="e-pane" data-pane="css" hidden>
+        <p class="e-note">These rules apply to this slide only. Use <code>&amp;</code> for the slide itself.</p>
+        <textarea id="e-css" aria-label="Slide CSS" spellcheck="false" autocapitalize="off" autocomplete="off"
+          placeholder=".source-title { color: #0C3335; }"></textarea>
+        <details class="e-reference">
+          <summary>Styles this slide uses now</summary>
+          <pre id="e-reference"></pre>
+        </details>
+      </div>
+      <div class="e-pane" data-pane="js" hidden>
+        <p class="e-note">Runs each time this slide is shown. <code>slide</code> is this slide's element.</p>
+        <textarea id="e-js" aria-label="Slide JS" spellcheck="false" autocapitalize="off" autocomplete="off"
+          placeholder="slide.querySelector('.source-title').title = 'Hello';"></textarea>
+      </div>
+      <div class="e-pane" data-pane="master" hidden>
+        <p class="e-note">The Master CSS applies to every slide, on top of the deck's built-in styles.</p>
+        <textarea id="e-master" aria-label="Master CSS" spellcheck="false" autocapitalize="off" autocomplete="off"
+          placeholder=".source-title { color: #0C3335; }"></textarea>
+      </div>
+      <div class="e-pane" data-pane="builtin" hidden>
+        <p class="e-note">The deck's own stylesheets, for reference. To change a rule, copy it into the Master CSS and edit it there.</p>
+        <pre id="e-builtin">Loading…</pre>
+      </div>
+    </section>
+  </main>
+
+  <script type="module">
+    import { initSlideEditor } from './js/slide-editor.js';
+    initSlideEditor();
+  </script>
+</body>
+</html>
