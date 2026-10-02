@@ -23,8 +23,14 @@ import { FIGURES } from './figures.js';
 import * as annotate from './annotate.js';
 import { createSurfaceController } from './surface-fit.js';
 import { WEBINAR } from '../content/webinar-config.js';
-import { createSlideEditClient, createSlideEditStage } from './slide-edits.js';
+import {
+  SLIDE_LIST_ID, arrangeSlides, createSlideEditClient, createSlideEditStage, parseSlideList,
+} from './slide-edits.js';
 
+/* SLIDES is rearranged in place when slides are added or deleted in Slide
+   settings; this is the deck exactly as content/slides.js defines it. */
+const DECK_SLIDES = [...SLIDES];
+let slideList = parseSlideList('');
 let P = activePresenter();
 const PREVIEW = new URLSearchParams(location.search).has('preview');
 const DECK_CHANNEL_PREFIX = 'msfg-deck:reverse-mortgages:';
@@ -748,34 +754,92 @@ function refreshBuild(el) {
   revealBuilds(buildPlayback.items.length);
 }
 
-/* Saved edits (Slide settings: a slide's HTML, CSS and JS, plus the Master CSS)
-   apply for everyone. The slides stay hidden for a moment so an edited first
-   slide does not flash its original; if the server is slow or unreachable the
-   originals show instead. */
-async function loadSavedEdits() {
+/* Saved edits (Slide settings: a slide's HTML, CSS and JS, the Master CSS, and
+   slides added or deleted) apply for everyone. The slides stay hidden for a
+   moment so an edited first slide does not flash its original; if the server
+   is slow or unreachable the originals show instead. */
+/* Inside Slide settings every preview of the deck shares the editor's one copy
+   of the saved edits, so twenty small previews do not mean twenty requests. */
+async function fetchSavedEdits() {
+  try {
+    if (window.parent !== window && typeof window.parent.__slideEditsFeed === 'function') {
+      return await window.parent.__slideEditsFeed();
+    }
+  } catch { /* a parent from another site: load them ourselves */ }
+  return createSlideEditClient({ base: WEBINAR.slideEditsApi, slug: WEBINAR.slug }).list();
+}
+
+async function loadSavedEdits(requestedId) {
   if (!WEBINAR.slideEditsApi) return;
   let holding = true;
   const reveal = () => { holding = false; scaler.style.visibility = ''; };
   scaler.style.visibility = 'hidden';
   const timer = setTimeout(reveal, 600);
-  const edits = await createSlideEditClient({ base: WEBINAR.slideEditsApi, slug: WEBINAR.slug }).list();
+  const edits = await fetchSavedEdits();
   clearTimeout(timer);
   const held = holding;
+  const saved = edits.find(edit => edit.slideId === SLIDE_LIST_ID);
+  if (saved) applySlideList(parseSlideList(saved.html));
   slideEdits.load(edits);
+  /* The address may have asked for a slide that only exists once the list is in. */
+  const requested = SLIDES.findIndex(s => s.id === requestedId);
+  if (requested >= 0 && requested !== current) show(requested);
   reveal();
   if (held || slideEdits.isEdited(SLIDES[current].id)) runBuild(document.getElementById(`slide-${SLIDES[current].id}`));
+}
+
+function label(el, d, i) {
+  el.dataset.index = String(i);
+  el.setAttribute('aria-label', `${i + 1} of ${SLIDES.length}: ${d.headline || d.eyebrow || d.id}`);
 }
 
 function shell(d, i) {
   const el = document.createElement('section');
   el.className = 'slide';
   el.id = `slide-${d.id}`;
-  el.dataset.index = String(i);
   el.dataset.bg = d.bg || 'mist';
   el.setAttribute('role', 'group');
   el.setAttribute('aria-roledescription', 'slide');
-  el.setAttribute('aria-label', `${i + 1} of ${SLIDES.length}: ${d.headline || d.eyebrow || d.id}`);
+  label(el, d, i);
   return el;
+}
+
+function buildSlide(d, i) {
+  const el = shell(d, i);
+  (layouts[d.layout] || layouts.grid)(el, d);
+  renderActions(el, d);
+  renderGraphicsControl(el, d);
+  renderCalcControl(el, d);
+  furniture(el, d);
+  return el;
+}
+
+/* The page number in a slide's footer follows the slide's place in the deck. */
+function renumber(el) {
+  const page = el.querySelector('.source-page');
+  if (page) page.textContent = String(Number(el.dataset.index) + 1);
+}
+
+/* Slides added or deleted in Slide settings: rearrange SLIDES and the slide
+   elements to match, keeping the slide on show where possible. */
+function applySlideList(list) {
+  slideList = list;
+  const shownId = SLIDES[current]?.id;
+  SLIDES.splice(0, SLIDES.length, ...arrangeSlides(DECK_SLIDES, list));
+  const existing = new Map([...scaler.querySelectorAll('.slide')].map(el => [el.id, el]));
+  SLIDES.forEach((d, i) => {
+    let el = existing.get(`slide-${d.id}`);
+    existing.delete(`slide-${d.id}`);
+    const fresh = !el;
+    if (fresh) el = buildSlide(d, i);
+    label(el, d, i);
+    scaler.appendChild(el);                        // appending in order also reorders
+    if (fresh) slideEdits.rerendered(d.id);        // take its original; a saved edit goes on top
+    renumber(el);
+  });
+  existing.forEach(el => el.remove());
+  const at = SLIDES.findIndex(s => s.id === shownId);
+  show(at >= 0 ? at : Math.min(current, SLIDES.length - 1));
 }
 
 function show(i) {
@@ -925,18 +989,13 @@ export function initDeck() {
     annotate.onStateChange(on => { if (channel) channel.postMessage({ type: 'annstate', on }); });
   }
 
-  SLIDES.forEach((d, i) => {
-    const el = shell(d, i);
-    (layouts[d.layout] || layouts.grid)(el, d);
-    renderActions(el, d);
-    renderGraphicsControl(el, d);
-    renderCalcControl(el, d);
-    furniture(el, d);
-    scaler.appendChild(el);
-  });
+  SLIDES.forEach((d, i) => scaler.appendChild(buildSlide(d, i)));
   slideEdits = createSlideEditStage({
     document,
-    onChange: el => { if (el.classList.contains('is-active')) refreshBuild(el); },
+    onChange: el => {
+      renumber(el);
+      if (el.classList.contains('is-active')) refreshBuild(el);
+    },
   });
   SLIDES.forEach(d => slideEdits.capture(d.id));
 
@@ -979,11 +1038,24 @@ export function initDeck() {
   fit();
   initChannel();
 
-  const fromHash = SLIDES.findIndex(s => s.id === location.hash.slice(1));
+  const requestedId = location.hash.slice(1);
+  const fromHash = SLIDES.findIndex(s => s.id === requestedId);
   show(fromHash >= 0 ? fromHash : 0);
   /* The Slide settings screen embeds this deck and drives its slides directly. */
-  slideEdits.ready = loadSavedEdits();
+  slideEdits.ready = loadSavedEdits(requestedId);
   window.__deckSlideEdits = slideEdits;
+  const named = s => ({ id: s.id, title: s.headline || s.eyebrow || s.id, added: Boolean(s.added) });
+  window.__deckSlides = {
+    list: () => slideList,
+    apply: applySlideList,
+    shown: () => SLIDES.map(named),
+    deck: () => DECK_SLIDES.map(named),
+    /* The deck slide a brand-new slide is framed like: light, standard layout. */
+    plain: () => {
+      const standard = s => (s.sourceLayout?.kind || 'standard') === 'standard' && s.bg !== 'dark';
+      return (DECK_SLIDES.find(s => standard(s) && !s.manualBuild) || DECK_SLIDES.find(standard) || DECK_SLIDES[0]).id;
+    },
+  };
 
   const ok = SLIDES.length === 21 && MODAL_COUNT === 0;
   console.log(

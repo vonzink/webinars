@@ -164,6 +164,16 @@
     .p-shortcut-actions button { border-radius: 4px; font: 700 12px/1 var(--font-display); }
     .p-shortcut-actions .is-primary { color: #0C3335; background: #8cc63E; border-color: #8cc63E; }
     .p-shortcut-actions .is-primary:hover { background: #A2D85A; }
+    .p-editing { margin-top: 24px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,.12); }
+    .p-editing .p-shortcut-title { font-size: 20px; }
+    .p-editing-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+    .p-editing-row input { flex: 1 1 200px; height: 36px; padding: 0 10px; border-radius: 4px;
+      border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.06); color: #fff;
+      font: 14px/1 var(--font-body); }
+    .p-editing-row input:focus { outline: none; border-color: #8cc63E; }
+    .p-editing-row button { height: 36px; border-radius: 4px; font: 700 12px/1 var(--font-display); }
+    .p-editing-row .is-primary { color: #0C3335; background: #8cc63E; border-color: #8cc63E; }
+    .p-editing-row .is-primary:hover { background: #A2D85A; }
     @container (max-width: 420px) {
       .p-library-grid { grid-template-columns: 1fr; }
     }
@@ -197,7 +207,7 @@
       <div class="p-clock"><div class="p-clock-label">Elapsed / <span id="p-total">00:00</span></div><div class="p-clock-value" id="p-elapsed">00:00</div></div>
     </div>
     <button class="p-utility-icon" id="p-shortcut-settings" type="button"
-      aria-label="Keyboard shortcut settings" title="Keyboard shortcut settings">
+      aria-label="Presenter settings" title="Presenter settings: keyboard shortcuts and slide editing">
       <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
         <circle cx="12" cy="12" r="3"></circle>
         <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6v.2h-4V21a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9A1.7 1.7 0 0 0 3 14H2.8v-4H3a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.6v-.2h4V3a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.2v4H21a1.7 1.7 0 0 0-1.6 1z"></path>
@@ -236,9 +246,7 @@
       </div>
       <div class="p-tools" style="margin-top:8px">
         <button id="p-fs" data-fs title="Fullscreen the shared slide window">⛶ Fullscreen slide: Off</button>
-        <button id="p-nav-visibility" title="Show or hide the navigation bar on the shared slide">Slide navigation: Shown</button>
-        <button type="button" id="p-slide-settings" title="Edit the slides: HTML, CSS and JS for each slide, and the Master CSS">⚙ Slide settings</button>
-      </div>
+        <button id="p-nav-visibility" title="Show or hide the navigation bar on the shared slide">Slide navigation: Shown</button>      </div>
 
       <div class="p-h">Annotate the live slide</div>
       <div class="p-tools" id="p-tools">
@@ -335,6 +343,16 @@
         <button type="button" id="p-shortcut-reset">Reset defaults</button>
         <button class="is-primary" type="button" id="p-shortcut-save">Save changes</button>
       </footer>
+      <section class="p-editing" aria-labelledby="p-editing-title">
+        <h2 class="p-shortcut-title" id="p-editing-title">Slide editing</h2>
+        <p class="p-shortcut-intro">Change the slides everyone sees: wording, layout, styles, and adding or removing slides.
+          The password is kept in this browser so you only enter it once.</p>
+        <div class="p-editing-row">
+          <input type="password" id="p-edit-password" placeholder="Edit password" aria-label="Edit password"
+            autocomplete="off">
+          <button class="is-primary" type="button" id="p-slide-settings">Open Slide settings ↗</button>
+        </div>
+      </section>
     </div>
   </dialog>
   <script type="module">

@@ -13,6 +13,11 @@ import { listNotes, addNote as apiAddNote, editNote as apiEditNote, deleteNote a
 import { loadPresenterShortcuts, savePresenterShortcuts } from './presenter-settings-store.js';
 import { actionForEvent, formatDescriptor, resolveShortcuts } from './presenter-shortcuts.js';
 import { createShortcutPanel } from './presenter-shortcut-panel.js';
+import { WEBINAR } from '../content/webinar-config.js';
+import {
+  SLIDE_LIST_ID, arrangeSlides, createSlideEditClient, parseSlideList,
+  rememberEditPassword, rememberedEditPassword,
+} from './slide-edits.js';
 
 const presenterParams = new URLSearchParams(location.search);
 const validSessionId = value => typeof value === 'string' && /^[a-z0-9-]{1,100}$/i.test(value) ? value : '';
@@ -95,6 +100,18 @@ function render() {
   $('#p-media-count').textContent = String(media.length);
 
   renderNotes();
+}
+
+/* Slides added or deleted in Slide settings: match the slide window's list, then
+   ask it where it is so both windows agree on the slide numbers. */
+async function followSlideList() {
+  const edits = await createSlideEditClient({ base: WEBINAR.slideEditsApi, slug: WEBINAR.slug }).list();
+  const saved = edits.find(edit => edit.slideId === SLIDE_LIST_ID);
+  if (!saved) return;
+  SLIDES.splice(0, SLIDES.length, ...arrangeSlides([...SLIDES], parseSlideList(saved.html)));
+  index = Math.min(index, SLIDES.length - 1);
+  render();
+  channel.postMessage({ type: 'hello' });
 }
 
 /* ---- clocks ---- */
@@ -379,10 +396,16 @@ export function initPresenter() {
     channel.postMessage({ type: 'cash-to-close-visibility', visible: !cashToCloseVisible });
   });
   $('#p-shortcut-settings').addEventListener('click', () => shortcutPanel.open());
-  /* Slide settings opens on the slide being presented, in its own tab. */
+  /* Slide editing lives in the settings dialog: the edit password (kept in this
+     browser, shared with Slide settings) and the way in. Slide settings opens
+     on the slide being presented, in its own tab. */
+  const editPassword = $('#p-edit-password');
+  editPassword.value = rememberedEditPassword();
+  editPassword.addEventListener('input', () => rememberEditPassword(editPassword.value));
   $('#p-slide-settings').addEventListener('click', () => {
     window.open(`./editor.html#${SLIDES[index].id}`, 'msfg-reverse-slide-settings');
   });
+  followSlideList();
 
   $('#p-animation-prev').addEventListener('click', () => animationCommand('prev'));
   $('#p-animation-play').addEventListener('click', () => animationCommand('play'));

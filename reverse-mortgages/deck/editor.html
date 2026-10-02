@@ -35,15 +35,28 @@
       font: 700 13px/1 var(--font-display); }
     .e-primary:hover:not(:disabled) { background: #A2D85A; }
 
+    /* three sections; the bars between them drag to resize */
     .e-main { flex: 1 1 auto; min-height: 0; display: grid;
-      grid-template-columns: 272px minmax(0, 1fr) minmax(0, 1.05fr); }
+      grid-template-columns: var(--e-left, 272px) 9px minmax(260px, 1fr) 9px var(--e-right, clamp(360px, 42vw, 1000px)); }
+    .e-split { position: relative; cursor: col-resize; touch-action: none; background: transparent; }
+    .e-split::before { content: ""; position: absolute; top: 0; bottom: 0; left: 4px; width: 1px;
+      background: rgba(255,255,255,.14); }
+    .e-split:hover::before, .e-split:focus-visible::before, .e-split.is-dragging::before {
+      left: 3px; width: 3px; background: #8cc63E; }
+    .e-split:focus-visible { outline: none; }
+    body.is-resizing { cursor: col-resize; user-select: none; }
+    body.is-resizing iframe { pointer-events: none; }
 
     /* slide list — Master CSS first, then every slide with a small live preview */
-    .e-list { overflow-y: auto; padding: 14px 12px; border-right: 1px solid rgba(255,255,255,.12);
+    .e-list { min-width: 0; overflow-y: auto; padding: 14px 12px;
       display: flex; flex-direction: column; gap: 8px; }
     .e-item { flex: none; display: block; width: 100%; padding: 8px; text-align: left; border-radius: 6px;
       border: 1px solid transparent; background: rgba(255,255,255,.04); }
     .e-item[aria-current="true"] { border-color: #8cc63E; background: rgba(140,198,62,.12); }
+    .e-item[draggable="true"] { cursor: grab; }
+    .e-item.is-dragged { opacity: .45; }
+    .e-item.is-drop-before { box-shadow: 0 -4px 0 #8cc63E; }
+    .e-item.is-drop-after { box-shadow: 0 4px 0 #8cc63E; }
     .e-item-head { display: flex; align-items: baseline; gap: 8px; }
     .e-item-number { flex: none; color: #8cc63E; font: 800 12px/1.3 var(--font-display); }
     .e-item-title { flex: 1 1 auto; min-width: 0; font: 600 13px/1.3 var(--font-body);
@@ -52,11 +65,18 @@
       letter-spacing: .08em; text-transform: uppercase; }
     .e-badge[data-kind="edited"] { color: #0C3335; background: #8cc63E; }
     .e-badge[data-kind="unsaved"] { color: #0C3335; background: #E4B84A; }
-    .e-thumb { display: block; position: relative; width: 230px; height: 129.375px; margin-top: 7px;
+    .e-thumb { display: block; position: relative; width: 100%; aspect-ratio: 16 / 9; margin-top: 7px;
       overflow: hidden; border: 1px solid rgba(255,255,255,.18); background: #000; pointer-events: none; }
     .e-thumb iframe { display: block; position: absolute; top: 0; left: 0; width: 1280px; height: 720px; border: 0;
-      transform: scale(.1796875); transform-origin: top left; }
+      transform: scale(var(--e-thumb-scale, .18)); transform-origin: top left; }
     .e-item-note { display: block; margin-top: 5px; color: rgba(255,255,255,.55); font-size: 12px; line-height: 1.4; }
+    .e-deleted { flex: none; margin-top: 10px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,.12); }
+    .e-deleted-title { color: rgba(255,255,255,.5); font: 700 10px/1 var(--font-display);
+      letter-spacing: .13em; text-transform: uppercase; }
+    .e-deleted-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+    .e-deleted-row span { flex: 1 1 auto; min-width: 0; color: rgba(255,255,255,.7); font-size: 13px;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .e-deleted-row button { flex: none; padding: 5px 10px; font: 700 11px/1 var(--font-display); }
 
     /* the view — the selected slide, live, and editable in place */
     .e-view { min-width: 0; overflow-y: auto; padding: 18px 20px; }
@@ -70,12 +90,14 @@
     .e-status { min-height: 21px; margin-top: 12px; color: rgba(255,255,255,.7); font-size: 13px; line-height: 1.5; }
     .e-status[data-state="error"] { color: #ffabb2; }
     .e-status[data-state="saved"] { color: #B9E47D; }
-    .e-actions { display: flex; gap: 8px; margin-top: 12px; }
+    .e-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
     .e-actions button { font: 700 12px/1 var(--font-display); }
+    .e-actions + .e-actions { padding-top: 12px; border-top: 1px solid rgba(255,255,255,.1); }
+    #e-delete:hover:not(:disabled) { border-color: #ff8b96; color: #ffabb2; }
 
     /* the code window — HTML, slide CSS and slide JS, or the Master CSS */
     .e-code { min-width: 0; min-height: 0; display: flex; flex-direction: column;
-      border-left: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.02); }
+      background: rgba(255,255,255,.02); }
     .e-tabs { flex: none; display: flex; gap: 4px; padding: 12px 16px 0; border-bottom: 1px solid rgba(255,255,255,.12); }
     .e-tabs button { padding: 9px 14px; border-radius: 4px 4px 0 0; border-bottom: 0; background: transparent;
       border-color: transparent; color: rgba(255,255,255,.6); font: 700 12px/1 var(--font-display); }
@@ -95,11 +117,36 @@
     .e-reference summary { cursor: pointer; color: #B9E47D; font-size: 13px; }
     .e-reference pre { margin-top: 8px; max-height: 30vh; }
 
+    /* instructions — how to edit, and a prompt for Claude or ChatGPT */
+    .e-link { padding: 8px 4px; border: 0; background: none; color: #B9E47D;
+      font: 700 13px/1 var(--font-display); text-decoration: underline; text-underline-offset: 4px; }
+    .e-link:hover:not(:disabled) { background: none; color: #fff; }
+    .e-help { width: min(860px, calc(100vw - 32px)); max-height: calc(100vh - 32px); padding: 0; overflow: auto;
+      color: #EAF0EA; background: #103B3D; border: 1px solid rgba(140,198,62,.48); border-radius: 8px;
+      box-shadow: 0 28px 80px rgba(0,0,0,.55); }
+    .e-help::backdrop { background: rgba(3,18,19,.74); }
+    .e-help-shell { padding: 24px 26px 26px; }
+    .e-help-head { position: relative; padding-right: 44px; }
+    .e-help-close { position: absolute; top: -2px; right: 0; width: 34px; height: 34px; padding: 0;
+      font-size: 22px; line-height: 1; }
+    .e-help h3 { margin: 22px 0 8px; color: #fff; font: 800 16px/1.3 var(--font-display); }
+    .e-help p, .e-help li { color: rgba(255,255,255,.78); font-size: 14px; line-height: 1.6; }
+    .e-help ol, .e-help ul { margin: 0 0 10px; padding-left: 22px; }
+    .e-help strong { color: #fff; }
+    .e-help a { color: #B9E47D; overflow-wrap: anywhere; }
+    .e-help-actions { display: flex; align-items: center; gap: 12px; margin: 12px 0 10px; }
+    .e-help-copied { color: #B9E47D; font-size: 13px; line-height: 1.4; }
+    .e-help-copied[data-state="error"] { color: #ffabb2; }
+    .e-help textarea { width: 100%; height: 200px; padding: 12px; resize: vertical; border-radius: 4px;
+      border: 1px solid rgba(255,255,255,.18); background: rgba(0,0,0,.24); color: #EAF0EA;
+      font: 12px/1.55 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; white-space: pre-wrap; }
+
     @media (max-width: 1100px) {
       body { overflow: auto; }
       .e-main { grid-template-columns: 1fr; }
-      .e-list { max-height: 260px; border-right: 0; border-bottom: 1px solid rgba(255,255,255,.12); }
-      .e-code { border-left: 0; border-top: 1px solid rgba(255,255,255,.12); min-height: 70vh; }
+      .e-split { display: none; }
+      .e-list { max-height: 260px; border-bottom: 1px solid rgba(255,255,255,.12); }
+      .e-code { border-top: 1px solid rgba(255,255,255,.12); min-height: 70vh; }
     }
   </style>
 </head>
@@ -110,12 +157,15 @@
       <div class="e-sub">Reverse Mortgages · changes you save are what everyone sees</div>
     </div>
     <div class="e-spacer"></div>
+    <button class="e-link" type="button" id="e-help-open">Instructions</button>
     <input type="password" id="e-password" placeholder="Edit password" aria-label="Edit password" autocomplete="off">
     <button class="e-primary" type="button" id="e-save" disabled>Save for everyone</button>
   </header>
 
   <main class="e-main">
     <nav class="e-list" id="e-list" aria-label="Slides"></nav>
+    <div class="e-split" id="e-split-left" role="separator" aria-orientation="vertical" tabindex="0"
+      aria-label="Resize the slide list" title="Drag to resize. Double-click to reset."></div>
 
     <section class="e-view" aria-label="Slide view">
       <div class="e-kicker" id="e-kicker"></div>
@@ -130,7 +180,15 @@
         <button type="button" id="e-discard" disabled>Discard changes</button>
         <button type="button" id="e-reset" disabled>Reset to original</button>
       </div>
+      <div class="e-actions">
+        <button type="button" id="e-add" disabled title="Adds a copy of this slide right after it. Saved straight away.">＋ Add a slide after this one</button>
+        <button type="button" id="e-move-up" disabled title="Move this slide one place earlier. Saved straight away.">↑ Move up</button>
+        <button type="button" id="e-move-down" disabled title="Move this slide one place later. Saved straight away.">↓ Move down</button>
+        <button type="button" id="e-delete" disabled title="Removes this slide from the deck for everyone. Saved straight away.">Delete this slide</button>
+      </div>
     </section>
+    <div class="e-split" id="e-split-right" role="separator" aria-orientation="vertical" tabindex="0"
+      aria-label="Resize the code window" title="Drag to resize. Double-click to reset."></div>
 
     <section class="e-code" aria-label="Code">
       <div class="e-tabs" role="tablist" id="e-tabs">
@@ -141,6 +199,8 @@
         <button type="button" role="tab" data-tab="builtin" data-for="master">Built-in styles</button>
       </div>
       <div class="e-pane" data-pane="html">
+        <p class="e-note">Everything inside the slide. The deck wraps it in <code id="e-wrapper"></code>, and the
+          look comes from the Master CSS and the built-in styles.</p>
         <textarea id="e-html" aria-label="Slide HTML" spellcheck="false" autocapitalize="off" autocomplete="off"></textarea>
       </div>
       <div class="e-pane" data-pane="css" hidden>
@@ -168,6 +228,68 @@
       </div>
     </section>
   </main>
+
+  <dialog class="e-help" id="e-help" aria-labelledby="e-help-title">
+    <div class="e-help-shell">
+      <header class="e-help-head">
+        <div class="e-kicker">Slide settings</div>
+        <h2 class="e-title" id="e-help-title">Instructions</h2>
+        <button type="button" id="e-help-close" class="e-help-close" aria-label="Close instructions" title="Close">×</button>
+      </header>
+
+      <h3>Editing a slide</h3>
+      <ol>
+        <li>Pick a slide in the list on the left. It comes up in the middle.</li>
+        <li>Click any text on the slide and type, or change the <strong>HTML</strong>, <strong>Slide CSS</strong> and
+          <strong>Slide JS</strong> boxes on the right. The slide updates as you type.</li>
+        <li>Press <strong>Save for everyone</strong>. Until then nothing changes for anyone else.</li>
+      </ol>
+      <p><strong>Add a slide</strong> puts a copy of the current slide right after it, ready to change.
+        <strong>Delete this slide</strong> takes it out of the deck; deleted deck slides wait at the bottom of the list
+        so you can bring them back. To <strong>change the order</strong>, drag a slide up or down the list, or use
+        Move up and Move down. <strong>Reset to original</strong> undoes a saved edit.</p>
+
+      <h3>Building a slide with Claude or ChatGPT</h3>
+      <ol>
+        <li>Open the slide you want to change (or add a new one), then press <strong>Copy the prompt</strong> below.</li>
+        <li>Paste it into Claude or ChatGPT and replace the last line with what you want the slide to be.</li>
+        <li>It answers with three blocks. Paste them into the <strong>HTML</strong>, <strong>Slide CSS</strong> and
+          <strong>Slide JS</strong> boxes, check the slide in the middle, then save.</li>
+      </ol>
+      <div class="e-help-actions">
+        <button class="e-primary" type="button" id="e-help-copy">Copy the prompt</button>
+        <span class="e-help-copied" id="e-help-copied" role="status" aria-live="polite"></span>
+      </div>
+      <textarea id="e-help-prompt" aria-label="Prompt for Claude or ChatGPT" readonly spellcheck="false"></textarea>
+
+      <h3>Building several slides at once</h3>
+      <ol>
+        <li>Press <strong>Copy the multi-slide prompt</strong>, paste it into Claude or ChatGPT, and replace the last
+          line with what the presentation should cover.</li>
+        <li>It answers with one block of code. Copy that block and paste it into the box below.</li>
+        <li>Press <strong>Add these slides</strong>. They go in after the slide you have open, and are saved for
+          everyone straight away. Delete any slides you no longer want afterwards.</li>
+      </ol>
+      <div class="e-help-actions">
+        <button class="e-primary" type="button" id="e-project-copy">Copy the multi-slide prompt</button>
+        <span class="e-help-copied" id="e-project-copied" role="status" aria-live="polite"></span>
+      </div>
+      <textarea id="e-project-answer" aria-label="The answer from Claude or ChatGPT" spellcheck="false"
+        placeholder='Paste the answer here. It starts with { "slides": [ ...'></textarea>
+      <div class="e-help-actions">
+        <button class="e-primary" type="button" id="e-project-add">Add these slides</button>
+        <span class="e-help-copied" id="e-project-status" role="status" aria-live="polite"></span>
+      </div>
+
+      <h3>The footer logos</h3>
+      <p>Every slide's footer uses these. The prompt already includes them.</p>
+      <ul class="e-help-links">
+        <li>MSFG logo: <a id="e-help-logo" target="_blank" rel="noopener noreferrer"></a></li>
+        <li>MSFG logo for dark slides: <a id="e-help-logo-dark" target="_blank" rel="noopener noreferrer"></a></li>
+        <li>Equal Housing Lender logo: <a id="e-help-housing" target="_blank" rel="noopener noreferrer"></a></li>
+      </ul>
+    </div>
+  </dialog>
 
   <script type="module">
     import { initSlideEditor } from './js/slide-editor.js';
