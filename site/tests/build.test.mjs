@@ -143,6 +143,21 @@ test('Webinar Studio is the Reverse Mortgages engine with its own content laid o
   });
 });
 
+test('every slide deck ships the same Slide settings code, with its own format notes', () => {
+  /* Each deck carries its own copy of the editor. The copies must not drift:
+     change the Reverse Mortgages one and copy it to the others. */
+  const shared = ['editor.html', 'js/slide-edits.js', 'js/slide-editor.js', 'js/slide-prompt.js', 'js/pages.js'];
+  const decks = ['first-home-without-mystery/deck', 'first-time-homebuyer/deck', 'va-loans/deck'];
+  const read = (deck, file) => readFileSync(join(REPO_ROOT, deck, file), 'utf8');
+  for (const deck of decks) {
+    for (const file of shared) {
+      assert.equal(read(deck, file), read('reverse-mortgages/deck', file), `${deck}/${file} differs from the Reverse Mortgages copy`);
+    }
+    assert.match(read(deck, 'content/slide-format.js'), /export const SLIDE_FORMAT/, `${deck} has no slide format`);
+    assert.match(read(deck, 'content/webinar-config.js'), /slideEditsApi/, `${deck} is not set up for saved edits`);
+  }
+});
+
 test('the built Webinar Studio starts new webinars with three starter slides and safe names', async () => {
   const outDir = mkdtempSync(join(tmpdir(), 'msfg-site-'));
   try {

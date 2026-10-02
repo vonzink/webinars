@@ -21,15 +21,24 @@ import { makeCard, makeCardGrid } from './card.js';
 import { FIGURES } from './figures.js';
 import * as annotate from './annotate.js';
 import { createSurfaceController } from './surface-fit.js';
+import { WEBINAR } from '../content/webinar-config.js';
+import {
+  SLIDE_LIST_ID, arrangeSlides, createSlideEditClient, createSlideEditStage, parseSlideList, webinarTitle,
+} from './slide-edits.js';
+import { pageUrl } from './pages.js';
 
+/* SLIDES is rearranged in place when slides are added or deleted in Slide
+   settings; this is the deck exactly as content/slides.js defines it. */
+const DECK_SLIDES = [...SLIDES];
+let slideList = parseSlideList('');
 let P = activePresenter();
 const PREVIEW = new URLSearchParams(location.search).has('preview');
-const DECK_CHANNEL_PREFIX = 'msfg-deck:first-home-without-mystery:';
+const DECK_CHANNEL_PREFIX = `msfg-deck:${WEBINAR.slug}:`;
 const DECK_SESSION_ID = globalThis.crypto?.randomUUID?.() ||
   `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
 const DECK_CHANNEL_NAME = `${DECK_CHANNEL_PREFIX}${DECK_SESSION_ID}`;
 if (!PREVIEW) window.__msfgDeckSessionId = DECK_SESSION_ID;
-let current = 0, scaler, stage, slideFit, channel;
+let current = 0, scaler, stage, slideFit, channel, slideEdits;
 let presenterWindow = null, presenterClosedWatch = null, navHidden = false;
 const buildPlayback = {
   items: [],
@@ -219,12 +228,8 @@ const layouts = {
             </article>`).join('')}
         </div>
         <div class="callout build ingredient-callout">${d.callout}</div>
-        ${d.helpModal ? `<button type="button" class="cash-help-trigger build" aria-haspopup="dialog">${esc(d.helpLabel)}<span aria-hidden="true">↗</span></button>` : ''}
+        ${d.helpModal ? `<button type="button" class="cash-help-trigger build" aria-haspopup="dialog" data-modal="${d.helpModal}">${esc(d.helpLabel)}<span aria-hidden="true">↗</span></button>` : ''}
       </div>`;
-    if (d.helpModal) {
-      const trigger = el.querySelector('.cash-help-trigger');
-      trigger.addEventListener('click', () => openModal(d.helpModal, trigger));
-    }
   },
 
   cashExample(el, d) {
@@ -255,7 +260,7 @@ const layouts = {
       <div class="slide-body" style="justify-content:center">
         <div class="document-story">
           ${d.groups.map((group, index) => `
-            <article class="document-group build" role="button" tabindex="0" aria-haspopup="dialog" aria-label="${esc(group.label)} — open document details" data-document-modal="${group.modal}">
+            <article class="document-group build" role="button" tabindex="0" aria-haspopup="dialog" aria-label="${esc(group.label)} — open document details" data-modal="${group.modal}" data-document-modal="${group.modal}">
               <span>0${index + 1}</span>
               <h3>${group.label}</h3>
               <ul>${group.items.map(item => `<li>${item}</li>`).join('')}</ul>
@@ -264,15 +269,6 @@ const layouts = {
         </div>
         <div class="callout build document-callout">${d.callout}</div>
       </div>`;
-    el.querySelectorAll('[data-document-modal]').forEach(card => {
-      card.addEventListener('click', () => openModal(card.dataset.documentModal, card));
-      card.addEventListener('keydown', event => {
-        if (event.key === 'Enter' || event.key === ' ') {
-          event.preventDefault(); event.stopPropagation();
-          openModal(card.dataset.documentModal, card);
-        }
-      });
-    });
   },
 
   closePlan(el, d) {
@@ -310,7 +306,8 @@ const layouts = {
   },
 
   /* Interactive diagram slide: the SVG IS the slide. Nodes carrying data-modal
-     open the matching educational popout when clicked. */
+     open the matching educational popout when clicked. The slot keeps its own
+     listener (the deck-wide one leaves .web-slot alone). */
   web(el, d) {
     el.innerHTML = `<div class="web-slot build"></div>`;
     const slot = el.querySelector('.web-slot');
@@ -335,8 +332,8 @@ const layouts = {
     if (d.compareModal) {
       const b = document.createElement('button');
       b.className = 'compare-cta build';
+      b.dataset.modal = d.compareModal;
       b.innerHTML = 'Compare loans: Conventional · FHA · VA <span aria-hidden="true">→</span>';
-      b.addEventListener('click', () => openModal(d.compareModal, b));
       el.querySelector('.slide-body').appendChild(b);
     }
   },
@@ -409,14 +406,10 @@ const layouts = {
           <ul class="prepaid-upfront">${d.upfront.map(i => `<li>${i}</li>`).join('')}</ul>
           <div class="prepaid-note">${d.note}</div>
         </div>
-        <button type="button" class="prepaid-figure build" aria-label="Enlarge the itemized fee worksheet">
+        <button type="button" class="prepaid-figure build" aria-label="Enlarge the itemized fee worksheet"${d.media ? ` data-media="${d.media}"` : ''}>
           <img src="${d.image}" alt="Example closing-cost worksheet for John Doe">
           <figcaption>${d.imageCaption} <span class="prepaid-zoom" aria-hidden="true">⤢ Tap to enlarge</span></figcaption>
         </button>`;
-    if (d.media) {
-      const fig = el.querySelector('.prepaid-figure');
-      fig.addEventListener('click', () => openMedia(d.media, fig));
-    }
   },
 
   stepper(el, d) {
@@ -551,8 +544,8 @@ function renderActions(el, d) {
       const b = document.createElement('button');
       b.type = 'button';
       b.className = `btn btn--sm btn--${variant}${ghostLight}`;
+      b.dataset.media = a.media;
       b.innerHTML = `<span class="btn-ico" aria-hidden="true">▦</span>${a.label}`;
-      b.addEventListener('click', () => { openMedia(a.media, b); });
       bar.appendChild(b);
     }
   });
@@ -561,7 +554,8 @@ function renderActions(el, d) {
 
 /* Subtle top-right control: a small graph icon that opens the list of graphics
    available on this slide. Viewers can open them, but the presenter drives.
-   Only appears on slides that actually have associated graphics. */
+   Only appears on slides that actually have associated graphics. The menu keeps
+   its own listeners (the deck-wide one leaves .slide-graphics alone). */
 function renderGraphicsControl(el, d) {
   const media = mediaForSlide(d.id);
   if (!media.length) return;
@@ -597,12 +591,15 @@ function renderGraphicsControl(el, d) {
   el.appendChild(wrap);
 }
 
-/* Subtle top-right calculator icon. Shown on the shared slide window only. */
+/* Subtle top-right calculator icon. Shown on the shared slide window only, so
+   it is never part of the HTML that Slide settings saves; the deck puts it back
+   on top of an edited slide (see the stage's onChange). */
 function renderCalcControl(el, d) {
-  if (!d.calc || PREVIEW) return;
+  if (!d.calc || PREVIEW || el.querySelector('.slide-calc')) return;
   const btnEl = document.createElement('button');
   btnEl.type = 'button';
   btnEl.className = 'slide-calc sg-btn';
+  btnEl.dataset.calc = d.calc;
   const label = 'Open cash-to-close calculator';
   btnEl.setAttribute('aria-label', label);
   btnEl.setAttribute('title', label);
@@ -617,8 +614,46 @@ function renderCalcControl(el, d) {
       <line x1="12" y1="15.5" x2="12.01" y2="15.5"></line>
       <line x1="16" y1="15" x2="16" y2="18"></line>
     </svg>`;
-  btnEl.addEventListener('click', () => setCashToCloseVisible(true, btnEl));
   el.appendChild(btnEl);
+}
+
+/* ---- clickable parts ------------------------------------------------------
+   Cards, help buttons, document cards and the compare button carry
+   data-modal="<pop-out id>"; figures and action buttons carry
+   data-media="<graphic id>"; the calculator icon carries data-calc. ONE listener
+   on the slides finds them, so they keep working after a slide's HTML has been
+   edited and saved. In Slide settings the slide is being typed on, and a click
+   there places the cursor instead. */
+const OPENERS = '[data-modal], [data-media], [data-calc]';
+
+function openerFor(event) {
+  const target = event.target;
+  if (!(target instanceof Element) || target.closest('[contenteditable]:not([contenteditable="false"])')) return null;
+  const opener = target.closest(OPENERS);
+  if (!opener || !scaler.contains(opener) || opener.closest('.slide-graphics, .web-slot')) return null;
+  return opener;
+}
+
+function openFrom(opener) {
+  if (opener.dataset.modal) openModal(opener.dataset.modal, opener);
+  else if (opener.dataset.media) openMedia(opener.dataset.media, opener);
+  else if (!PREVIEW) setCashToCloseVisible(true, opener);
+}
+
+function initOpeners() {
+  scaler.addEventListener('click', event => {
+    const opener = openerFor(event);
+    if (opener) openFrom(opener);
+  });
+  /* Buttons and links click themselves on Enter and Space; anything else that
+     opens something (a document card) needs the keys handled for it. */
+  scaler.addEventListener('keydown', event => {
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    const opener = openerFor(event);
+    if (!opener || opener.matches('button, a[href], input, select, textarea')) return;
+    event.preventDefault(); event.stopPropagation();
+    openFrom(opener);
+  });
 }
 
 /* ---- build sequencing ----------------------------------------------------- */
@@ -643,12 +678,16 @@ function updatePlanDetail() {
   const el = document.getElementById(`slide-${slide.id}`);
   const detail = el.querySelector('.plan-detail');
   const index = buildPlayback.revealed - 1;
-  detail.hidden = index < 0;
   el.querySelectorAll('.plan-step').forEach((step, i) => step.classList.toggle('is-current', i === index));
-  if (index < 0) return;
-  detail.querySelector('.plan-detail-count').textContent = `0${index + 1}`;
-  detail.querySelector('h3').textContent = slide.steps[index].label;
-  detail.querySelector('p').textContent = slide.steps[index].detail;
+  /* An edited slide may have dropped the detail panel or changed its steps. */
+  const [count, title, body] = ['.plan-detail-count', 'h3', 'p'].map(part => detail?.querySelector(part));
+  const step = slide.steps[index];
+  if (!detail || !count || !title || !body) return;
+  detail.hidden = !step;
+  if (!step) return;
+  count.textContent = `0${index + 1}`;
+  title.textContent = step.label;
+  body.textContent = step.detail;
 }
 
 function revealBuilds(count) {
@@ -707,23 +746,143 @@ function runBuild(el) {
   buildPlayback.revealed = 0;
   buildPlayback.playing = false;
   buildPlayback.items.forEach(item => item.classList.remove('is-in'));
-  if (SLIDES[current].manualBuild) {
+  /* A preview (Presenter View's next slide, Slide settings) shows the finished slide. */
+  if (PREVIEW || SLIDES[current].manualBuild) {
     revealBuilds(PREVIEW ? buildPlayback.items.length : 0);
   } else {
     playBuild();
   }
 }
 
+/* A slide's markup was replaced by a slide edit: pick up its build items again
+   and show them all, so nothing stays hidden while it is being edited. */
+function refreshBuild(el) {
+  clearBuildTimers();
+  buildPlayback.items = [...el.querySelectorAll('.build')];
+  buildPlayback.playing = false;
+  revealBuilds(buildPlayback.items.length);
+}
+
+/* Saved edits (Slide settings: a slide's HTML, CSS and JS, the Master CSS, and
+   slides added or deleted) apply for everyone. The slides stay hidden for a
+   moment so an edited first slide does not flash its original; if the server
+   is slow or unreachable the originals show instead. */
+/* Inside Slide settings every preview of the deck shares the editor's one copy
+   of the saved edits, so twenty small previews do not mean twenty requests. */
+async function fetchSavedEdits() {
+  try {
+    if (window.parent !== window && typeof window.parent.__slideEditsFeed === 'function') {
+      return await window.parent.__slideEditsFeed();
+    }
+  } catch { /* a parent from another site: load them ourselves */ }
+  return createSlideEditClient({ base: WEBINAR.slideEditsApi, slug: WEBINAR.slug }).list();
+}
+
+async function loadSavedEdits(requestedId) {
+  if (!WEBINAR.slideEditsApi) return;
+  let holding = true;
+  const reveal = () => { holding = false; scaler.style.visibility = ''; };
+  scaler.style.visibility = 'hidden';
+  const timer = setTimeout(reveal, 600);
+  const edits = await fetchSavedEdits();
+  clearTimeout(timer);
+  const held = holding;
+  /* A webinar made in Webinar Studio carries its own title; this deck's is fixed. */
+  const title = webinarTitle(edits);
+  if (title) document.title = `${title} — Mountain State Financial Group`;
+  window.__deckTitle = title || WEBINAR.title;
+  const saved = edits.find(edit => edit.slideId === SLIDE_LIST_ID);
+  if (saved) applySlideList(parseSlideList(saved.html));
+  slideEdits.load(edits);
+  /* The address may have asked for a slide that only exists once the list is in. */
+  const requested = SLIDES.findIndex(s => s.id === requestedId);
+  if (requested >= 0 && requested !== current) show(requested);
+  reveal();
+  /* Start the slide on show again: its build was held back, or its markup was replaced. */
+  if (held || slideEdits.isEdited(SLIDES[current].id)) runBuild(document.getElementById(`slide-${SLIDES[current].id}`));
+}
+
+function label(el, d, i) {
+  el.dataset.index = String(i);
+  el.setAttribute('aria-label', `${i + 1} of ${SLIDES.length}: ${d.headline || d.eyebrow || d.id}`);
+}
+
 function shell(d, i) {
   const el = document.createElement('section');
   el.className = 'slide';
   el.id = `slide-${d.id}`;
-  el.dataset.index = String(i);
   el.dataset.bg = d.bg || 'mist';
   el.setAttribute('role', 'group');
   el.setAttribute('aria-roledescription', 'slide');
-  el.setAttribute('aria-label', `${i + 1} of ${SLIDES.length}: ${d.headline || d.eyebrow || d.id}`);
+  label(el, d, i);
   return el;
+}
+
+/* Slide settings makes each slide editable as plain text, and Chrome then stops
+   collapsing white space inside it: every line break in the markup shows as a
+   blank line. So in a preview, the white space that only lays the markup out is
+   taken away: the layouts' own indentation, and the line breaks the HTML box
+   puts between tags. Only white space that cannot show on a slide goes: inside
+   a flex or grid box, at either end of a block, or next to a block-level box.
+   Visitors' slides are not touched, and the preview looks the same as theirs.
+   It reads the page's styles, so it does nothing until the slide is in the page. */
+function tidyForEditing(el) {
+  if (!PREVIEW || !el.isConnected) return;
+  const display = node => (node?.nodeType === Node.ELEMENT_NODE ? getComputedStyle(node).display : '');
+  const inline = value => !value || value.startsWith('inline') || value === 'contents' || value === 'none';
+  const inFlow = node => { const style = getComputedStyle(node); return !['absolute', 'fixed'].includes(style.position) && style.float === 'none'; };
+  const isBlock = node => !inline(display(node)) && inFlow(node);
+  const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+  const spare = [];
+  while (walker.nextNode()) {
+    const node = walker.currentNode;
+    if (!/^[ \t\n\r\f]*$/.test(node.data)) continue;
+    const before = node.previousSibling;
+    const after = node.nextSibling;
+    const box = display(node.parentNode);
+    if (/flex|grid/.test(box) || isBlock(before) || isBlock(after) || ((!before || !after) && !inline(box))) spare.push(node);
+  }
+  spare.forEach(node => node.remove());
+}
+
+/* Draw a slide's own content into its element. */
+function renderSlide(el, d) {
+  (layouts[d.layout] || layouts.grid)(el, d);
+  renderActions(el, d);
+  renderGraphicsControl(el, d);
+  renderCalcControl(el, d);
+  furniture(el, d);
+  tidyForEditing(el);
+}
+
+function buildSlide(d, i) {
+  const el = shell(d, i);
+  renderSlide(el, d);
+  return el;
+}
+
+/* Slides added or deleted in Slide settings: rearrange SLIDES and the slide
+   elements to match, keeping the slide on show where possible. */
+function applySlideList(list) {
+  slideList = list;
+  const shownId = SLIDES[current]?.id;
+  SLIDES.splice(0, SLIDES.length, ...arrangeSlides(DECK_SLIDES, list));
+  const existing = new Map([...scaler.querySelectorAll('.slide')].map(el => [el.id, el]));
+  SLIDES.forEach((d, i) => {
+    let el = existing.get(`slide-${d.id}`);
+    existing.delete(`slide-${d.id}`);
+    const fresh = !el;
+    if (fresh) el = buildSlide(d, i);
+    label(el, d, i);
+    scaler.appendChild(el);                        // appending in order also reorders
+    if (fresh) {
+      tidyForEditing(el);
+      slideEdits.rerendered(d.id);                 // take its original; a saved edit goes on top
+    }
+  });
+  existing.forEach(el => el.remove());
+  const at = SLIDES.findIndex(s => s.id === shownId);
+  show(at >= 0 ? at : Math.min(current, SLIDES.length - 1));
 }
 
 function show(i) {
@@ -733,6 +892,7 @@ function show(i) {
   const slides = document.querySelectorAll('.slide');
   slides.forEach((s, idx) => s.classList.toggle('is-active', idx === current));
   runBuild(slides[current]);
+  slideEdits.shown(SLIDES[current].id);          // a slide's own JS runs each time it is shown
   const nav = document.querySelector('.nav-count');
   if (nav) nav.textContent = `${current + 1} / ${SLIDES.length}`;
   const prog = document.querySelector('.deck-progress');
@@ -834,6 +994,8 @@ function applyPresenter(p) {
     if (!d) return;
     (layouts[d.layout] || layouts.grid)(el, d);   // re-render with new P
     furniture(el, d);                              // innerHTML reset dropped the footer
+    tidyForEditing(el);
+    slideEdits.rerendered(id);                     // a saved edit goes back on top
     if (el.classList.contains('is-active')) runBuild(el);
   });
 }
@@ -871,15 +1033,24 @@ export function initDeck() {
     annotate.onStateChange(on => { if (channel) channel.postMessage({ type: 'annstate', on }); });
   }
 
-  SLIDES.forEach((d, i) => {
-    const el = shell(d, i);
-    (layouts[d.layout] || layouts.grid)(el, d);
-    renderActions(el, d);
-    renderGraphicsControl(el, d);
-    renderCalcControl(el, d);
-    furniture(el, d);
-    scaler.appendChild(el);
+  SLIDES.forEach((d, i) => tidyForEditing(scaler.appendChild(buildSlide(d, i))));
+  initOpeners();
+  slideEdits = createSlideEditStage({
+    document,
+    onChange: el => {
+      /* The calculator icon is the deck's, not part of a slide's saved HTML. */
+      const d = SLIDES.find(s => `slide-${s.id}` === el.id);
+      if (d) renderCalcControl(el, d);
+      tidyForEditing(el);
+      if (el.classList.contains('is-active')) refreshBuild(el);
+    },
+    /* Back to the original: the deck draws the slide again. */
+    restore: (id, el) => {
+      const d = SLIDES.find(s => s.id === id);
+      if (d) renderSlide(el, d);
+    },
   });
+  SLIDES.forEach(d => slideEdits.capture(d.id));
 
   if (!PREVIEW) {
     document.querySelector('[data-nav="next"]').addEventListener('click', next);
@@ -920,8 +1091,27 @@ export function initDeck() {
   fit();
   initChannel();
 
-  const fromHash = SLIDES.findIndex(s => s.id === location.hash.slice(1));
+  const requestedId = location.hash.slice(1);
+  const fromHash = SLIDES.findIndex(s => s.id === requestedId);
   show(fromHash >= 0 ? fromHash : 0);
+  /* The Slide settings screen embeds this deck and drives its slides directly. */
+  slideEdits.ready = loadSavedEdits(requestedId);
+  window.__deckSlideEdits = slideEdits;
+  window.__deckTitle = WEBINAR.title;
+  /* A slide whose saved HTML has its own heading is named by that heading. */
+  const named = s => ({ id: s.id, title: slideEdits.heading(s.id) || s.headline || s.eyebrow || s.id, added: Boolean(s.added) });
+  window.__deckSlides = {
+    list: () => slideList,
+    apply: applySlideList,
+    shown: () => SLIDES.map(named),
+    deck: () => DECK_SLIDES.map(named),
+    /* The deck slide a brand-new slide is framed like: light, with the standard
+       header, body and footer, and nothing special about it. */
+    plain: () => {
+      const light = s => s.bg !== 'dark' && !s.footerTheme;
+      return (DECK_SLIDES.find(s => light(s) && !s.manualBuild && !s.calc) || DECK_SLIDES.find(light) || DECK_SLIDES[0]).id;
+    },
+  };
 
   const ok = SLIDES.length === 14 && MODAL_COUNT === 8;
   console.log(
@@ -943,7 +1133,7 @@ export function initDeck() {
 
 function openPresenter() {
   const params = new URLSearchParams({ deck: DECK_SESSION_ID, slide: String(current) });
-  presenterWindow = window.open(`./presenter.html?${params}`, 'msfg-presenter', 'width=1280,height=800');
+  presenterWindow = window.open(pageUrl('presenter.html', params.toString()), 'msfg-presenter', 'width=1280,height=800');
 }
 
 export { show, next, prev, SLIDES };

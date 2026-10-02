@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { existsSync } from 'node:fs';
 import test from 'node:test';
 import {
   arrangeSlides, headingOf, listAfterAdd, listAfterMove, listAfterRemove, listAfterRestore, parseSlideList, webinarTitle,
@@ -109,41 +110,48 @@ test('a Webinar Studio webinar\'s title is read from its saved details', () => {
   assert.equal(webinarTitle([{ slideId: 'opening', html: '<h1>x</h1>' }]), '');
 });
 
-const links = brandLinks('https://msfgmortgage.com/webinars/reverse-mortgages/index.html', SLIDE_FORMAT.logos);
+const links = brandLinks('https://msfgmortgage.com/webinars/homebuyers-webinar/index.html', SLIDE_FORMAT.logos);
 
-test('the brand links point at the deck\'s own logo files', () => {
+test('the brand links point at the deck\'s own logo files, which exist', () => {
   assert.deepEqual(links, {
-    logo: 'https://msfgmortgage.com/webinars/reverse-mortgages/assets/brand/logo-horizontal.svg',
-    logoOnDark: 'https://msfgmortgage.com/webinars/reverse-mortgages/assets/brand/logo-horizontal-knockout.svg',
-    equalHousing: 'https://msfgmortgage.com/webinars/reverse-mortgages/assets/brand/EQUAL%20HOUSING%20LENDER.png',
+    logo: 'https://msfgmortgage.com/webinars/homebuyers-webinar/assets/brand/logo-horizontal.svg',
+    logoOnDark: 'https://msfgmortgage.com/webinars/homebuyers-webinar/assets/brand/logo-horizontal-knockout.svg',
+    equalHousing: 'https://msfgmortgage.com/webinars/homebuyers-webinar/assets/brand/EQUAL%20HOUSING%20LENDER.png',
   });
+  for (const path of Object.values(SLIDE_FORMAT.logos)) {
+    assert.ok(existsSync(new URL(`../${decodeURIComponent(path)}`, import.meta.url)), `missing brand file: ${path}`);
+  }
   const footer = footerHtml(links);
   assert.ok(footer.includes(links.logo) && footer.includes(links.equalHousing));
-  assert.ok(footer.includes('class="source-page"') && footer.includes('NMLS #1314257'));
+  assert.ok(footer.includes('class="slide-footer"') && footer.includes('class="footer-lines"') && footer.includes('NMLS# 1314257'));
+});
+
+test('the built-in parts that an HTML edit breaks are named for the editor\'s warning', () => {
+  assert.equal(SLIDE_FORMAT.interactive, '.slide-graphics, .slide-calc, .web-slot');
 });
 
 test('the one-slide prompt carries the format, the footer and the slide that is open', () => {
   const prompt = buildSlidePrompt({
-    deckTitle: 'Reverse Mortgages',
+    deckTitle: 'The Homebuyer\'s Playbook',
     links,
     format: SLIDE_FORMAT,
-    slide: { title: 'What is a HECM?', html: '<h2 class="source-title">What is a HECM?</h2>', css: '.x { color: red; }', js: '', reference: '.source-title {\n  color: var(--forest);\n}' },
+    slide: { title: 'Myths', html: '<h2 class="headline">Myths</h2>', css: '.x { color: red; }', js: '', reference: '.headline {\n  color: var(--text-head-light);\n}' },
   });
-  for (const expected of ['three code blocks', '1920 x 1080', '<footer class="source-footer">', links.logo, links.logoOnDark,
-    links.equalHousing, 'source-groups', 'variable named slide', 'THE SLIDE I HAVE OPEN NOW ("What is a HECM?")',
-    '<h2 class="source-title">What is a HECM?</h2>', '.x { color: red; }', 'THE DECK STYLES THIS SLIDE USES NOW', 'color: var(--forest);', 'WHAT I WANT']) {
+  for (const expected of ['three code blocks', '1920 x 1080', 'called "The Homebuyer\'s Playbook"', '<div class="slide-footer">', '<div class="slide-header">',
+    links.logo, links.logoOnDark, links.equalHousing, 'card-grid', 'data-modal', 'variable named slide', 'THE SLIDE I HAVE OPEN NOW ("Myths")',
+    '<h2 class="headline">Myths</h2>', '.x { color: red; }', 'THE DECK STYLES THIS SLIDE USES NOW', 'color: var(--text-head-light);', 'WHAT I WANT']) {
     assert.ok(prompt.includes(expected), `missing: ${expected}`);
   }
   assert.ok(!buildSlidePrompt({ links, format: SLIDE_FORMAT }).includes('THE SLIDE I HAVE OPEN NOW'));
   /* a deck with no format of its own still gets the general rules and the open slide */
   const plain = buildSlidePrompt({ slide: { title: 'Any', html: '<h2>Any</h2>', css: '', js: '' } });
-  assert.ok(plain.includes('1920 x 1080') && plain.includes('<h2>Any</h2>') && !plain.includes('source-groups'));
+  assert.ok(plain.includes('1920 x 1080') && plain.includes('<h2>Any</h2>') && !plain.includes('card-grid'));
   assert.deepEqual(brandLinks('https://example.com/deck/index.html'), {});
 });
 
 test('the multi-slide prompt asks for one JSON block the editor can read back', () => {
-  const prompt = buildProjectPrompt({ deckTitle: 'Reverse Mortgages', links, format: SLIDE_FORMAT, example: { html: '<h2 class="source-title">Plain</h2>', reference: '' } });
-  assert.ok(prompt.includes('A SLIDE FROM THIS DECK TO MODEL YOURS ON') && prompt.includes('<h2 class="source-title">Plain</h2>'));
+  const prompt = buildProjectPrompt({ deckTitle: 'The Homebuyer\'s Playbook', links, format: SLIDE_FORMAT, example: { html: '<h2 class="headline">Plain</h2>', reference: '' } });
+  assert.ok(prompt.includes('A SLIDE FROM THIS DECK TO MODEL YOURS ON') && prompt.includes('<h2 class="headline">Plain</h2>'));
   for (const expected of ['ONE code block labelled json', '"slides"', `At most ${MAX_PROJECT_SLIDES} slides`, links.equalHousing, 'WHAT I WANT']) {
     assert.ok(prompt.includes(expected), `missing: ${expected}`);
   }
