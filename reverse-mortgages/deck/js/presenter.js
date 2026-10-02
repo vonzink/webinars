@@ -421,6 +421,10 @@ export function initPresenter() {
   $('#p-slide-settings').addEventListener('click', () => {
     window.open(pageUrl('editor.html', '', SLIDES[index].id), `msfg-${WEBINAR.slug}-slide-settings`);
   });
+  if (WEBINAR.studio) {
+    $('#p-studio-link').href = WEBINAR.studio;
+    $('#p-studio-link').hidden = false;
+  }
   followSlideList();
 
   $('#p-animation-prev').addEventListener('click', () => animationCommand('prev'));
