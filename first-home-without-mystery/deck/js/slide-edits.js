@@ -11,15 +11,82 @@ export const MASTER_ID = '_master';      // the server's name for the Master CSS
 export const SLIDE_LIST_ID = '_slides';  // ...and for the deck's slide list
 export const WEBINAR_ID = '_webinar';    // ...and for a Webinar Studio webinar's details
 
-/* The title a webinar was given in Webinar Studio, if it was made there. */
+/* What Webinar Suite saved about a webinar made there: its title, and the
+   presenter chosen when it was made with AI ({ name, title, nmls, phone,
+   email }), or null. `madeWithAi`: its slides all came from one AI
+   response, so the starter slides they are framed on are not slides of its own. Empty for a deck built into the site. */
+export function webinarDetails(edits) {
+  const saved = edits.find(edit => edit.slideId === WEBINAR_ID);
+  let data = null;
+  try { data = JSON.parse(saved.html); } catch { /* nothing saved, or not readable */ }
+  const title = typeof data?.title === 'string' ? data.title.trim() : '';
+  const presenter = data?.presenter && typeof data.presenter === 'object' && typeof data.presenter.name === 'string'
+    ? data.presenter : null;
+  return { title, presenter, madeWithAi: data?.madeWithAi === true };
+}
+
+/* The title a webinar was given in Webinar Suite, if it was made there. */
 export function webinarTitle(edits) {
-  const details = edits.find(edit => edit.slideId === WEBINAR_ID);
-  try {
-    const title = JSON.parse(details.html).title;
-    return typeof title === 'string' ? title.trim() : '';
-  } catch {
-    return '';
+  return webinarDetails(edits).title;
+}
+
+/* ---- a new presentation made with AI ----------------------------------------
+   The saved-edits model has no stand-alone slide: every added slide is a copy
+   of one of the deck's own slides (its frame) with its content saved on top.
+   A presentation from Webinar Suite therefore becomes added slides framed like
+   the Studio's plain starter slide, each with the full HTML, CSS and JS from
+   the AI answer, and the starter slides themselves are left out. */
+
+/* Everything to save for a new presentation, in the order it is saved: each
+   slide, then the Master CSS, then the slide list, and the webinar's details
+   last, because those are what make it show up in Webinar Suite.
+   `starters` are the deck's own slides; `frame` the id of the one new slides
+   are framed like; `newId(index)` names each new slide. */
+export function planPresentation(presentation, { starters, frame, presenter = null, newId }) {
+  const slides = presentation.slides.map((slide, index) => ({
+    id: newId(index),
+    title: slide.title,
+    edit: { html: slide.html, css: slide.css, js: slide.js },
+  }));
+  const list = {
+    order: slides.map(slide => slide.id),
+    added: Object.fromEntries(slides.map(slide => [slide.id, { from: frame, title: slide.title }])),
+    removed: starters.map(slide => slide.id),
+  };
+  return {
+    title: presentation.title,
+    slides,
+    records: [
+      ...slides.map(slide => ({ slideId: slide.id, edit: slide.edit })),
+      { slideId: MASTER_ID, edit: { html: '', css: presentation.masterCss, js: '' } },
+      { slideId: SLIDE_LIST_ID, edit: { html: JSON.stringify(list), css: '', js: '' } },
+      { slideId: WEBINAR_ID, edit: { html: JSON.stringify({ title: presentation.title, madeWithAi: true, ...(presenter ? { presenter } : {}) }), css: '', js: '' } },
+    ],
+  };
+}
+
+/* The plan as saved edits, so the deck can show it before anything is saved
+   (see __slideEditsFeed). */
+export const planFeed = plan => plan.records.map(({ slideId, edit }) => ({ slideId, ...edit }));
+
+/* Saved edits with some changed or added ([{ slideId, html, css, js }]). */
+export function overlayEdits(edits, changes) {
+  const byId = new Map(edits.map(edit => [edit.slideId, edit]));
+  changes.forEach(change => byId.set(change.slideId, change));
+  return [...byId.values()];
+}
+
+/* Save a plan record by record, stopping at the first failure. Nothing is
+   saved out of order, so the webinar's details (and with them its place in
+   Webinar Suite) are only written once everything else is. Trying again with
+   the same plan writes the same records again. */
+export async function savePlan(client, plan, password, onProgress = () => {}) {
+  for (const [index, record] of plan.records.entries()) {
+    onProgress(index, plan.records.length, record.slideId);
+    const result = await client.save(record.slideId, record.edit, password);
+    if (!result.ok) return { ...result, savedCount: index, failedAt: record.slideId };
   }
+  return { ok: true, savedCount: plan.records.length };
 }
 
 /* ---- the slide list ------------------------------------------------------
@@ -306,16 +373,16 @@ export function createSlideEditStage({ document, onChange = () => {}, restore = 
     return paint(id, saved.get(id) || { html: '', css: '', js: '' });
   }
 
-  /* The deck's own rules that touch this slide, for reference beside the editor. */
-  function reference(el) {
+  /* The rules in `rules` that touch the slide `el`, formatted. */
+  function rulesFor(el, rules) {
     const matches = selector => {
       const plain = selector.replace(/::[\w-]+(\([^)]*\))?/g, '').trim();
       if (!plain) return false;
       try { return el.matches(plain) || Boolean(el.querySelector(plain)); } catch { return false; }
     };
-    const collect = rules => {
+    const collect = list => {
       const lines = [];
-      for (const rule of rules) {
+      for (const rule of list) {
         if (typeof rule.selectorText === 'string') {
           if (rule.selectorText.split(',').some(matches)) lines.push(formatCssRule(rule.cssText));
         } else if (rule.cssRules && rule.conditionText) {
@@ -326,10 +393,38 @@ export function createSlideEditStage({ document, onChange = () => {}, restore = 
       }
       return lines;
     };
+    return collect(rules);
+  }
+
+  /* The Master CSS for one slide: the rules that reach it, and the names of
+     the classes it defines that the slide does not use yet. */
+  function masterReference(id) {
+    const el = slideEl(id);
+    const sheet = document.getElementById(`slide-edit-css-${MASTER_ID}`)?.sheet;
+    if (!el || !sheet) return { rules: '', classes: [] };
+    let rules = [];
+    const classes = new Set();
+    try {
+      rules = rulesFor(el, sheet.cssRules);
+      const visit = list => {
+        for (const rule of list) {
+          if (typeof rule.selectorText === 'string') {
+            for (const match of rule.selectorText.matchAll(/\.(-?[_a-zA-Z][\w-]*)/g)) classes.add(match[1]);
+          } else if (rule.cssRules) visit(rule.cssRules);
+        }
+      };
+      visit(sheet.cssRules);
+    } catch { /* not readable */ }
+    const used = new Set([...el.querySelectorAll('[class]'), el].flatMap(node => Array.from(node.classList || [])));
+    return { rules: rules.join('\n\n'), classes: [...classes].filter(name => name !== 'slide' && !used.has(name)) };
+  }
+
+  /* The deck's own rules that touch this slide, for reference beside the editor. */
+  function reference(el) {
     const blocks = [];
     for (const sheet of document.styleSheets) {
       if (sheet.ownerNode?.dataset?.slideEdit) continue;
-      try { blocks.push(...collect(sheet.cssRules)); } catch { /* cross-origin sheet (fonts) */ }
+      try { blocks.push(...rulesFor(el, sheet.cssRules)); } catch { /* cross-origin sheet (fonts) */ }
     }
     return blocks.join('\n\n');
   }
@@ -398,6 +493,7 @@ export function createSlideEditStage({ document, onChange = () => {}, restore = 
     },
     revert: render,
     masterSource: () => ({ css: savedMaster, edited: Boolean(savedMaster.trim()) }),
+    masterReference,
     previewMaster(css) { styleEl(MASTER_ID).textContent = text(css); },
     commitMaster(css) {
       savedMaster = text(css);

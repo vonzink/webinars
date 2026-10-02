@@ -4,15 +4,41 @@
      structure, ready-made classes and footer (the general rules about the
      canvas, CSS and JS are added by js/slide-prompt.js).
    - `interactive`: a selector for built-in parts whose click handlers are lost
-     once a slide's HTML is edited. This deck has none. */
+     once a slide's HTML is edited. This deck has none.
+   - `footer`: the footer every imported slide is given (js/slide-prompt.js,
+     normalizeFooter). Webinar Suite uses this format too, with the presenter
+     chosen for each new presentation. */
 
+import { COMPANY } from './presenters.js';
+
+/* This deck's own footer line, as it has always read. */
 const FOOTER_TEXT = 'Mountain State Financial Group, LLC • NMLS #1314257  |  Seth Angell • NMLS #912881  |  (303) 883-8519  |  <a href="https://www.msfg.us/" target="_blank" rel="noopener noreferrer">www.msfg.us</a>';
 
-export function footerHtml(links) {
+const escapeHtml = value => String(value || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const nmls = value => String(value || '').replace(/^NMLS#\s*/i, 'NMLS #');
+const phone = value => {
+  const digits = String(value || '').replace(/\D/g, '');
+  return digits.length === 10 ? `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}` : String(value || '').trim();
+};
+
+/* The footer line for a presenter ({ name, nmls, phone }, from presenters.js
+   or, later, the roster). Without one, the deck's own line. */
+export function footerText(presenter) {
+  if (!presenter) return FOOTER_TEXT;
+  const site = String(COMPANY.site || '').replace(/^https?:\/\//, '');
+  return [
+    `${escapeHtml(COMPANY.name)} • ${escapeHtml(nmls(COMPANY.nmls))}`,
+    presenter.name ? `${escapeHtml(presenter.name)}${presenter.nmls ? ` • ${escapeHtml(nmls(presenter.nmls))}` : ''}` : '',
+    escapeHtml(phone(presenter.phone)),
+    site ? `<a href="https://${escapeHtml(site)}/" target="_blank" rel="noopener noreferrer">${escapeHtml(site)}</a>` : '',
+  ].filter(Boolean).join('  |  ');
+}
+
+export function footerHtml(links, presenter) {
   return [
     '<footer class="source-footer">',
     `  <img src="${links.logo}" alt="Mountain State Financial Group">`,
-    `  <p class="source-footer-copy">${FOOTER_TEXT}</p>`,
+    `  <p class="source-footer-copy">${footerText(presenter)}</p>`,
     '  <span class="source-page">1</span>',
     `  <img class="source-housing" src="${links.equalHousing}" alt="Equal Housing Lender">`,
     '</footer>',
@@ -26,7 +52,8 @@ export const SLIDE_FORMAT = Object.freeze({
     equalHousing: './assets/brand/EQUAL%20HOUSING%20LENDER.png',
   }),
   interactive: '',
-  notes: links => [
+  footer: Object.freeze({ className: 'source-footer', html: (links, presenter) => footerHtml(links, presenter) }),
+  notes: (links, presenter) => [
     'THIS DECK\'S LAYOUT',
     '- The slide is a flex column with padding 58px top, 86px left and right, 24px bottom, and a 20px gap. Unless told otherwise, text is #404041 on a white background.',
     '- Keep this order: header, content, optional disclaimer, footer. The content block grows to fill the space, which keeps the footer at the bottom.',
@@ -41,7 +68,7 @@ export const SLIDE_FORMAT = Object.freeze({
     '  <!-- the body of the slide goes here -->',
     '</div>',
     '<p class="source-disclaimer">Optional small-print line.</p>',
-    footerHtml(links),
+    footerHtml(links, presenter),
     '```',
     '',
     'THE FOOTER',

@@ -760,11 +760,12 @@ function refreshBuild(el) {
    moment so an edited first slide does not flash its original; if the server
    is slow or unreachable the originals show instead. */
 /* Inside Slide settings every preview of the deck shares the editor's one copy
-   of the saved edits, so twenty small previews do not mean twenty requests. */
+   of the saved edits, so twenty small previews do not mean twenty requests.
+   The page passes itself, so an AI preview can be shown edits not saved yet. */
 async function fetchSavedEdits() {
   try {
     if (window.parent !== window && typeof window.parent.__slideEditsFeed === 'function') {
-      return await window.parent.__slideEditsFeed();
+      return await window.parent.__slideEditsFeed(window);
     }
   } catch { /* a parent from another site: load them ourselves */ }
   return createSlideEditClient({ base: WEBINAR.slideEditsApi, slug: WEBINAR.slug }).list();

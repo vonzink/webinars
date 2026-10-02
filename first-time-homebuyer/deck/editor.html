@@ -143,6 +143,40 @@
       border: 1px solid rgba(255,255,255,.18); background: rgba(0,0,0,.24); color: #EAF0EA;
       font: 12px/1.55 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; white-space: pre-wrap; }
 
+    /* working with ChatGPT or Claude: numbered steps, then a preview before anything is saved */
+    .e-ai-actions button { border-color: rgba(140,198,62,.55); color: #B9E47D; }
+    .e-ai-actions button:hover:not(:disabled) { background: rgba(140,198,62,.16); color: #fff; }
+    .e-step { margin-top: 18px; }
+    .e-step-label { display: flex; align-items: baseline; gap: 10px; color: #fff; font: 800 15px/1.3 var(--font-display); }
+    .e-step-label span { flex: none; display: inline-grid; place-items: center; width: 24px; height: 24px; border-radius: 50%;
+      color: #0C3335; background: #8cc63E; font-size: 12px; }
+    .e-step p.e-step-note { margin: 6px 0 0 34px; color: rgba(255,255,255,.65); font-size: 13px; }
+    .e-step-body { margin: 10px 0 0 34px; }
+    .e-help .e-plain { height: 96px; font: 15px/1.5 var(--font-body); white-space: pre-wrap; }
+    .e-help .e-answer { height: 140px; }
+    .e-choice { display: grid; gap: 6px; }
+    .e-choice label { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 4px; cursor: pointer;
+      border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.03); color: rgba(255,255,255,.85); font-size: 14px; }
+    .e-choice label:has(input:checked) { border-color: #8cc63E; background: rgba(140,198,62,.1); }
+    .e-pick { display: grid; gap: 4px; max-height: 190px; overflow-y: auto; margin-top: 8px; padding: 8px;
+      border: 1px solid rgba(255,255,255,.14); border-radius: 4px; }
+    .e-pick[hidden] { display: none; }
+    .e-pick label { display: flex; gap: 8px; align-items: center; color: rgba(255,255,255,.85); font-size: 13px; cursor: pointer; }
+    .e-errors { margin: 10px 0 0; padding: 10px 12px 10px 30px; border-left: 3px solid #ff8b96; background: rgba(255,139,150,.08); }
+    .e-errors li { color: #ffcdd2; font-size: 13px; }
+    .e-errors[hidden], .e-review[hidden] { display: none; }
+    .e-review { margin-top: 14px; padding: 14px; border: 1px solid rgba(140,198,62,.4); border-radius: 6px; background: rgba(0,0,0,.18); }
+    .e-review-head { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+    .e-review-head strong { flex: 1 1 auto; }
+    .e-review-frame { position: relative; margin-top: 10px; overflow: hidden; aspect-ratio: 16 / 9; background: #000;
+      border: 1px solid rgba(255,255,255,.18); }
+    .e-review-frame iframe { position: absolute; top: 0; left: 0; width: 1280px; height: 720px; border: 0; transform-origin: top left;
+      pointer-events: none; }
+    .e-review-note { margin-top: 8px; color: rgba(255,255,255,.65); font-size: 13px; }
+    .e-advanced { margin-top: 18px; }
+    .e-advanced summary { cursor: pointer; color: rgba(255,255,255,.6); font-size: 13px; }
+    .e-advanced textarea { margin-top: 8px; }
+
     @media (max-width: 1100px) {
       body { overflow: auto; }
       .e-main { grid-template-columns: 1fr; }
@@ -159,7 +193,7 @@
       <div class="e-sub"><span id="e-deck-title">Reverse Mortgages</span> · changes you save are what everyone sees</div>
     </div>
     <div class="e-spacer"></div>
-    <a class="e-link" id="e-studio" hidden>All webinars</a>
+    <a class="e-link" id="e-studio" hidden>Webinar Suite</a>
     <a class="e-link" id="e-present" target="_blank" rel="noopener">Open the webinar ↗</a>
     <button class="e-link" type="button" id="e-help-open">Instructions</button>
     <input type="password" id="e-password" placeholder="Edit password" aria-label="Edit password" autocomplete="off">
@@ -180,6 +214,10 @@
       <p class="e-hint" id="e-hint">Click any text on the slide to change it right there, or use the boxes on the right.
         Nothing is saved until you press Save.</p>
       <p class="e-status" id="e-status" role="status" aria-live="polite"></p>
+      <div class="e-actions e-ai-actions">
+        <button type="button" id="e-ai-slide-open" disabled>✦ Edit this slide with AI</button>
+        <button type="button" id="e-ai-many-open" disabled>✦ Add or edit several slides with AI</button>
+      </div>
       <div class="e-actions">
         <button type="button" id="e-discard" disabled>Discard changes</button>
         <button type="button" id="e-reset" disabled>Reset to original</button>
@@ -256,45 +294,132 @@
         so you can bring them back. To <strong>change the order</strong>, drag a slide up or down the list, or use
         Move up and Move down. <strong>Reset to original</strong> undoes a saved edit.</p>
 
-      <h3>Building a slide with Claude or ChatGPT</h3>
-      <ol>
-        <li>Open the slide you want to change (or add a new one), then press <strong>Copy the prompt</strong> below.</li>
-        <li>Paste it into Claude or ChatGPT and replace the last line with what you want the slide to be.</li>
-        <li>It answers with three blocks. Paste them into the <strong>HTML</strong>, <strong>Slide CSS</strong> and
-          <strong>Slide JS</strong> boxes, check the slide in the middle, then save.</li>
-      </ol>
-      <div class="e-help-actions">
-        <button class="e-primary" type="button" id="e-help-copy">Copy the prompt</button>
-        <span class="e-help-copied" id="e-help-copied" role="status" aria-live="polite"></span>
-      </div>
-      <textarea id="e-help-prompt" aria-label="Prompt for Claude or ChatGPT" readonly spellcheck="false"></textarea>
-
-      <h3>Building several slides at once</h3>
-      <ol>
-        <li>Press <strong>Copy the multi-slide prompt</strong>, paste it into Claude or ChatGPT, and replace the last
-          line with what the presentation should cover.</li>
-        <li>It answers with raw JSON, starting with { and ending with }. Copy the whole answer and paste it into the box below.</li>
-        <li>Press <strong>Add these slides</strong>. They go in after the slide you have open, and are saved for
-          everyone straight away. Delete any slides you no longer want afterwards.</li>
-      </ol>
-      <div class="e-help-actions">
-        <button class="e-primary" type="button" id="e-project-copy">Copy the multi-slide prompt</button>
-        <span class="e-help-copied" id="e-project-copied" role="status" aria-live="polite"></span>
-      </div>
-      <textarea id="e-project-answer" aria-label="The answer from Claude or ChatGPT" spellcheck="false"
-        placeholder='Paste the answer here. It starts with { "slides": [ ...'></textarea>
-      <div class="e-help-actions">
-        <button class="e-primary" type="button" id="e-project-add">Add these slides</button>
-        <span class="e-help-copied" id="e-project-status" role="status" aria-live="polite"></span>
-      </div>
+      <h3>Working with ChatGPT or Claude</h3>
+      <p><strong>Edit this slide with AI</strong> changes the slide you have open. <strong>Add or edit several slides
+        with AI</strong> adds new slides after it, or changes slides you choose. Each one takes you through the same
+        steps: describe what you want, copy the prompt, paste it into ChatGPT or Claude, paste its response back, and
+        preview the result. Nothing is saved until you say so. The deck's own footer is put on every slide that comes
+        back, whatever footer the AI wrote.</p>
 
       <h3>The footer logos</h3>
-      <p>Every slide's footer uses these. The prompt already includes them.</p>
+      <p>Every slide's footer uses these. The prompts already include them.</p>
       <ul class="e-help-links">
         <li>MSFG logo: <a id="e-help-logo" target="_blank" rel="noopener noreferrer"></a></li>
         <li>MSFG logo for dark slides: <a id="e-help-logo-dark" target="_blank" rel="noopener noreferrer"></a></li>
         <li>Equal Housing Lender logo: <a id="e-help-housing" target="_blank" rel="noopener noreferrer"></a></li>
       </ul>
+    </div>
+  </dialog>
+
+  <dialog class="e-help" id="e-ai-slide" aria-labelledby="e-ai-slide-title">
+    <div class="e-help-shell">
+      <header class="e-help-head">
+        <div class="e-kicker">Edit this slide with AI</div>
+        <h2 class="e-title" id="e-ai-slide-title">This slide</h2>
+        <button type="button" class="e-help-close" data-close aria-label="Close" title="Close">×</button>
+      </header>
+      <div class="e-step">
+        <div class="e-step-label"><span>1</span>Describe what you want</div>
+        <div class="e-step-body">
+          <textarea class="e-plain" id="e-ai-slide-request" spellcheck="true"
+            placeholder="For example: Shorten the bullets and make the title two lines. Or: Turn this into three cards: lump sum, monthly payments, line of credit."></textarea>
+        </div>
+      </div>
+      <div class="e-step">
+        <div class="e-step-label"><span>2</span>Copy prompt</div>
+        <p class="e-step-note">Then paste it into ChatGPT or Claude. It already includes this slide and the deck's styles.</p>
+        <div class="e-step-body e-help-actions">
+          <button class="e-primary" type="button" id="e-ai-slide-copy">Copy prompt</button>
+          <span class="e-help-copied" id="e-ai-slide-copied" role="status" aria-live="polite"></span>
+        </div>
+      </div>
+      <div class="e-step">
+        <div class="e-step-label"><span>3</span>Paste ChatGPT or Claude's response</div>
+        <div class="e-step-body">
+          <textarea class="e-answer" id="e-ai-slide-answer" spellcheck="false" aria-label="ChatGPT or Claude's response"
+            placeholder="Paste the whole response here."></textarea>
+        </div>
+      </div>
+      <div class="e-step">
+        <div class="e-step-label"><span>4</span>Preview</div>
+        <p class="e-step-note">The slide changes in the editor so you can check it. It is not saved until you press Save for everyone.</p>
+        <div class="e-step-body e-help-actions">
+          <button class="e-primary" type="button" id="e-ai-slide-preview">Preview</button>
+          <span class="e-help-copied" id="e-ai-slide-status" role="status" aria-live="polite"></span>
+        </div>
+      </div>
+      <details class="e-advanced">
+        <summary>Advanced: show the prompt</summary>
+        <textarea id="e-ai-slide-prompt" readonly spellcheck="false" aria-label="The prompt"></textarea>
+      </details>
+    </div>
+  </dialog>
+
+  <dialog class="e-help" id="e-ai-many" aria-labelledby="e-ai-many-title">
+    <div class="e-help-shell">
+      <header class="e-help-head">
+        <div class="e-kicker">Slide settings</div>
+        <h2 class="e-title" id="e-ai-many-title">Add or edit several slides with AI</h2>
+        <button type="button" class="e-help-close" data-close aria-label="Close" title="Close">×</button>
+      </header>
+      <div class="e-step">
+        <div class="e-step-label"><span>1</span>What should change?</div>
+        <div class="e-step-body e-choice">
+          <label><input type="radio" name="e-ai-mode" value="add" checked> <span id="e-ai-mode-add">Add new slides after this one</span></label>
+          <label><input type="radio" name="e-ai-mode" value="replace"> Change slides I choose</label>
+          <div class="e-pick" id="e-ai-pick" hidden role="group" aria-label="Slides to change"></div>
+        </div>
+      </div>
+      <div class="e-step">
+        <div class="e-step-label"><span>2</span>Describe what you want</div>
+        <div class="e-step-body">
+          <textarea class="e-plain" id="e-ai-many-request" spellcheck="true"
+            placeholder="For example: Three slides on how down payment assistance works in Colorado: who qualifies, the main programs, and the steps."></textarea>
+        </div>
+      </div>
+      <div class="e-step">
+        <div class="e-step-label"><span>3</span>Copy prompt</div>
+        <p class="e-step-note">Then paste it into ChatGPT or Claude.</p>
+        <div class="e-step-body e-help-actions">
+          <button class="e-primary" type="button" id="e-ai-many-copy">Copy prompt</button>
+          <span class="e-help-copied" id="e-ai-many-copied" role="status" aria-live="polite"></span>
+        </div>
+      </div>
+      <div class="e-step">
+        <div class="e-step-label"><span>4</span>Paste ChatGPT or Claude's response</div>
+        <div class="e-step-body">
+          <textarea class="e-answer" id="e-ai-many-answer" spellcheck="false" aria-label="ChatGPT or Claude's response"
+            placeholder="Paste the whole response here. It starts with {"></textarea>
+        </div>
+      </div>
+      <div class="e-step">
+        <div class="e-step-label"><span>5</span>Preview</div>
+        <div class="e-step-body">
+          <div class="e-help-actions">
+            <button class="e-primary" type="button" id="e-ai-many-preview">Preview</button>
+            <span class="e-help-copied" id="e-ai-many-status" role="status" aria-live="polite"></span>
+          </div>
+          <ul class="e-errors" id="e-ai-many-errors" hidden></ul>
+          <div class="e-review" id="e-ai-many-review" hidden>
+            <div class="e-review-head">
+              <strong id="e-ai-many-summary"></strong>
+              <button type="button" id="e-ai-many-prev">‹ Previous</button>
+              <span id="e-ai-many-place"></span>
+              <button type="button" id="e-ai-many-next">Next ›</button>
+            </div>
+            <div class="e-review-frame" id="e-ai-many-box"><iframe id="e-ai-many-frame" title="Preview" src="about:blank"></iframe></div>
+            <p class="e-review-note">This is a preview. Nothing is saved yet.</p>
+            <div class="e-help-actions">
+              <button class="e-primary" type="button" id="e-ai-many-apply">Save for everyone</button>
+              <span class="e-help-copied" id="e-ai-many-saving" role="status" aria-live="polite"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <details class="e-advanced">
+        <summary>Advanced: show the prompt</summary>
+        <textarea id="e-ai-many-prompt" readonly spellcheck="false" aria-label="The prompt"></textarea>
+      </details>
     </div>
   </dialog>
 
