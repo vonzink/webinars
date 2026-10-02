@@ -1,0 +1,258 @@
+<style>
+#msfg-confirmation {
+  --forest:#104547;
+  --green:#8cc63e;
+  --muted:#53645c;
+  font:18px/1.6 "Source Sans Pro",Arial,sans-serif;
+  color:#333f3a;
+  background:#f4f7f4;
+  text-align:center;
+}
+#msfg-confirmation * { box-sizing:border-box; }
+#msfg-confirmation [hidden] { display:none!important; }
+#msfg-confirmation h1,
+#msfg-confirmation p { margin:0; }
+#msfg-confirmation a { color:var(--forest); }
+#msfg-confirmation a:focus-visible { outline:3px solid #59832b; outline-offset:5px; }
+#msfg-confirmation .msfg-shell { width:min(1100px,100% - 40px); margin:auto; }
+#msfg-confirmation .msfg-header {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:24px;
+  padding:24px 0;
+}
+#msfg-confirmation .msfg-logo { display:block; width:245px; max-width:100%; height:auto; }
+#msfg-confirmation .msfg-header-name { color:var(--muted); font-size:15px; }
+#msfg-confirmation .msfg-main { padding:24px 0 48px; }
+#msfg-confirmation .msfg-card {
+  max-width:760px;
+  margin:auto;
+  padding:44px;
+  background:white;
+  border-top:5px solid var(--green);
+  border-radius:12px;
+  box-shadow:0 12px 40px #1045470d;
+}
+#msfg-confirmation .msfg-checkmark {
+  display:grid;
+  place-items:center;
+  width:64px;
+  height:64px;
+  margin:0 auto 18px;
+  border-radius:50%;
+  background:#eef7e6;
+  color:#36691e;
+  font-size:34px;
+  font-weight:700;
+}
+#msfg-confirmation .msfg-eyebrow { color:var(--muted); font-weight:700; margin-bottom:10px; }
+#msfg-confirmation .msfg-title {
+  font:800 clamp(34px,5vw,48px)/1.15 Raleway,Arial,sans-serif;
+  color:var(--forest);
+  letter-spacing:-.03em;
+  margin-bottom:22px;
+}
+#msfg-confirmation .msfg-copy { max-width:58ch; margin:auto; }
+#msfg-confirmation .msfg-event {
+  display:grid;
+  gap:5px;
+  margin:24px 0;
+  color:var(--forest);
+  font-weight:700;
+}
+#msfg-confirmation .msfg-countdown,
+#msfg-confirmation .msfg-ready {
+  margin:26px 0;
+  padding:24px 20px;
+  background:#f4f8f1;
+  border:1px solid #d6e7c5;
+  border-radius:12px;
+}
+#msfg-confirmation .msfg-countdown-heading { margin-bottom:18px; color:var(--forest); font-weight:700; }
+#msfg-confirmation .msfg-countdown-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+#msfg-confirmation .msfg-number { color:var(--forest); font-size:36px; font-weight:700; line-height:1.1; font-variant-numeric:tabular-nums; }
+#msfg-confirmation .msfg-unit { margin-top:6px; color:var(--muted); font-size:14px; }
+#msfg-confirmation .msfg-ready strong { display:block; color:var(--forest); font-size:21px; margin-bottom:6px; }
+#msfg-confirmation .msfg-next { padding:24px 0; border-top:1px solid #dce5dc; }
+#msfg-confirmation .msfg-next strong { display:block; margin-bottom:8px; color:var(--forest); }
+#msfg-confirmation .msfg-button {
+  display:inline-block;
+  padding:15px 28px;
+  border-radius:6px;
+  background:var(--forest);
+  color:white;
+  font-weight:700;
+  text-decoration:none;
+}
+#msfg-confirmation .msfg-small { margin-top:18px; color:var(--muted); font-size:15px; }
+#msfg-confirmation .msfg-footer { padding:0 0 36px; color:var(--muted); font-size:14px; }
+#msfg-confirmation .msfg-eho { display:block; width:54px; height:auto; margin:0 auto 16px; }
+#msfg-confirmation .msfg-footer-company { font-weight:700; }
+#msfg-confirmation .msfg-footer-links { display:flex; justify-content:center; flex-wrap:wrap; gap:16px; margin-top:16px; }
+@media(max-width:600px) {
+  #msfg-confirmation .msfg-shell { width:calc(100% - 28px); }
+  #msfg-confirmation .msfg-header { justify-content:center; }
+  #msfg-confirmation .msfg-header-name { display:none; }
+  #msfg-confirmation .msfg-card { padding:30px 20px; }
+  #msfg-confirmation .msfg-countdown { padding:20px 10px; }
+  #msfg-confirmation .msfg-number { font-size:30px; }
+  #msfg-confirmation .msfg-button { display:block; }
+}
+</style>
+
+<div id="msfg-confirmation"
+     class="msfg-confirmation-page"
+     data-webinar-start="{{custom_values.next_webinar_start_iso}}">
+  <div class="msfg-shell">
+
+    <header class="msfg-header">
+      <a href="{{custom_values.domain_name_}}" aria-label="Webinar home">
+        <img class="msfg-logo"
+             src="{{custom_values.logo_image_url}}"
+             alt="Mountain State Financial Group">
+      </a>
+      <div class="msfg-header-name">Mountain State Financial Group</div>
+    </header>
+
+    <main class="msfg-main">
+      <section class="msfg-card" aria-labelledby="msfg-confirmation-title">
+        <div class="msfg-checkmark" aria-hidden="true">✓</div>
+        <div class="msfg-eyebrow">Registration Confirmed</div>
+        <h1 class="msfg-title" id="msfg-confirmation-title">You're Registered.</h1>
+
+        <p class="msfg-copy">
+          You're all set for <strong>{{custom_values.webinar_title}}</strong>
+          with {{custom_values.webinar_host}}. We'll send your webinar access
+          information and reminders before the live event.
+        </p>
+
+        <div class="msfg-event">
+          <div>{{custom_values.next_webinar_date}}</div>
+          <div>{{custom_values.webinar_start_time}} · {{custom_values.timezone}}</div>
+        </div>
+
+        <div class="msfg-countdown" data-countdown hidden>
+          <div class="msfg-countdown-heading">Webinar starts in</div>
+          <div class="msfg-countdown-grid" role="timer" aria-label="Time until the webinar starts">
+            <div><div class="msfg-number" data-days>0</div><div class="msfg-unit">days</div></div>
+            <div><div class="msfg-number" data-hours>0</div><div class="msfg-unit">hours</div></div>
+            <div><div class="msfg-number" data-minutes>0</div><div class="msfg-unit">minutes</div></div>
+            <div><div class="msfg-number" data-seconds>0</div><div class="msfg-unit">seconds</div></div>
+          </div>
+        </div>
+
+        <div class="msfg-ready" data-ready role="status" hidden>
+          <strong>The scheduled start time has arrived.</strong>
+          <span>Continue to the webinar page for access and the latest event status.</span>
+        </div>
+
+        <div class="msfg-next">
+          <strong>What happens next?</strong>
+          <span>
+            Continue to the webinar page for access information.
+            If you're early, check back at the scheduled start time.
+          </span>
+        </div>
+
+        <a class="msfg-button"
+           href="{{custom_values.webinar_broadcast_url}}">
+          Continue to Webinar
+        </a>
+
+        <p class="msfg-small">
+          You can also return using the webinar link sent to you by email or text.
+        </p>
+        <p class="msfg-small">
+          Questions?
+          <a href="mailto:{{custom_values.webinar_host_email}}">{{custom_values.webinar_host_email}}</a>
+        </p>
+      </section>
+    </main>
+
+    <footer class="msfg-footer">
+      <img class="msfg-eho"
+           src="https://assets.cdn.filesafe.space/46BB4JfRDQDuW3lvtlMw/media/6a7e08cdfe4291bd1056c347.png"
+           alt="Equal Housing Opportunity">
+      <div class="msfg-footer-company">
+        Mountain State Financial Group, LLC · NMLS #{{custom_values.company_nmls}}
+      </div>
+      <div>Equal Housing Opportunity</div>
+      <div class="msfg-footer-links">
+        <a href="https://msfg.us/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a>
+        <a href="https://msfg.us/terms" target="_blank" rel="noopener noreferrer">Terms &amp; Conditions</a>
+      </div>
+    </footer>
+  </div>
+</div>
+
+<script>
+(function () {
+  function initializeCountdown() {
+    const root = document.getElementById("msfg-confirmation");
+    if (!root) return;
+    if (typeof root.msfgCountdownCleanup === "function") {
+      root.msfgCountdownCleanup();
+    }
+
+    const countdown = root.querySelector("[data-countdown]");
+    const ready = root.querySelector("[data-ready]");
+    const startText = (root.dataset.webinarStart || "").trim();
+    const isoPattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:Z|[+-]\d{2}:\d{2})$/;
+    const start = isoPattern.test(startText) ? Date.parse(startText) : NaN;
+    countdown.hidden = true;
+    ready.hidden = true;
+
+    // Keep the displayed event details and link available if the ISO value is missing.
+    if (!Number.isFinite(start)) return;
+
+    const fields = ["days", "hours", "minutes", "seconds"].map(function (name) {
+      return root.querySelector("[data-" + name + "]");
+    });
+    let timer = null;
+
+    function cleanup() {
+      if (timer !== null) window.clearInterval(timer);
+      timer = null;
+      document.removeEventListener("visibilitychange", update);
+    }
+
+    function update() {
+      if (!root.isConnected) {
+        cleanup();
+        return;
+      }
+      const remaining = start - Date.now();
+      if (remaining <= 0) {
+        countdown.hidden = true;
+        ready.hidden = false;
+        cleanup();
+        return;
+      }
+      const totalSeconds = Math.ceil(remaining / 1000);
+      const values = [
+        Math.floor(totalSeconds / 86400),
+        Math.floor(totalSeconds / 3600) % 24,
+        Math.floor(totalSeconds / 60) % 60,
+        totalSeconds % 60
+      ];
+      fields.forEach(function (element, index) {
+        element.textContent = String(values[index]).padStart(2, "0");
+      });
+      countdown.hidden = false;
+      ready.hidden = true;
+    }
+
+    root.msfgCountdownCleanup = cleanup;
+    timer = window.setInterval(update, 1000);
+    document.addEventListener("visibilitychange", update);
+    update();
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initializeCountdown, { once: true });
+  } else {
+    initializeCountdown();
+  }
+})();
+</script>

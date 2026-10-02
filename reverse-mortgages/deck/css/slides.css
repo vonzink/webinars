@@ -1,0 +1,365 @@
+/* ============================================================================
+   SLIDE-SPECIFIC LAYOUT STYLING (Ridgeline)
+   ========================================================================= */
+
+/* Split photo panels */
+.split-photo { position: relative; }
+.split[data-ratio="photo-right"] .split-copy { padding-right: 72px; justify-content: center; }
+.split[data-ratio="1-1"] .split-copy { justify-content: center; }
+
+/* Figures */
+.figure-wrap { display: flex; align-items: center; justify-content: center; }
+.figure-wrap > svg { width: 100%; height: auto; }
+
+/* Payment breakdown — clean stacked bar + legend chips (no leader lines) */
+.pay-bar { width: 100%; height: 84px; border-radius: 12px; overflow: hidden; }
+.pay-bar svg { width: 100%; height: 100%; display: block; }
+.pay-legend { display: flex; flex-wrap: wrap; gap: 14px 40px; margin-top: 20px; }
+.pay-chip { display: flex; align-items: center; gap: 12px;
+  font-family: var(--font-display); font-weight: var(--fw-700); font-size: 24px; color: var(--charcoal); }
+.pay-sw { width: 22px; height: 22px; flex: none; border-radius: 5px; }
+
+/* Two-column locked / moves + can / cannot */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; }
+.col-head {
+  font-family: var(--font-display); font-weight: var(--fw-800); font-size: 30px;
+  color: var(--forest); padding-bottom: 14px; margin-bottom: 18px;
+  border-bottom: 3px solid var(--card-border-light);
+}
+.slide[data-bg="dark"] .col-head { color: #fff; }
+.col-head--lock { border-bottom-color: var(--sage); }
+.col-head--move { border-bottom-color: var(--green); }
+.mini-list > li {
+  position: relative; padding-left: 32px; margin-bottom: 14px;
+  font-family: var(--font-body); font-size: var(--fs-body-s); line-height: 1.3;
+}
+.mini-list > li::before { content: ""; position: absolute; left: 0; top: 13px;
+  width: 11px; height: 11px; border-radius: 50%; background: var(--green); }
+
+/* Dense slides — tighten so diagram + columns + points clear the footer */
+#slide-budget-payment .slide-body { gap: 22px; }
+#slide-budget-payment .slide-header,
+#slide-cash-makeup .slide-header { margin-bottom: 24px; }
+#slide-budget-payment .two-col { gap: 48px; }
+#slide-budget-payment .mini-list > li { font-size: 24px; margin-bottom: 10px; }
+#slide-budget-payment .col-head { font-size: 26px; padding-bottom: 10px; margin-bottom: 12px; }
+/* The three explainers become a compact 3-across row, not full-width bullets */
+#slide-budget-payment .points {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 34px;
+}
+#slide-budget-payment .points > li { font-size: 23px; line-height: 1.3; padding-left: 26px; }
+#slide-budget-payment .points > li::before { top: 9px; width: 10px; height: 10px; }
+#slide-cash-makeup .points > li { font-size: var(--fs-body-s); }
+
+/* Opening / wrap — trim so the contact block clears the footer */
+#slide-opening .headline { font-size: 84px !important; }
+#slide-opening .contact { gap: 10px; margin-top: 28px !important; }
+#slide-opening .contact li { font-size: 30px; }
+
+/* Compare-loans CTA on the closing-costs/APR slide */
+.compare-cta {
+  align-self: flex-start; margin-top: 34px;
+  display: inline-flex; align-items: center; gap: 14px;
+  padding: 18px 34px; background: var(--green); color: var(--forest);
+  font-family: var(--font-display); font-weight: var(--fw-800); font-size: 26px;
+  letter-spacing: 0.01em; transition: transform var(--dur-fast) var(--ease-out);
+}
+.compare-cta:hover { transform: translateY(-2px); }
+
+/* Do / Don't handout — client wants the red/green from the printed handout.
+   Scoped to these two slides so the rest of the deck keeps the Ridgeline system. */
+#slide-mistakes-donts .headline { color: var(--red); }
+#slide-mistakes-donts .marker[data-tone="dont"] { background: var(--red); }
+#slide-mistakes-donts .slide-header .accent-bar { background: var(--red); }
+#slide-mistakes-dos .headline { color: var(--do-green); }
+#slide-mistakes-dos .marker[data-tone="do"] { background: var(--do-green); }
+#slide-mistakes-dos .slide-header .accent-bar { background: var(--do-green); }
+
+/* Questions */
+#slide-questions .slide-header { margin-bottom: 30px; }
+.qa-list { display: flex; flex-direction: column; gap: 20px; max-width: 1500px; }
+.qa { display: flex; gap: 30px; align-items: baseline; }
+.qa-num {
+  flex: none; width: 56px; height: 56px; display: grid; place-items: center; border-radius: 50%;
+  background: var(--green); color: var(--forest);
+  font-family: var(--font-display); font-weight: var(--fw-900); font-size: 28px;
+}
+.qa-q { font-family: var(--font-display); font-weight: var(--fw-800); font-size: 34px;
+  color: #fff; line-height: 1.15; }
+.slide[data-bg="white"] .qa-q, .slide[data-bg="mist"] .qa-q { color: var(--forest); }
+.qa-a { font-family: var(--font-body); font-size: 24px; line-height: 1.35;
+  color: var(--text-body-dark); margin-top: 6px; max-width: 1360px; }
+.slide[data-bg="white"] .qa-a, .slide[data-bg="mist"] .qa-a { color: var(--charcoal); }
+
+/* Clickable contact lines (opening / wrap) */
+.contact a { color: inherit; text-decoration: none; border-bottom: 1px solid rgba(255,255,255,0.28); }
+.contact a:hover { color: var(--green); border-bottom-color: var(--green); }
+.wrap-qr-cap { margin-top: 16px; text-align: center; font-family: var(--font-body);
+  font-size: 22px; color: var(--text-body-dark); }
+
+/* "Closing costs vs. prepaid items" slide */
+.prepaid-body { flex-direction: row; gap: 56px; align-items: stretch; }
+.prepaid-copy { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; }
+.prepaid-def { margin-bottom: 24px; }
+.prepaid-def-head { font-family: var(--font-display); font-weight: var(--fw-800);
+  font-size: 32px; color: var(--forest); margin-bottom: 6px; }
+.prepaid-def-body { font-size: 25px; line-height: 1.4; color: var(--charcoal); max-width: 760px; }
+.prepaid-upfront-label { font-family: var(--font-display); font-weight: var(--fw-800);
+  font-size: 22px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--sage); margin: 6px 0 14px; }
+.prepaid-upfront { display: flex; flex-wrap: wrap; gap: 12px 14px; margin-bottom: 26px; }
+.prepaid-upfront li { display: inline-flex; align-items: center; padding: 9px 20px; border-radius: 999px;
+  background: var(--mist); font-family: var(--font-display); font-weight: var(--fw-700); font-size: 23px; color: var(--forest); }
+.prepaid-note { margin-top: auto; padding: 20px 26px; border-radius: 12px;
+  border-left: 6px solid var(--green); background: var(--mist);
+  font-size: 23px; line-height: 1.4; color: var(--charcoal); font-style: italic; }
+.prepaid-figure { flex: 0 0 42%; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; margin: 0; padding: 0; border: 0; background: none; cursor: pointer;
+  font: inherit; color: inherit; transition: transform var(--dur-fast) var(--ease-out); }
+.prepaid-figure:hover { transform: translateY(-3px); }
+.prepaid-figure img { max-width: 100%; max-height: 560px; object-fit: contain;
+  border: 1px solid var(--card-border-light); border-radius: 12px; box-shadow: 0 10px 34px rgba(12,51,53,0.14);
+  transition: box-shadow var(--dur-fast) var(--ease-out); }
+.prepaid-figure:hover img { box-shadow: 0 16px 44px rgba(12,51,53,0.22); }
+.prepaid-figure figcaption { margin-top: 14px; font-size: 19px; color: var(--text-meta-light);
+  display: flex; align-items: center; gap: 12px; }
+.prepaid-zoom { font-family: var(--font-display); font-weight: var(--fw-700); font-size: 16px;
+  color: var(--sage); padding: 4px 12px; border-radius: 999px; background: var(--mist); }
+
+/* Opening portrait — keep the top of the head in frame */
+#slide-opening .photo img { object-position: center top; }
+
+/* ---------------------------------------------------------------------------
+   Your first home, without the mystery — three-key signature system
+   ------------------------------------------------------------------------ */
+
+#slide-opening .headline { max-width: 900px; }
+#slide-opening .eyebrow { max-width: 880px; line-height: 1.4; }
+
+.statement-prompts {
+  display: flex; align-items: center; justify-content: center; gap: 0;
+  margin-top: 52px; border-top: 1px solid rgba(255,255,255,.2);
+}
+.statement-prompts span {
+  padding: 20px 34px 0; font-family: var(--font-display); font-weight: var(--fw-700);
+  font-size: 23px; letter-spacing: .06em; color: var(--text-body-dark);
+}
+.statement-prompts span + span { border-left: 1px solid rgba(255,255,255,.18); }
+
+/* Three questions: connected panels, with cash to close as the destination. */
+#slide-three-questions .slide-header {
+  display: grid; grid-template-columns: 1.45fr 1fr; column-gap: 64px;
+  margin-bottom: 50px;
+}
+#slide-three-questions .eyebrow { grid-column: 1 / -1; }
+#slide-three-questions .headline {
+  font-size: 76px; line-height: 1.08; letter-spacing: -.035em;
+  white-space: pre-line;
+}
+#slide-three-questions .subhead {
+  grid-column: 2; grid-row: 2; align-self: center;
+  margin: 0 !important; padding: 22px 0 22px 48px;
+  border-left: 2px solid var(--card-border-light);
+  font-size: 32px; line-height: 1.5; white-space: pre-line;
+}
+#slide-three-questions .accent-bar { grid-column: 1; }
+#slide-three-questions .slide-body { justify-content: flex-start !important; }
+.clarity-keys {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 64px; width: 100%;
+}
+.clarity-key {
+  position: relative; display: flex; flex-direction: column;
+  min-width: 0; min-height: 480px; padding: 34px 42px 38px;
+  border-radius: 16px; background: #EFF5EC; color: var(--forest);
+}
+.clarity-key:nth-of-type(2) { background: #E3EEDC; }
+.clarity-key:nth-of-type(3) { background: var(--forest); color: var(--white); }
+.clarity-key + .clarity-key::before {
+  content: ""; position: absolute; left: -48px; top: 50%;
+  width: 25px; height: 25px; border-top: 8px solid var(--sage);
+  border-right: 8px solid var(--sage); transform: translateY(-50%) rotate(45deg);
+}
+.clarity-index { font: 800 78px/1 var(--font-display); color: var(--sage); }
+.clarity-key:nth-of-type(3) .clarity-index { color: var(--green); }
+.clarity-key h3 { margin-top: 8px; font: 700 36px/1.2 var(--font-display); color: inherit; }
+.clarity-key p {
+  margin: 42px 0 32px; font: 800 52px/1.12 var(--font-display);
+  letter-spacing: -.025em; color: inherit; white-space: pre-line;
+}
+.clarity-key small {
+  display: block; margin-top: auto; font-size: 27px; line-height: 1.35;
+  color: inherit;
+}
+.clarity-key small::before {
+  content: ""; display: block; width: 88px; height: 7px;
+  margin-bottom: 20px; background: var(--green);
+}
+
+.credit-layers { display: grid; gap: 14px; width: 100%; max-width: 1540px; }
+.credit-layer {
+  display: grid; grid-template-columns: 100px 290px 1fr; align-items: center; min-height: 104px;
+  border-left: 9px solid var(--forest); background: var(--white); padding: 18px 34px;
+}
+.credit-layer:nth-child(2) { margin-left: 54px; border-left-color: var(--forest-mid); }
+.credit-layer:nth-child(3) { margin-left: 108px; border-left-color: var(--sage); }
+.credit-layer:nth-child(4) { margin-left: 162px; border-left-color: var(--green); }
+.credit-layer > span { font: 800 20px/1 var(--font-display); letter-spacing: .12em; color: var(--sage); }
+.credit-layer h3 { font: 800 35px/1.1 var(--font-display); color: var(--forest); }
+.credit-layer p { font-size: 25px; line-height: 1.35; color: var(--charcoal); }
+
+.ingredient-track { position: relative; display: grid; grid-template-columns: repeat(4, 1fr); gap: 42px; }
+.ingredient-track::before {
+  content: ""; position: absolute; left: 7%; right: 7%; top: 38px; height: 6px;
+  background: rgba(255,255,255,.18);
+}
+.ingredient { position: relative; padding-top: 92px; text-align: center; }
+.ingredient-number {
+  position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+  width: 78px; height: 78px; display: grid; place-items: center; border-radius: 50%;
+  background: var(--forest); border: 6px solid var(--green); color: var(--white);
+  font: 900 30px/1 var(--font-display); z-index: 1;
+}
+.ingredient h3 { font: 800 34px/1.1 var(--font-display); color: var(--white); }
+.ingredient p { margin-top: 13px; font-size: 23px; line-height: 1.35; color: var(--text-body-dark); }
+.ingredient-callout { align-self: center; margin-top: 54px; font-size: 28px; }
+
+.cash-example { display: grid; grid-template-columns: 420px 1fr; gap: 70px; align-items: center; }
+.cash-example-price { padding: 46px 40px; background: var(--forest); color: var(--white); border-left: 9px solid var(--green); }
+.cash-example-price span, .cash-example-price small {
+  display: block; font-family: var(--font-display); font-weight: var(--fw-700); letter-spacing: .1em;
+  text-transform: uppercase;
+}
+.cash-example-price span { font-size: 20px; color: var(--green); }
+.cash-example-price strong { display: block; margin: 14px 0; font: 900 66px/1 var(--font-display); letter-spacing: -.04em; }
+.cash-example-price small { font-size: 16px; color: var(--text-meta-dark); }
+.cash-example-equation { display: grid; gap: 12px; }
+.cash-example-row {
+  display: grid; grid-template-columns: 54px 1fr auto; gap: 22px; align-items: center;
+  min-height: 74px; padding: 14px 26px; background: var(--mist); border-left: 7px solid var(--sage);
+}
+.cash-example-row[data-tone="subtract"] { border-left-color: var(--green); }
+.cash-example-row > span { font: 900 30px/1 var(--font-display); color: var(--sage); }
+.cash-example-row p { font-size: 24px; line-height: 1.25; }
+.cash-example-row strong { font: 800 30px/1 var(--font-display); color: var(--forest); }
+.cash-example-total {
+  display: flex; justify-content: space-between; align-items: center; gap: 30px;
+  margin-top: 8px; padding: 24px 28px; background: var(--green); color: var(--forest);
+  font-family: var(--font-display); font-weight: var(--fw-800); font-size: 28px;
+}
+.cash-example-total strong { font-size: 44px; letter-spacing: -.03em; }
+
+.document-story { display: grid; grid-template-columns: repeat(3, 1fr); gap: 46px; }
+.document-group { min-height: 330px; padding: 34px 38px; border-left: 9px solid var(--forest); background: var(--mist); }
+.document-group:nth-child(2) { border-left-color: var(--sage); }
+.document-group:nth-child(3) { border-left-color: var(--green); }
+.document-group > span { font: 800 18px/1 var(--font-display); letter-spacing: .14em; color: var(--sage); }
+.document-group h3 { margin: 18px 0 24px; font: 800 38px/1 var(--font-display); color: var(--forest); }
+.document-group li { position: relative; padding-left: 24px; margin-bottom: 16px; font-size: 24px; line-height: 1.3; }
+.document-group li::before { content: ""; position: absolute; left: 0; top: 12px; width: 9px; height: 9px; border-radius: 50%; background: var(--green); }
+.document-callout { align-self: center; margin-top: 32px; font-size: 24px; }
+
+.close-plan { display: grid; grid-template-columns: 1.12fr .88fr; gap: 100px; flex: 1 1 auto; align-items: center; }
+.close-plan-copy .headline { margin-top: 22px; max-width: 980px; font-size: 78px; }
+.close-plan-copy .accent-bar { margin: 34px 0; }
+.close-presenter { font: 800 37px/1.1 var(--font-display); color: var(--white); }
+.close-role { margin-top: 7px; font-size: 23px; color: var(--text-body-dark); }
+.close-plan .contact { margin-top: 28px; gap: 9px; }
+.close-plan .contact li { font-size: 26px; }
+.closing-questions { border-left: 8px solid var(--green); padding-left: 44px; }
+.closing-label { margin-bottom: 22px; font: 700 17px/1 var(--font-display); letter-spacing: .14em; text-transform: uppercase; color: var(--green); }
+.closing-questions > div { display: grid; grid-template-columns: 50px 1fr; gap: 20px; align-items: start; padding: 24px 0; border-top: 1px solid rgba(255,255,255,.18); }
+.closing-questions > div span { font: 800 18px/1.2 var(--font-display); color: var(--green); }
+.closing-questions > div p { font: 700 29px/1.25 var(--font-display); color: var(--white); }
+
+/* Existing layouts, tuned to this deck's denser teaching moments. */
+
+#slide-low-down-payment .compare-panel { padding-bottom: 300px; }
+#slide-low-down-payment .callout { bottom: 220px !important; }
+#slide-costs-vs-prepaids .compare-panel { padding-bottom: 240px; }
+#slide-costs-vs-prepaids .callout { bottom: 170px !important; }
+#slide-low-down-payment .panel-list > li,
+#slide-costs-vs-prepaids .panel-list > li { font-size: 26px; margin-bottom: 17px; }
+
+.slide[data-footer-theme="split"] .footer-lines { color: rgba(255,255,255,.62); }
+.slide[data-footer-theme="split"] .slide-footer {
+  border-top-color: transparent;
+  background: linear-gradient(90deg, rgba(12,51,53,.16) 0 50%, rgba(255,255,255,.18) 50% 100%) top / 100% 2px no-repeat;
+}
+.slide[data-footer-theme="split"] .disclaimer {
+  right: auto; width: 820px; padding: 10px 16px; color: var(--charcoal);
+  background: rgba(255,255,255,.94); border-left: 5px solid var(--green);
+}
+
+#slide-protect-preapproval .marker-list { gap: 16px; }
+#slide-protect-preapproval .marker-list > li { font-size: 25px; }
+#slide-credit-habits .marker-list { gap: 18px; }
+
+/* Wrap QR */
+.wrap-qr { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.wrap-qr .photo { position: relative; inset: auto; width: 420px; height: 420px;
+  margin-left: auto; background: #fff; }
+.wrap-qr .photo img { object-fit: contain; padding: 24px; }
+.wrap-qr .photo .wash { display: none; }
+.wrap-qr .photo-placeholder { position: absolute; inset: 0; }
+
+/* FICO pie: SVG extrusion keeps each slice and its legend in one reveal. */
+#slide-credit-report .slide-header { margin-bottom: 24px; }
+.fico-body { justify-content: center; }
+.fico-chart { display: block; width: 100%; height: 550px; flex: none; overflow: visible; }
+.fico-percent { font: 800 38px var(--font-display); }
+.fico-weight { font: 800 44px var(--font-display); fill: var(--forest); }
+.fico-label { font: 700 32px var(--font-display); fill: var(--forest); }
+.fico-detail { font: 400 25px var(--font-body); fill: var(--text-meta-light); }
+.fico-source { font-size: 21px; line-height: 1.4; color: var(--text-meta-light); margin-top: 4px; }
+.fico-slice.build { transform: translateY(-12px); transition-duration: 380ms; }
+@media (prefers-reduced-motion: reduce) { .fico-slice.build { transition-duration: 1ms; } }
+
+/* Five original habits, in a three-over-two card layout. */
+#slide-credit-habits .slide-header { margin-bottom: 48px; }
+.credit-actions { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 24px; }
+.credit-action {
+  grid-column: span 2; min-height: 280px; padding: 30px 36px; border-radius: 16px;
+  background: #EFF5EC; color: var(--forest);
+}
+.credit-action:nth-child(2), .credit-action:nth-child(4) { background: #E3EEDC; }
+.credit-action:nth-child(n+4) { grid-column: span 3; }
+.credit-action:nth-child(5) { background: var(--forest); color: var(--white); }
+.credit-action-icon { display: block; width: 56px; height: 56px; color: var(--sage); margin-bottom: 22px; }
+.credit-action:nth-child(5) .credit-action-icon { color: var(--green); }
+.credit-action h3 { font: 800 36px/1.2 var(--font-display); letter-spacing: -.02em; }
+
+.cash-help-trigger { display: flex; align-items: center; gap: 28px; width: 100%; margin-top: 26px; padding: 23px 30px; border: 2px solid var(--sage); border-radius: 12px; background: rgba(255,255,255,.07); color: white; text-align: left; font: 700 27px/1.35 var(--font-display); cursor: pointer; }
+.cash-help-trigger span { margin-left: auto; color: var(--green); font-size: 36px; }
+.cash-help-trigger:hover { background: rgba(255,255,255,.12); }
+.cash-help-trigger:focus-visible { outline: 4px solid var(--green); outline-offset: 5px; }
+
+/* Preapproval: persistent call-first panel and five manual reveals. */
+#slide-protect-preapproval .slide-header { margin-bottom: 54px; }
+#slide-protect-preapproval .slide-body { display: grid; grid-template-columns: 590px minmax(0,1fr); gap: 72px; align-items: stretch; flex: none; min-height: 555px; }
+#slide-protect-preapproval .preapproval-anchor { background: var(--forest); padding: 46px; display: flex; flex-direction: column; justify-content: center; border-bottom: 10px solid var(--green); }
+#slide-protect-preapproval .preapproval-anchor svg { width: 86px; height: 86px; color: var(--green); margin-bottom: 42px; }
+#slide-protect-preapproval .subhead { color: white; margin: 0 !important; font: 700 48px/1.25 var(--font-display); letter-spacing: -.025em; }
+#slide-protect-preapproval .marker-list { max-width: none !important; gap: 0; justify-content: center; }
+#slide-protect-preapproval .marker-list > li { gap: 26px; align-items: center; padding: 27px 0; border-bottom: 1px solid #CAD5CD; font: 600 32px/1.35 var(--font-display); color: var(--forest); }
+#slide-protect-preapproval .marker-list > li:last-child { border-bottom: 0; }
+#slide-protect-preapproval .marker { width: 36px; height: 36px; background: none; border: 2px solid var(--sage); color: var(--sage); font-size: 22px; }
+
+.document-group[role="button"] { cursor: pointer; transition: background var(--dur-fast); }
+.document-group[role="button"]:hover { background: #EAF0E6; }
+.document-group[role="button"]:focus-visible { outline: 4px solid var(--green); outline-offset: 5px; }
+.document-details-hint { display: flex; justify-content: space-between; margin-top: 24px; color: var(--sage); font: 700 22px/1.3 var(--font-display); }
+
+/* The recap advances through five steps and one changing explanation. */
+.plan-body { justify-content: center; gap: 58px; }
+.plan-steps { display: grid; grid-template-columns: repeat(5,minmax(0,1fr)); gap: 48px; }
+.plan-step { position: relative; text-align: center; color: #C0D1C8; padding: 10px 0 24px; border-bottom: 4px solid transparent; }
+.plan-step svg { display: block; width: 80px; height: 80px; margin: 0 auto 24px; }
+.plan-step h3 { color: white; font: 800 40px/1.2 var(--font-display); }
+.plan-step p { margin-top: 12px; font-size: 25px; line-height: 1.3; }
+.plan-step + .plan-step::before { content: '→'; position: absolute; left: -42px; top: 105px; font-size: 36px; color: var(--green); }
+.plan-step.is-current { color: var(--green); border-bottom-color: var(--green); }
+.plan-detail { display: flex; gap: 38px; align-items: center; padding: 38px 44px; min-height: 220px; background: white; border-left: 8px solid var(--green); border-radius: 12px; }
+.plan-detail[hidden] { display: flex; visibility: hidden; }
+.plan-detail-count { color: var(--sage); font: 800 78px/1 var(--font-display); }
+.plan-detail h3 { color: var(--forest); font: 800 38px/1.2 var(--font-display); }
+.plan-detail p { margin-top: 12px; color: var(--charcoal); font-size: 30px; line-height: 1.4; }

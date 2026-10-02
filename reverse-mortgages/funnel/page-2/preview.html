@@ -1,0 +1,154 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Preview — Webinar Confirmation</title><link rel="icon" href="data:,"><link rel="stylesheet" href="02-confirmation.css"><style>body{margin:0}</style></head><body><div id="msfg-confirmation"
+     class="msfg-confirmation-page"
+     data-webinar-start="2026-10-08T18:00:00-06:00">
+  <div class="msfg-shell">
+
+    <header class="msfg-header">
+      <img class="msfg-logo"
+             src="https://assets.cdn.filesafe.space/46BB4JfRDQDuW3lvtlMw/media/6aac1a8cdefc5728a962b096.png"
+             alt="Mountain State Financial Group">
+      <div class="msfg-header-name">Mountain State Financial Group</div>
+    </header>
+
+    <main class="msfg-main">
+      <section class="msfg-card" aria-labelledby="msfg-confirmation-title">
+        <div class="msfg-checkmark" aria-hidden="true">✓</div>
+        <div class="msfg-eyebrow">Registration Confirmed</div>
+        <h1 class="msfg-title" id="msfg-confirmation-title">You're Registered.</h1>
+
+        <p class="msfg-copy">
+          You're all set for <strong>Reverse Mortgages. Clearly Explained.</strong>
+          with Seth Angell. We'll send your webinar access
+          information and reminders before the live event.
+        </p>
+
+        <div class="msfg-event">
+          <div>October 8th, 2026</div>
+          <div>6:00 pm · Mountain Time Zone (MT)</div>
+        </div>
+
+        <div class="msfg-countdown" data-countdown hidden>
+          <div class="msfg-countdown-heading">Webinar starts in</div>
+          <div class="msfg-countdown-grid" role="timer" aria-label="Time until the webinar starts">
+            <div><div class="msfg-number" data-days>0</div><div class="msfg-unit">days</div></div>
+            <div><div class="msfg-number" data-hours>0</div><div class="msfg-unit">hours</div></div>
+            <div><div class="msfg-number" data-minutes>0</div><div class="msfg-unit">minutes</div></div>
+            <div><div class="msfg-number" data-seconds>0</div><div class="msfg-unit">seconds</div></div>
+          </div>
+        </div>
+
+        <div class="msfg-ready" data-ready role="status" hidden>
+          <strong>The scheduled start time has arrived.</strong>
+          <span>Continue to the webinar page for access and the latest event status.</span>
+        </div>
+
+        <div class="msfg-next">
+          <strong>What happens next?</strong>
+          <span>
+            Continue to the webinar page for access information.
+            If you're early, check back at the scheduled start time.
+          </span>
+        </div>
+
+        <a class="msfg-button"
+           href="https://web.msfgmortgage.com/webinar-broadcast-reverse">
+          Continue to Webinar
+        </a>
+
+        <p class="msfg-small">
+          You can also return using the webinar link sent to you by email or text.
+        </p>
+        <p class="msfg-small">
+          Questions?
+          <a href="mailto:seth.angell@msfg.us">seth.angell@msfg.us</a>
+        </p>
+      </section>
+    </main>
+
+    <footer class="msfg-footer">
+      <img class="msfg-eho"
+           src="https://assets.cdn.filesafe.space/46BB4JfRDQDuW3lvtlMw/media/6a7e08cdfe4291bd1056c347.png"
+           alt="Equal Housing Opportunity">
+      <div class="msfg-footer-company">
+        Mountain State Financial Group, LLC · NMLS #1314257
+      </div>
+      <div>Equal Housing Opportunity</div>
+      <div class="msfg-footer-links">
+        <a href="https://msfg.us/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a>
+        <a href="https://msfg.us/terms" target="_blank" rel="noopener noreferrer">Terms &amp; Conditions</a>
+      </div>
+    </footer>
+  </div>
+</div>
+
+<script>
+(function () {
+  function initializeCountdown() {
+    const root = document.getElementById("msfg-confirmation");
+    if (!root) return;
+    if (typeof root.msfgCountdownCleanup === "function") {
+      root.msfgCountdownCleanup();
+    }
+
+    const countdown = root.querySelector("[data-countdown]");
+    const ready = root.querySelector("[data-ready]");
+    const startText = (root.dataset.webinarStart || "").trim();
+    const isoPattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:Z|[+-]\d{2}:\d{2})$/;
+    const start = isoPattern.test(startText) ? Date.parse(startText) : NaN;
+    countdown.hidden = true;
+    ready.hidden = true;
+
+    // Keep the displayed event details and link available if the ISO value is missing.
+    if (!Number.isFinite(start)) return;
+
+    const fields = ["days", "hours", "minutes", "seconds"].map(function (name) {
+      return root.querySelector("[data-" + name + "]");
+    });
+    let timer = null;
+
+    function cleanup() {
+      if (timer !== null) window.clearInterval(timer);
+      timer = null;
+      document.removeEventListener("visibilitychange", update);
+    }
+
+    function update() {
+      if (!root.isConnected) {
+        cleanup();
+        return;
+      }
+      const remaining = start - Date.now();
+      if (remaining <= 0) {
+        countdown.hidden = true;
+        ready.hidden = false;
+        cleanup();
+        return;
+      }
+      const totalSeconds = Math.ceil(remaining / 1000);
+      const values = [
+        Math.floor(totalSeconds / 86400),
+        Math.floor(totalSeconds / 3600) % 24,
+        Math.floor(totalSeconds / 60) % 60,
+        totalSeconds % 60
+      ];
+      fields.forEach(function (element, index) {
+        element.textContent = String(values[index]).padStart(2, "0");
+      });
+      countdown.hidden = false;
+      ready.hidden = true;
+    }
+
+    root.msfgCountdownCleanup = cleanup;
+    timer = window.setInterval(update, 1000);
+    document.addEventListener("visibilitychange", update);
+    update();
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initializeCountdown, { once: true });
+  } else {
+    initializeCountdown();
+  }
+})();
+</script>
+</body></html>

@@ -1,0 +1,15 @@
+EMAIL 1 — REGISTRATION CONFIRMATION
+Subject: You’re registered! {{custom_values.webinar_title}}
+Preview text: Your webinar date, time, and Zoom link are inside. Save this email to join us.
+From name: {{custom_values.webinar_host}} | MSFG
+Reply-to: {{custom_values.webinar_host_email}}
+
+Paste the full 01-registration-confirmation.html file into the GHL HTML email editor. Styles are included; no JavaScript is needed. Send after successful registration, not a page visit.
+
+Uses confirmed host, event, Zoom and NMLS custom value keys. Logo is the first supplied MSFG image URL, intentionally fixed so it matches the requested email branding.
+
+Uses the built-in {{unsubscribe}} tag documented by GHL, not the user-created custom_values.unsubscribe_link field. Verify its rendering with a GHL test email. Retain the account’s business mailing-address footer. Ensure reply-to routes to the host’s monitored inbox.
+
+preview.html uses sample recipient Alex and supplied event/host details. Its Zoom button goes to the Zoom homepage for design review, not the private meeting. Its unsubscribe text is a nonfunctional preview. Use the production template in GHL.
+
+Desktop/mobile browser checks are not inbox delivery tests. Send a GHL test email to verify real substitutions, links, footer, and Gmail/Outlook rendering before activating. Nothing has been sent or published.
