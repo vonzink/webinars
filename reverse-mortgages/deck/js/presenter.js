@@ -15,9 +15,10 @@ import { actionForEvent, formatDescriptor, resolveShortcuts } from './presenter-
 import { createShortcutPanel } from './presenter-shortcut-panel.js';
 import { WEBINAR } from '../content/webinar-config.js';
 import {
-  SLIDE_LIST_ID, arrangeSlides, createSlideEditClient, parseSlideList,
-  rememberEditPassword, rememberedEditPassword,
+  SLIDE_LIST_ID, arrangeSlides, createSlideEditClient, headingOf, parseSlideList,
+  rememberEditPassword, rememberedEditPassword, webinarTitle,
 } from './slide-edits.js';
+import { pageUrl } from './pages.js';
 
 const presenterParams = new URLSearchParams(location.search);
 const validSessionId = value => typeof value === 'string' && /^[a-z0-9-]{1,100}$/i.test(value) ? value : '';
@@ -25,12 +26,12 @@ let openerSessionId = '';
 try { openerSessionId = validSessionId(window.opener?.__msfgDeckSessionId); } catch { /* cross-origin opener */ }
 const presenterSessionId = validSessionId(presenterParams.get('deck')) || openerSessionId ||
   `standalone-${globalThis.crypto?.randomUUID?.() || `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`}`;
-const channel = new BroadcastChannel(`msfg-deck:reverse-mortgages:${presenterSessionId}`);
+const channel = new BroadcastChannel(`msfg-deck:${WEBINAR.slug}:${presenterSessionId}`);
 const requestedSlide = Number(presenterParams.get('slide'));
 const initialSlide = Number.isInteger(requestedSlide)
   ? Math.max(0, Math.min(SLIDES.length - 1, requestedSlide))
   : 0;
-const ACTIVE_LO_KEY = 'msfg-active-lo:reverse-mortgages';
+const ACTIVE_LO_KEY = `msfg-active-lo:${WEBINAR.slug}`;
 let presenters = [DEFAULT_PRESENTER];
 let activeLo = DEFAULT_PRESENTER;
 let notesCache = [];        // [{ id, slide_id, body, updated_at }] for the active presenter
@@ -57,9 +58,10 @@ function render() {
     appendix.dataset.loaded = 'true';
     SOURCE_APPENDIX.blocks.forEach(text => { const p = document.createElement('p'); p.textContent = text; appendix.appendChild(p); });
   }
-  /* The pacing guide is for getting ready, so it only shows on the opening slide. */
+  /* The pacing guide is for getting ready, so it only shows on the opening slide
+     (and not at all for a deck that has none). */
   const appendixSection = appendix?.closest('.p-appendix');
-  if (appendixSection) appendixSection.hidden = index !== 0;
+  if (appendixSection) appendixSection.hidden = index !== 0 || !SOURCE_APPENDIX.blocks.length;
   $('#p-notes').innerHTML = (cur.notes || '—').split('\n\n').map(p => `<p>${p}</p>`).join('');
   $('#p-next').textContent = nxt ? (nxt.headline || nxt.eyebrow || nxt.id) : 'End — open Q&A';
   $('#p-slide-target').textContent = fmt(cur.time || 0);
@@ -67,8 +69,12 @@ function render() {
   // mini preview -> next slide (or current on the last slide)
   const previewId = (nxt || cur).id;
   const frame = $('#p-preview-frame');
-  try { if (frame.contentWindow) frame.contentWindow.location.hash = previewId; }
-  catch (e) { frame.src = `./index.html?preview#${previewId}`; }
+  const previewUrl = pageUrl('index.html', 'preview', previewId);
+  if (!frame.dataset.deck) { frame.dataset.deck = 'true'; frame.src = previewUrl; }
+  else {
+    try { frame.contentWindow.location.hash = previewId; }
+    catch (e) { frame.src = previewUrl; }
+  }
 
   const ids = [...new Set((cur.cards || []).map(c => c.modal).concat(cur.helpModal ? [cur.helpModal] : []).concat(cur.compareModal ? [cur.compareModal] : []))];
   const list = $('#p-popouts');
@@ -106,9 +112,19 @@ function render() {
    ask it where it is so both windows agree on the slide numbers. */
 async function followSlideList() {
   const edits = await createSlideEditClient({ base: WEBINAR.slideEditsApi, slug: WEBINAR.slug }).list();
+  const title = webinarTitle(edits);
+  if (title) {
+    document.title = `Presenter View — ${title}`;
+    const opening = SLIDES.find(slide => slide.id === 'opening');
+    if (WEBINAR.created && opening) opening.headline = title;
+  }
   const saved = edits.find(edit => edit.slideId === SLIDE_LIST_ID);
-  if (!saved) return;
-  SLIDES.splice(0, SLIDES.length, ...arrangeSlides([...SLIDES], parseSlideList(saved.html)));
+  if (saved) SLIDES.splice(0, SLIDES.length, ...arrangeSlides([...SLIDES], parseSlideList(saved.html)));
+  /* A slide whose saved HTML has its own heading goes by that heading. */
+  SLIDES.forEach(slide => {
+    const heading = headingOf(edits.find(edit => edit.slideId === slide.id)?.html);
+    if (heading) slide.headline = heading;
+  });
   index = Math.min(index, SLIDES.length - 1);
   render();
   channel.postMessage({ type: 'hello' });
@@ -403,7 +419,7 @@ export function initPresenter() {
   editPassword.value = rememberedEditPassword();
   editPassword.addEventListener('input', () => rememberEditPassword(editPassword.value));
   $('#p-slide-settings').addEventListener('click', () => {
-    window.open(`./editor.html#${SLIDES[index].id}`, 'msfg-reverse-slide-settings');
+    window.open(pageUrl('editor.html', '', SLIDES[index].id), `msfg-${WEBINAR.slug}-slide-settings`);
   });
   followSlideList();
 

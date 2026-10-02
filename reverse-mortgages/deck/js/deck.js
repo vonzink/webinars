@@ -24,8 +24,9 @@ import * as annotate from './annotate.js';
 import { createSurfaceController } from './surface-fit.js';
 import { WEBINAR } from '../content/webinar-config.js';
 import {
-  SLIDE_LIST_ID, arrangeSlides, createSlideEditClient, createSlideEditStage, parseSlideList,
+  SLIDE_LIST_ID, arrangeSlides, createSlideEditClient, createSlideEditStage, parseSlideList, webinarTitle,
 } from './slide-edits.js';
+import { pageUrl } from './pages.js';
 
 /* SLIDES is rearranged in place when slides are added or deleted in Slide
    settings; this is the deck exactly as content/slides.js defines it. */
@@ -33,7 +34,7 @@ const DECK_SLIDES = [...SLIDES];
 let slideList = parseSlideList('');
 let P = activePresenter();
 const PREVIEW = new URLSearchParams(location.search).has('preview');
-const DECK_CHANNEL_PREFIX = 'msfg-deck:reverse-mortgages:';
+const DECK_CHANNEL_PREFIX = `msfg-deck:${WEBINAR.slug}:`;
 const DECK_SESSION_ID = globalThis.crypto?.randomUUID?.() ||
   `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
 const DECK_CHANNEL_NAME = `${DECK_CHANNEL_PREFIX}${DECK_SESSION_ID}`;
@@ -778,6 +779,22 @@ async function loadSavedEdits(requestedId) {
   const edits = await fetchSavedEdits();
   clearTimeout(timer);
   const held = holding;
+  /* A webinar made in Webinar Studio carries its own title: the tab shows it,
+     and so does the opening slide until that slide is edited. */
+  const title = webinarTitle(edits);
+  if (title) {
+    document.title = `${title} — Mountain State Financial Group`;
+    const opening = DECK_SLIDES.find(s => s.id === 'opening');
+    const el = document.getElementById('slide-opening');
+    if (WEBINAR.created && opening?.sourceBlocks && el) {
+      opening.sourceBlocks[0] = title;
+      opening.headline = title;
+      (layouts[opening.layout] || layouts.grid)(el, opening);
+      furniture(el, opening);
+      slideEdits.rerendered('opening');
+    }
+  }
+  window.__deckTitle = title || WEBINAR.title;
   const saved = edits.find(edit => edit.slideId === SLIDE_LIST_ID);
   if (saved) applySlideList(parseSlideList(saved.html));
   slideEdits.load(edits);
@@ -1044,7 +1061,8 @@ export function initDeck() {
   /* The Slide settings screen embeds this deck and drives its slides directly. */
   slideEdits.ready = loadSavedEdits(requestedId);
   window.__deckSlideEdits = slideEdits;
-  const named = s => ({ id: s.id, title: s.headline || s.eyebrow || s.id, added: Boolean(s.added) });
+  /* A slide whose saved HTML has its own heading is named by that heading. */
+  const named = s => ({ id: s.id, title: slideEdits.heading(s.id) || s.headline || s.eyebrow || s.id, added: Boolean(s.added) });
   window.__deckSlides = {
     list: () => slideList,
     apply: applySlideList,
@@ -1057,10 +1075,9 @@ export function initDeck() {
     },
   };
 
-  const ok = SLIDES.length === 21 && MODAL_COUNT === 0;
   console.log(
-    `%c Reverse Mortgages: Understanding Your Home Equity Options · Ridgeline %c ${SLIDES.length} slides · ${MODAL_COUNT} popouts · ` +
-    `${Math.round(TARGET_RUNTIME_SECONDS / 60)} min ${ok ? '✓' : '✗ count check'}`,
+    `%c ${WEBINAR.title} · Ridgeline %c ${SLIDES.length} slides · ${MODAL_COUNT} popouts · ` +
+    `${Math.round(TARGET_RUNTIME_SECONDS / 60)} min`,
     'background:#0C3335;color:#8cc63E;font-weight:700;padding:2px 6px', 'color:#0C3335');
 
   const referenced = new Set();
@@ -1077,7 +1094,7 @@ export function initDeck() {
 
 function openPresenter() {
   const params = new URLSearchParams({ deck: DECK_SESSION_ID, slide: String(current) });
-  presenterWindow = window.open(`./presenter.html?${params}`, `msfg-reverse-presenter-${DECK_SESSION_ID}`, 'width=1280,height=800');
+  presenterWindow = window.open(pageUrl('presenter.html', params.toString()), `msfg-${WEBINAR.slug}-presenter-${DECK_SESSION_ID}`, 'width=1280,height=800');
 }
 
 export { show, next, prev, SLIDES };

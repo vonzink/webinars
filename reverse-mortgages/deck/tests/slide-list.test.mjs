@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
-  arrangeSlides, listAfterAdd, listAfterMove, listAfterRemove, listAfterRestore, listWithTitle, parseSlideList,
+  arrangeSlides, headingOf, listAfterAdd, listAfterMove, listAfterRemove, listAfterRestore, parseSlideList, webinarTitle,
 } from '../js/slide-edits.js';
 import {
   MAX_PROJECT_SLIDES, brandLinks, buildProjectPrompt, buildSlidePrompt, footerHtml, parseSlideProject,
@@ -89,10 +89,25 @@ test('slides can be put in any order, deck slides and added ones alike', () => {
   assert.deepEqual(ids(listAfterRestore(deck, listAfterRemove(deck, list, 'what'), 'what')), ['added-a', 'opening', 'what', 'closing']);
 });
 
-test('an added slide can be retitled', () => {
-  const list = listAfterAdd(deck, empty, 'what', 'added-a', 'Copy');
-  assert.equal(arrangeSlides(deck, listWithTitle(list, 'added-a', 'Fees'))[2].headline, 'Fees');
-  assert.equal(listWithTitle(list, 'what', 'Nope'), list);
+test('a brand-new slide can be framed like a named deck slide instead of the open one', () => {
+  const list = listAfterAdd(deck, empty, 'what', 'added-a', 'Imported', 'opening');
+  assert.deepEqual(ids(list), ['opening', 'what', 'added-a', 'closing']);
+  assert.equal(list.added['added-a'].from, 'opening');
+  assert.equal(arrangeSlides(deck, list)[2].manualBuild, false);
+});
+
+test('a slide is named by the first heading in its saved HTML', () => {
+  assert.equal(headingOf('<header><h2 class="source-title">Who  qualifies\n&amp; <em>why</em></h2></header><h2>Second</h2>'), 'Who qualifies & why');
+  assert.equal(headingOf('<div><h1 class="source-title" data-source-block="0">REVERSE\nMORTGAGES</h1></div>'), 'REVERSE MORTGAGES');
+  assert.equal(headingOf('<p>No heading here</p>'), '');
+  assert.equal(headingOf(''), '');
+  assert.equal(headingOf(undefined), '');
+});
+
+test('a Webinar Studio webinar\'s title is read from its saved details', () => {
+  assert.equal(webinarTitle([{ slideId: '_webinar', html: '{"title":"  First-time buyers "}' }]), 'First-time buyers');
+  assert.equal(webinarTitle([{ slideId: '_webinar', html: 'nope' }]), '');
+  assert.equal(webinarTitle([{ slideId: 'opening', html: '<h1>x</h1>' }]), '');
 });
 
 const links = brandLinks('https://msfgmortgage.com/webinars/reverse-mortgages/index.html');

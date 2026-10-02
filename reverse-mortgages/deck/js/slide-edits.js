@@ -9,6 +9,18 @@
 
 export const MASTER_ID = '_master';      // the server's name for the Master CSS
 export const SLIDE_LIST_ID = '_slides';  // ...and for the deck's slide list
+export const WEBINAR_ID = '_webinar';    // ...and for a Webinar Studio webinar's details
+
+/* The title a webinar was given in Webinar Studio, if it was made there. */
+export function webinarTitle(edits) {
+  const details = edits.find(edit => edit.slideId === WEBINAR_ID);
+  try {
+    const title = JSON.parse(details.html).title;
+    return typeof title === 'string' ? title.trim() : '';
+  } catch {
+    return '';
+  }
+}
 
 /* ---- the slide list ------------------------------------------------------
    { order: [slide ids], added: { id: { from, title } }, removed: [slide ids] }
@@ -85,9 +97,17 @@ export function listAfterMove(originals, list, id, position) {
   return { order, added: { ...list.added }, removed: [...list.removed] };
 }
 
-export function listWithTitle(list, id, title) {
-  if (!list.added[id]) return list;
-  return { ...list, added: { ...list.added, [id]: { ...list.added[id], title } } };
+/* The title a slide's saved HTML gives it: the text of its first h1 or h2. The
+   slide list and Presenter View name an edited slide by it. */
+export function headingOf(html) {
+  const match = /<h[12]\b[^>]*>([\s\S]*?)<\/h[12]>/i.exec(String(html || ''));
+  if (!match) return '';
+  const entities = { amp: '&', lt: '<', gt: '>', quot: '"', '#39': '\'', nbsp: ' ' };
+  return match[1]
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/&(amp|lt|gt|quot|#39|nbsp);/g, (_, name) => entities[name])
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 const BLOCK_TAGS = new Set([
@@ -325,6 +345,7 @@ export function createSlideEditStage({ document, onChange = () => {} }) {
       });
     },
     isEdited: id => (id === MASTER_ID ? Boolean(savedMaster.trim()) : saved.has(id)),
+    heading: id => headingOf(saved.get(id)?.html),
     shown: run,
     source(id) {
       const el = slideEl(id);

@@ -11,9 +11,10 @@
 import { WEBINAR } from '../content/webinar-config.js';
 import {
   MASTER_ID, SLIDE_LIST_ID, createSlideEditClient, listAfterAdd, listAfterMove, listAfterRemove, listAfterRestore,
-  listWithTitle, rememberEditPassword, rememberedEditPassword,
+  rememberEditPassword, rememberedEditPassword,
 } from './slide-edits.js';
 import { brandLinks, buildProjectPrompt, buildSlidePrompt, parseSlideProject } from './slide-prompt.js';
+import { pageUrl } from './pages.js';
 
 const COLUMNS_KEY = 'msfg-slide-settings-columns';
 const PREVIEW_DELAY_MS = 200;
@@ -100,7 +101,7 @@ export function initSlideEditor() {
       preview.loading = 'lazy';
       preview.tabIndex = -1;
       preview.title = `Slide ${index + 1} preview`;
-      preview.src = `./index.html?preview#${slide.id}`;
+      preview.src = pageUrl('index.html', 'preview', slide.id);
       thumb.appendChild(preview);
       button.appendChild(thumb);
       button.title = 'Drag to change the order';
@@ -141,6 +142,7 @@ export function initSlideEditor() {
   function refreshState() {
     document.querySelectorAll('.e-item').forEach(button => {
       const { id } = button.dataset;
+      if (isSlide(id)) button.querySelector('.e-item-title').textContent = titleOf(id);   // follows a saved heading
       const badge = button.querySelector('.e-badge');
       const kind = drafts.has(id) ? 'unsaved' : stage.isEdited(id) ? 'edited' : '';
       badge.hidden = !kind;
@@ -221,7 +223,7 @@ export function initSlideEditor() {
       const index = shown().findIndex(slide => slide.id === id);
       $('#e-kicker').textContent = `Slide ${index + 1} of ${shown().length}`;
       $('#e-title').textContent = titleOf(id);
-      history.replaceState(null, '', `#${id}`);
+      history.replaceState(null, '', `${location.pathname}${location.search}#${id}`);
     } else {
       $('#e-kicker').textContent = 'Every slide';
       $('#e-title').textContent = 'Master CSS';
@@ -316,17 +318,6 @@ export function initSlideEditor() {
     afterChange(id, isSlide(id) ? 'Reset. Everyone sees the original slide again.' : 'Reset. The Master CSS is removed.');
   }
 
-  /* An added slide is listed under its own heading once that has been saved. */
-  async function followHeading(id, pass) {
-    const heading = deck.document.querySelector(`#slide-${id} h1, #slide-${id} h2`)?.textContent.replace(/\s+/g, ' ').trim();
-    if (!slides.list().added[id] || !heading || heading === titleOf(id)) return;
-    const list = listWithTitle(slides.list(), id, heading);
-    if (!await saveList(list, pass)) return;
-    slides.apply(list);
-    makeEditable();
-    buildList();
-  }
-
   async function save() {
     const id = selected;
     if (!drafts.has(id) || busy) return;
@@ -341,7 +332,6 @@ export function initSlideEditor() {
     setStatus('Saving…');
     if (!await send(() => client.save(id, edit, pass))) return;
     if (isSlide(id)) stage.commit(id, edit); else stage.commitMaster(edit.css);
-    if (isSlide(id)) await followHeading(id, pass);
     afterChange(id, isSlide(id)
       ? 'Saved. Everyone who opens this webinar now sees this slide.'
       : 'Saved. The Master CSS now applies for everyone.');
@@ -480,7 +470,7 @@ export function initSlideEditor() {
   }
 
   /* ---- instructions: how to edit, plus prompts for Claude or ChatGPT ---- */
-  const deckTitle = document.title.split('—').pop().trim();
+  const deckTitle = () => deck?.__deckTitle || WEBINAR.title;
   const links = brandLinks(new URL('./index.html', location.href).href);
   const note = (selector, message, state = '') => { $(selector).textContent = message; $(selector).dataset.state = state; };
 
@@ -488,7 +478,7 @@ export function initSlideEditor() {
     const id = isSlide(selected) ? selected : viewed;
     const values = fields(id);
     $('#e-help-prompt').value = buildSlidePrompt({
-      deckTitle,
+      deckTitle: deckTitle(),
       links,
       slide: { title: titleOf(id), wrapper: source(id).wrapper, html: values.html, css: values.css, js: values.js },
     });
@@ -647,12 +637,19 @@ export function initSlideEditor() {
     deck.document.addEventListener('keydown', saveShortcut);
     deck.document.addEventListener('click', event => { if (event.target.closest('a')) event.preventDefault(); });
 
+    document.title = `Slide settings — ${deckTitle()}`;
+    $('#e-deck-title').textContent = deckTitle();
     buildList();
     const wanted = location.hash.slice(1);
     select(shown().some(slide => slide.id === wanted) ? wanted : shown()[0].id);
     document.querySelector('.e-item[aria-current="true"]')?.scrollIntoView({ block: 'nearest' });
   }
 
+  $('#e-present').href = pageUrl('index.html');
+  if (WEBINAR.studio) {
+    $('#e-studio').href = WEBINAR.studio;
+    $('#e-studio').hidden = false;
+  }
   passwordBox.value = rememberedEditPassword();
   Object.values(boxes).forEach(box => box.addEventListener('input', typed));
   document.querySelectorAll('#e-tabs button').forEach(button => {
@@ -668,7 +665,7 @@ export function initSlideEditor() {
   $('#e-help-open').addEventListener('click', openHelp);
   $('#e-help-close').addEventListener('click', () => $('#e-help').close());
   $('#e-help-copy').addEventListener('click', () => copy($('#e-help-prompt').value, '#e-help-copied'));
-  $('#e-project-copy').addEventListener('click', () => copy(buildProjectPrompt({ deckTitle, links }), '#e-project-copied'));
+  $('#e-project-copy').addEventListener('click', () => copy(buildProjectPrompt({ deckTitle: deckTitle(), links }), '#e-project-copied'));
   $('#e-project-add').addEventListener('click', addProject);
   document.addEventListener('keydown', saveShortcut);
   window.addEventListener('beforeunload', event => { if (drafts.size) event.preventDefault(); });
@@ -682,5 +679,5 @@ export function initSlideEditor() {
     frame.removeEventListener('load', loaded);
     connect();
   });
-  frame.src = `./index.html?preview${location.hash}`;
+  frame.src = pageUrl('index.html', 'preview', location.hash.slice(1));
 }
