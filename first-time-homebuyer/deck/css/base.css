@@ -310,9 +310,11 @@ em, i { font-style: normal; font-weight: var(--fw-800); }
 #annotate-bar button.col.is-active { border-color: #fff; }
 #annotate-bar .sep { width: 1px; height: 26px; background: rgba(255,255,255,.2); margin: 0 4px; }
 
-/* Preview iframe (mini next-slide in presenter view): hide chrome */
+/* Preview iframe (mini next-slide in presenter view, Slide settings): hide
+   chrome, and show the finished slide with no build animation. */
 body.is-preview .deck-nav, body.is-preview .deck-progress { display: none; }
 body.is-preview { pointer-events: none; }
+body.is-preview .build { transition: none; }
 
 /* Dev guide: webcam/safe visualization off by default */
 body.show-guides .slide::after {

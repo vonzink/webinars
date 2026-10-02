@@ -3,8 +3,6 @@
    The "open" cue is a green corner tick.
    ========================================================================= */
 
-import { openModal } from './modal.js';
-
 export function makeCard(spec) {
   const el = document.createElement('button');
   el.type = 'button';
@@ -27,8 +25,10 @@ export function makeCard(spec) {
   if (spec.stat) parts.push(`<span class="card-stat">${spec.stat}</span>`);
   /* No "+" cue — the whole block is clickable (or drive it from Presenter View). */
 
+  /* The click is handled once for the whole deck (js/deck.js): anything carrying
+     data-modal opens that pop-out, so a card still works after its slide's HTML
+     has been edited in Slide settings. */
   el.innerHTML = parts.join('');
-  el.addEventListener('click', () => openModal(spec.modal, el));
   return el;
 }
 

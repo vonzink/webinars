@@ -8,6 +8,12 @@ import { SLIDES, TARGET_RUNTIME_SECONDS } from '../content/slides.js';
 import { MODALS } from '../content/modals.js';
 import { mediaForSlide } from '../content/presenter-media.js';
 import { activePresenter, COMPANY } from '../content/presenters.js';
+import { WEBINAR } from '../content/webinar-config.js';
+import {
+  SLIDE_LIST_ID, arrangeSlides, createSlideEditClient, headingOf, parseSlideList,
+  rememberEditPassword, rememberedEditPassword, webinarTitle,
+} from './slide-edits.js';
+import { pageUrl } from './pages.js';
 
 const channel = new BroadcastChannel('msfg-deck');
 const P = activePresenter();
@@ -31,8 +37,12 @@ function render() {
   // mini preview -> next slide (or current on the last slide)
   const previewId = (nxt || cur).id;
   const frame = $('#p-preview-frame');
-  try { if (frame.contentWindow) frame.contentWindow.location.hash = previewId; }
-  catch (e) { frame.src = `./index.html?preview#${previewId}`; }
+  const previewUrl = pageUrl('index.html', 'preview', previewId);
+  if (!frame.dataset.deck) { frame.dataset.deck = 'true'; frame.src = previewUrl; }
+  else {
+    try { frame.contentWindow.location.hash = previewId; }
+    catch (e) { frame.src = previewUrl; }
+  }
 
   const ids = (cur.cards || []).map(c => c.modal).concat(cur.compareModal ? [cur.compareModal] : []);
   const list = $('#p-popouts');
@@ -64,6 +74,25 @@ function render() {
   $('#p-media-count').textContent = String(media.length);
 
   renderNotes();
+}
+
+/* Slides added, deleted or reordered in Slide settings: match the slide
+   window's list, then ask it where it is so both windows agree on the slide
+   numbers. */
+async function followSlideList() {
+  const edits = await createSlideEditClient({ base: WEBINAR.slideEditsApi, slug: WEBINAR.slug }).list();
+  const title = webinarTitle(edits);
+  if (title) document.title = `Presenter View — ${title}`;
+  const saved = edits.find(edit => edit.slideId === SLIDE_LIST_ID);
+  if (saved) SLIDES.splice(0, SLIDES.length, ...arrangeSlides([...SLIDES], parseSlideList(saved.html)));
+  /* A slide whose saved HTML has its own heading goes by that heading. */
+  SLIDES.forEach(slide => {
+    const heading = headingOf(edits.find(edit => edit.slideId === slide.id)?.html);
+    if (heading) slide.headline = heading;
+  });
+  index = Math.min(index, SLIDES.length - 1);
+  render();
+  channel.postMessage({ type: 'hello' });
 }
 
 /* ---- clocks ---- */
@@ -210,6 +239,21 @@ export function initPresenter() {
   $('#p-calculator').addEventListener('click', () => {
     channel.postMessage({ type: 'calculator-visibility', visible: !calculatorVisible });
   });
+
+  /* Edit the slides: the edit password (kept in this browser, shared with
+     Slide settings) and the way in. Slide settings opens on the slide being
+     presented, in its own tab. */
+  const editPassword = $('#p-edit-password');
+  editPassword.value = rememberedEditPassword();
+  editPassword.addEventListener('input', () => rememberEditPassword(editPassword.value));
+  $('#p-slide-settings').addEventListener('click', () => {
+    window.open(pageUrl('editor.html', '', SLIDES[index].id), `msfg-${WEBINAR.slug}-slide-settings`);
+  });
+  if (WEBINAR.studio) {
+    $('#p-studio-link').href = WEBINAR.studio;
+    $('#p-studio-link').hidden = false;
+  }
+  followSlideList();
 
   $('#p-prev').addEventListener('click', () => channel.postMessage({ type: 'prev' }));
   $('#p-next-btn').addEventListener('click', () => channel.postMessage({ type: 'next' }));

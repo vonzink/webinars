@@ -92,6 +92,22 @@
     .p-none { font-size: 14px; color: rgba(255,255,255,.4); }
     .p-controls { display: flex; gap: 10px; margin-top: 22px; }
     .p-controls button { flex: 1 1 auto; font-weight: 600; font-family: var(--font-display); }
+    /* edit the slides: password + the way into Slide settings */
+    .p-editing { margin-top: 22px; padding: 2px 14px 14px; border: 1px solid rgba(140,198,62,.4);
+      border-radius: 3px; background: rgba(140,198,62,.07); }
+    .p-editing .p-h { margin-top: 14px; color: #B9E47D; }
+    .p-editing-intro { font-size: 13px; line-height: 1.5; color: rgba(255,255,255,.7); }
+    .p-editing-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+    .p-editing-row input { flex: 1 1 160px; min-width: 0; height: 36px; padding: 0 10px; border-radius: 3px;
+      border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.06); color: #fff;
+      font: 14px/1 var(--font-body); }
+    .p-editing-row input:focus { outline: none; border-color: #8cc63E; }
+    .p-editing-row button { height: 36px; border-radius: 3px; color: #0C3335; background: #8cc63E;
+      border-color: #8cc63E; font: 700 12px/1 var(--font-display); }
+    .p-editing-row button:hover { background: #A2D85A; }
+    .p-studio-link { display: inline-block; margin-top: 10px; color: #B9E47D; font-size: 13px;
+      text-underline-offset: 3px; }
+    .p-studio-link[hidden] { display: none; }
     .p-hint { margin-top: 16px; font-size: 12px; line-height: 1.6; color: rgba(255,255,255,.42);
       border-top: 1px solid rgba(255,255,255,.1); padding-top: 12px; }
     @container (max-width: 420px) {
@@ -143,7 +159,7 @@
 
       <div class="p-h">Up next</div>
       <div class="p-preview-wrap">
-        <div class="p-preview"><iframe id="p-preview-frame" src="./index.html?preview" title="Next slide preview" tabindex="-1"></iframe></div>
+        <div class="p-preview"><iframe id="p-preview-frame" title="Next slide preview" tabindex="-1"></iframe></div>
         <div class="p-next-label" id="p-next"></div>
       </div>
       <div class="p-tools" style="margin-top:8px">
@@ -195,6 +211,18 @@
         <button type="button" id="p-next-btn">Next ›</button>
         <button type="button" id="p-start">Start timer</button>
       </div>
+
+      <section class="p-editing" aria-labelledby="p-editing-title">
+        <div class="p-h" id="p-editing-title">Edit the slides</div>
+        <p class="p-editing-intro">Change the slides everyone sees: wording, layout, styles, and adding, removing or
+          reordering slides. The password is kept in this browser.</p>
+        <div class="p-editing-row">
+          <input type="password" id="p-edit-password" placeholder="Edit password" aria-label="Edit password"
+            autocomplete="off">
+          <button type="button" id="p-slide-settings">Open Slide settings ↗</button>
+        </div>
+        <a class="p-studio-link" id="p-studio-link" target="_blank" rel="noopener" hidden>All webinars: Webinar Studio ↗</a>
+      </section>
       <div class="p-hint">Share the <strong>main window</strong>, keep this one on your own screen.<br>
         Arrow keys and popout buttons work from either window. Draw controls the shared slide.</div>
     </aside>

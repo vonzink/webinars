@@ -62,11 +62,11 @@ async (page) => {
     }));
   }, { eventCode: code, eventKey: key });
 
-  const settingsButton = presenter.getByRole('button', { name: 'Keyboard shortcut settings' });
+  const settingsButton = presenter.getByRole('button', { name: 'Presenter settings' });
   check(await settingsButton.count() === 1, 'presenter must expose one keyboard settings button');
   if (failures.length) throw new Error(JSON.stringify({ status: 'fail', failures, pageErrors }));
   await settingsButton.click();
-  const dialog = presenter.getByRole('dialog', { name: 'Keyboard shortcuts' });
+  const dialog = presenter.getByRole('dialog', { name: 'Settings' });
   check(await dialog.isVisible(), 'keyboard settings must open as a visible dialog');
   check(await dialog.locator('.p-shortcut-row').count() === 7, 'settings must list all seven presenter actions');
 
@@ -101,7 +101,7 @@ async (page) => {
   )));
   check(savedPayload?.shortcuts?.nextSlide?.[0] === 'KeyX', 'save must persist the customized key through the presenter API');
   check(savedPayload?.shortcuts?.nextSlide?.[1] === 'Space', 'save must preserve the alternate Space shortcut');
-  await dialog.getByRole('button', { name: 'Close keyboard shortcuts' }).click();
+  await dialog.getByRole('button', { name: 'Close settings' }).click();
   await presenter.locator('body').click({ position: { x: 6, y: 100 } });
   if (!page.url().endsWith('#opening')) throw new Error(`settings interactions navigated the deck: ${page.url()}`);
 
@@ -146,7 +146,7 @@ async (page) => {
   await checkpoint('offline return to opening', page.waitForFunction(() => location.hash === '#opening'));
   await pressPresenter('KeyX', 'x');
   await checkpoint('offline cached shortcut', page.waitForFunction(() => location.hash === '#confident-number'));
-  await presenter.getByRole('button', { name: 'Keyboard shortcut settings' }).click();
+  await presenter.getByRole('button', { name: 'Presenter settings' }).click();
   check((await presenter.locator('#p-shortcut-status').textContent()).includes('Offline'),
     'offline settings must identify the browser-cache fallback');
 

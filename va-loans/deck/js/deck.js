@@ -14,10 +14,19 @@ import { initCalculator, setCalculatorVisible, isCalculatorVisible } from './cal
 import { makeCard, makeCardGrid } from './card.js';
 import { FIGURES } from './figures.js';
 import * as annotate from './annotate.js';
+import { WEBINAR } from '../content/webinar-config.js';
+import {
+  SLIDE_LIST_ID, arrangeSlides, createSlideEditClient, createSlideEditStage, parseSlideList, webinarTitle,
+} from './slide-edits.js';
+import { pageUrl } from './pages.js';
 
+/* SLIDES is rearranged in place when slides are added or deleted in Slide
+   settings; this is the deck exactly as content/slides.js defines it. */
+const DECK_SLIDES = [...SLIDES];
+let slideList = parseSlideList('');
 const P = activePresenter();
 const PREVIEW = new URLSearchParams(location.search).has('preview');
-let current = 0, scaler, stage, channel;
+let current = 0, scaler, stage, channel, slideEdits;
 let presenterWindow = null, presenterClosedWatch = null, navHidden = false;
 
 /* ---- helpers -------------------------------------------------------------- */
@@ -110,9 +119,10 @@ const layouts = {
       </div>`;
     if (d.compareModal) {
       const b = document.createElement('button');
+      b.type = 'button';
       b.className = 'compare-cta build';
+      b.dataset.modal = d.compareModal;            // opened by the deck's one data-modal listener
       b.innerHTML = 'Compare loans: Conventional · FHA · VA <span aria-hidden="true">→</span>';
-      b.addEventListener('click', () => openModal(d.compareModal, b));
       el.querySelector('.slide-body').appendChild(b);
     }
   },
@@ -240,22 +250,142 @@ function btn(label, url, variant) {
 }
 
 /* ---- build sequencing ----------------------------------------------------- */
+let buildTimers = [];
+function clearBuildTimers() {
+  buildTimers.forEach(timer => clearTimeout(timer));
+  buildTimers = [];
+}
+
 function runBuild(el) {
+  clearBuildTimers();
   const items = [...el.querySelectorAll('.build')];
+  /* A preview (Presenter View's "up next", Slide settings) shows the whole slide. */
+  if (PREVIEW) { items.forEach(n => n.classList.add('is-in')); return; }
   items.forEach(n => n.classList.remove('is-in'));
-  items.forEach((n, i) => setTimeout(() => n.classList.add('is-in'), 60 + Math.min(i, 6) * 90));
+  buildTimers = items.map((n, i) => setTimeout(() => n.classList.add('is-in'), 60 + Math.min(i, 6) * 90));
+}
+
+/* A slide's markup was replaced by a slide edit: show all of its build items,
+   so nothing stays hidden while it is being edited. */
+function refreshBuild(el) {
+  clearBuildTimers();
+  el.querySelectorAll('.build').forEach(n => n.classList.add('is-in'));
+}
+
+/* Saved edits (Slide settings: a slide's HTML, CSS and JS, the Master CSS, and
+   slides added, deleted or reordered) apply for everyone. The slides stay
+   hidden for a moment so an edited first slide does not flash its original; if
+   the server is slow or unreachable the originals show instead.
+   Inside Slide settings every preview of the deck shares the editor's one copy
+   of the saved edits, so twenty small previews do not mean twenty requests. */
+async function fetchSavedEdits() {
+  try {
+    if (window.parent !== window && typeof window.parent.__slideEditsFeed === 'function') {
+      return await window.parent.__slideEditsFeed();
+    }
+  } catch { /* a parent from another site: load them ourselves */ }
+  return createSlideEditClient({ base: WEBINAR.slideEditsApi, slug: WEBINAR.slug }).list();
+}
+
+async function loadSavedEdits(requestedId) {
+  if (!WEBINAR.slideEditsApi) return;
+  let holding = true;
+  const reveal = () => { holding = false; scaler.style.visibility = ''; };
+  scaler.style.visibility = 'hidden';
+  const timer = setTimeout(reveal, 600);
+  const edits = await fetchSavedEdits();
+  clearTimeout(timer);
+  const held = holding;
+  /* A webinar given a title in Webinar Studio shows it in the tab. */
+  const title = webinarTitle(edits);
+  if (title) document.title = `${title} — Mountain State Financial Group`;
+  window.__deckTitle = title || WEBINAR.title;
+  const saved = edits.find(edit => edit.slideId === SLIDE_LIST_ID);
+  if (saved) applySlideList(parseSlideList(saved.html));
+  slideEdits.load(edits);
+  /* The address may have asked for a slide that only exists once the list is in. */
+  const requested = SLIDES.findIndex(s => s.id === requestedId);
+  if (requested >= 0 && requested !== current) show(requested);
+  reveal();
+  if (held || slideEdits.isEdited(SLIDES[current].id)) runBuild(document.getElementById(`slide-${SLIDES[current].id}`));
+}
+
+function label(el, d, i) {
+  el.dataset.index = String(i);
+  el.setAttribute('aria-label', `${i + 1} of ${SLIDES.length}: ${d.headline || d.eyebrow || d.id}`);
 }
 
 function shell(d, i) {
   const el = document.createElement('section');
   el.className = 'slide';
   el.id = `slide-${d.id}`;
-  el.dataset.index = String(i);
   el.dataset.bg = d.bg || 'mist';
   el.setAttribute('role', 'group');
   el.setAttribute('aria-roledescription', 'slide');
-  el.setAttribute('aria-label', `${i + 1} of ${SLIDES.length}: ${d.headline || d.eyebrow || d.id}`);
+  label(el, d, i);
   return el;
+}
+
+/* Draw a slide's own content into its element. */
+function renderSlide(el, d) {
+  (layouts[d.layout] || layouts.grid)(el, d);
+  furniture(el, d);
+}
+
+function buildSlide(d, i) {
+  const el = shell(d, i);
+  renderSlide(el, d);
+  return el;
+}
+
+/* Slides added, deleted or reordered in Slide settings: rearrange SLIDES and
+   the slide elements to match, keeping the slide on show where possible. */
+function applySlideList(list) {
+  slideList = list;
+  const shownId = SLIDES[current]?.id;
+  SLIDES.splice(0, SLIDES.length, ...arrangeSlides(DECK_SLIDES, list));
+  const existing = new Map([...scaler.querySelectorAll('.slide')].map(el => [el.id, el]));
+  SLIDES.forEach((d, i) => {
+    let el = existing.get(`slide-${d.id}`);
+    existing.delete(`slide-${d.id}`);
+    const fresh = !el;
+    if (fresh) el = buildSlide(d, i);
+    label(el, d, i);
+    scaler.appendChild(el);                        // appending in order also reorders
+    if (fresh) slideEdits.rerendered(d.id);        // take its original; a saved edit goes on top
+  });
+  existing.forEach(el => el.remove());
+  const at = SLIDES.findIndex(s => s.id === shownId);
+  show(at >= 0 ? at : Math.min(current, SLIDES.length - 1));
+}
+
+/* Anything in a slide that carries data-modal="<pop-out id>" opens that
+   pop-out: the cards, the compare button, and the same attribute in a slide's
+   edited HTML. One listener on the slides container does it, so nothing is lost
+   when a slide's markup is replaced. A slide being typed on (Slide settings)
+   is left alone: a click there places the cursor. */
+function modalTrigger(event) {
+  const target = event.target instanceof Element ? event.target : null;
+  if (!target || target.isContentEditable || target.closest('[contenteditable]:not([contenteditable="false"])')) return null;
+  const trigger = target.closest('[data-modal]');
+  return trigger && scaler.contains(trigger) ? trigger : null;
+}
+
+function initModalTriggers() {
+  scaler.addEventListener('click', event => {
+    const trigger = modalTrigger(event);
+    if (trigger) openModal(trigger.dataset.modal, trigger);
+  });
+  /* A button answers Enter and Space with a click by itself; other elements
+     (a div or an article carrying data-modal) need it done for them. */
+  scaler.addEventListener('keydown', event => {
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    const trigger = modalTrigger(event);
+    if (!trigger || trigger !== event.target || trigger.matches('button, a[href], input, select, textarea')) return;
+    event.preventDefault();
+    event.stopPropagation();
+    openModal(trigger.dataset.modal, trigger);
+  });
 }
 
 function show(i) {
@@ -265,6 +395,7 @@ function show(i) {
   const slides = document.querySelectorAll('.slide');
   slides.forEach((s, idx) => s.classList.toggle('is-active', idx === current));
   runBuild(slides[current]);
+  slideEdits.shown(SLIDES[current].id);          // a slide's own JS runs each time it is shown
   const nav = document.querySelector('.nav-count');
   if (nav) nav.textContent = `${current + 1} / ${SLIDES.length}`;
   const prog = document.querySelector('.deck-progress');
@@ -368,12 +499,18 @@ export function initDeck() {
     annotate.onStateChange(on => { if (channel) channel.postMessage({ type: 'annstate', on }); });
   }
 
-  SLIDES.forEach((d, i) => {
-    const el = shell(d, i);
-    (layouts[d.layout] || layouts.grid)(el, d);
-    furniture(el, d);
-    scaler.appendChild(el);
+  SLIDES.forEach((d, i) => scaler.appendChild(buildSlide(d, i)));
+  initModalTriggers();
+  slideEdits = createSlideEditStage({
+    document,
+    onChange: el => { if (el.classList.contains('is-active')) refreshBuild(el); },
+    /* Back to the original: the deck draws the slide again. */
+    restore: (id, el) => {
+      const d = SLIDES.find(s => s.id === id);
+      if (d) renderSlide(el, d);
+    },
   });
+  SLIDES.forEach(d => slideEdits.capture(d.id));
 
   if (!PREVIEW) {
     document.querySelector('[data-nav="next"]').addEventListener('click', next);
@@ -415,8 +552,28 @@ export function initDeck() {
   fit();
   initChannel();
 
-  const fromHash = SLIDES.findIndex(s => s.id === location.hash.slice(1));
+  const requestedId = location.hash.slice(1);
+  const fromHash = SLIDES.findIndex(s => s.id === requestedId);
   show(fromHash >= 0 ? fromHash : 0);
+  /* The Slide settings screen embeds this deck and drives its slides directly. */
+  slideEdits.ready = loadSavedEdits(requestedId);
+  window.__deckSlideEdits = slideEdits;
+  window.__deckTitle = WEBINAR.title;
+  /* A slide whose saved HTML has its own heading is named by that heading. */
+  const named = s => ({ id: s.id, title: slideEdits.heading(s.id) || s.headline || s.eyebrow || s.id, added: Boolean(s.added) });
+  window.__deckSlides = {
+    list: () => slideList,
+    apply: applySlideList,
+    shown: () => SLIDES.map(named),
+    deck: () => DECK_SLIDES.map(named),
+    /* The deck slide a brand-new slide is framed like: light, with the footer
+       and no small print, and the simplest body (a header and one list). */
+    plain: () => {
+      const light = s => s.bg !== 'dark' && s.footer && !s.compliance && !s.hasNumbers && s.layout !== 'compare';
+      const simple = s => light(s) && ['markers', 'points'].includes(s.layout);
+      return (DECK_SLIDES.find(simple) || DECK_SLIDES.find(light) || DECK_SLIDES[0]).id;
+    },
+  };
 
   const ok = SLIDES.length === 17 && MODAL_COUNT === 32;
   console.log(
@@ -433,7 +590,7 @@ export function initDeck() {
 }
 
 function openPresenter() {
-  presenterWindow = window.open('./presenter.html', 'msfg-presenter', 'width=1280,height=800');
+  presenterWindow = window.open(pageUrl('presenter.html'), 'msfg-presenter', 'width=1280,height=800');
 }
 
 export { show, next, prev, SLIDES };

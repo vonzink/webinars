@@ -1,9 +1,10 @@
 /* ============================================================================
    CARD — the one clickable affordance. No emoji, no icon fonts.
    The "open" cue is a green corner tick.
+   A card names its pop-out in data-modal; the deck's one click listener
+   (initOpeners in deck.js) opens it, so a card still works after its slide's
+   HTML has been edited in Slide settings.
    ========================================================================= */
-
-import { openModal } from './modal.js';
 
 export function makeCard(spec) {
   const el = document.createElement('button');
@@ -28,7 +29,6 @@ export function makeCard(spec) {
   /* No "+" cue — the whole block is clickable (or drive it from Presenter View). */
 
   el.innerHTML = parts.join('');
-  el.addEventListener('click', () => openModal(spec.modal, el));
   return el;
 }
 

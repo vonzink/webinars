@@ -821,13 +821,18 @@ function shell(d, i) {
   return el;
 }
 
-function buildSlide(d, i) {
-  const el = shell(d, i);
+/* Draw a slide's own content into its element, with any click handlers it has. */
+function renderSlide(el, d) {
   (layouts[d.layout] || layouts.grid)(el, d);
   renderActions(el, d);
   renderGraphicsControl(el, d);
   renderCalcControl(el, d);
   furniture(el, d);
+}
+
+function buildSlide(d, i) {
+  const el = shell(d, i);
+  renderSlide(el, d);
   return el;
 }
 
@@ -1012,6 +1017,11 @@ export function initDeck() {
     onChange: el => {
       renumber(el);
       if (el.classList.contains('is-active')) refreshBuild(el);
+    },
+    /* Back to the original: the deck draws the slide again, handlers included. */
+    restore: (id, el) => {
+      const d = SLIDES.find(s => s.id === id);
+      if (d) renderSlide(el, d);
     },
   });
   SLIDES.forEach(d => slideEdits.capture(d.id));
