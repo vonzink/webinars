@@ -1,7 +1,7 @@
 /* ============================================================================
    SLIDE PROMPTS — the text behind "Instructions" in Slide settings.
    Prompts to paste into Claude or ChatGPT so it answers with what the editor
-   takes: one slide's HTML, CSS and JS, or a whole set of slides in one block.
+   takes: one slide's HTML, CSS and JS, or a whole set of slides as raw JSON.
    The general rules are here; what is particular to a deck (its layout, its
    ready-made classes, its footer and logos) comes from that deck's
    content/slide-format.js.
@@ -93,20 +93,32 @@ export function buildSlidePrompt({ deckTitle, links = {}, format, slide }) {
   return parts.join('\n');
 }
 
-/* Several slides at once. The answer is one JSON block the editor can take in
-   whole (see parseSlideProject). `example` is a plain slide from this deck
+export const PROJECT_SHAPE = JSON.stringify({
+  slides: [
+    { title: 'Short name shown in the slide list', html: 'the slide\'s HTML as one string', css: 'CSS for this slide only, or an empty string', js: 'JS for this slide only, or an empty string' },
+  ],
+}, null, 2);
+
+/* Several slides at once. The answer is raw JSON the editor can take in whole
+   (see parseSlideProject). `example` is a plain slide from this deck
    ({ html, reference }) to model the new slides on. */
 export function buildProjectPrompt({ deckTitle, links = {}, format, example }) {
   return [
     `I am building a set of slides for a Mountain State Financial Group (MSFG) webinar deck${forDeck(deckTitle)}. I will paste your whole answer into a slide editor, which adds every slide in one go.`,
     '',
     'YOUR ANSWER',
-    'Reply with ONE code block labelled json and nothing else. It must be valid JSON in exactly this shape:',
-    block('json', JSON.stringify({
-      slides: [
-        { title: 'Short name shown in the slide list', html: 'the slide\'s HTML as one string', css: 'CSS for this slide only, or an empty string', js: 'JS for this slide only, or an empty string' },
-      ],
-    }, null, 2)),
+    'Return raw, valid JSON only, in exactly this shape:',
+    '',
+    PROJECT_SHAPE,
+    '',
+    'IMPORTANT:',
+    '- Do NOT wrap the response in Markdown code fences.',
+    '- Do NOT write ```json.',
+    '- Do NOT include commentary before or after the JSON.',
+    '- The first character of the response must be {',
+    '- The final character must be }',
+    '- The complete response must be directly parseable with JSON.parse().',
+    '',
     `- One object per slide, in presentation order. At most ${MAX_PROJECT_SLIDES} slides.`,
     '- Each slide stands alone: any CSS or JS a slide needs goes in that slide\'s own css and js, even if another slide uses the same thing.',
     '- Every slide\'s html includes the footer.',
@@ -131,19 +143,101 @@ export function buildProjectPrompt({ deckTitle, links = {}, format, example }) {
   ].join('\n');
 }
 
-/* Read the assistant's answer to the project prompt: JSON, with or without the
-   code fence or a sentence around it. Returns { slides } or { error }. */
-export function parseSlideProject(answer) {
-  const textIn = String(answer || '');
-  const start = textIn.search(/[[{]/);
-  const end = Math.max(textIn.lastIndexOf('}'), textIn.lastIndexOf(']'));
-  if (start < 0 || end <= start) return { error: 'Paste the whole answer first. It should start with { and end with }.' };
-  let data;
-  try {
-    data = JSON.parse(textIn.slice(start, end + 1));
-  } catch {
-    return { error: 'That could not be read. Copy the whole code block from the answer, from the first { to the last }.' };
+const FENCE = /^[ \t]*```[ \t]*([\w-]*)[ \t]*$/;
+const MAX_SCAN_STARTS = 50;
+
+/* The bodies of the Markdown code blocks in `text` labelled json or not
+   labelled at all, in order. */
+function jsonFences(text) {
+  const bodies = [];
+  const lines = text.split(/\r?\n/);
+  let open = null;
+  lines.forEach((line, index) => {
+    const fence = line.match(FENCE);
+    if (!fence) return;
+    if (!open) { open = { language: fence[1].toLowerCase(), at: index }; return; }
+    if (open.language === '' || open.language === 'json') bodies.push(lines.slice(open.at + 1, index).join('\n'));
+    open = null;
+  });
+  return bodies;
+}
+
+/* Where the JSON object or array opening at `start` closes, skipping brackets
+   inside strings; -1 if it never does. */
+function closingIndex(text, start) {
+  let depth = 0;
+  let inString = false;
+  for (let i = start; i < text.length; i += 1) {
+    const char = text[i];
+    if (inString) {
+      if (char === '\\') i += 1;
+      else if (char === '"') inString = false;
+    } else if (char === '"') inString = true;
+    else if (char === '{' || char === '[') depth += 1;
+    else if (char === '}' || char === ']') {
+      depth -= 1;
+      if (depth === 0) return i;
+    }
   }
+  return -1;
+}
+
+/* Each complete, bracket-balanced { } or [ ] in `text`, in order. Never looks
+   inside one it has found, so a broken answer is not mined for a part of it. */
+function* balancedValues(text) {
+  let from = 0;
+  for (let tries = 0; tries < MAX_SCAN_STARTS; tries += 1) {
+    const offset = text.slice(from).search(/[[{]/);
+    if (offset < 0) return;
+    const start = from + offset;
+    const end = closingIndex(text, start);
+    if (end > start) yield text.slice(start, end + 1);
+    from = end > start ? end + 1 : start + 1;
+  }
+}
+
+const isSlideList = list => Array.isArray(list) && list.every(item => item && typeof item === 'object' && !Array.isArray(item));
+const isProject = data => isSlideList(data) || Array.isArray(data?.slides);
+
+/* The JSON in an answer. Tried in order: the whole answer, then each json
+   code block, then each balanced { } or [ ] in the text. The first that
+   parses into slides wins; failing that, the first that parses at all. */
+function readJson(text) {
+  const candidates = function* () {
+    yield text;
+    yield* jsonFences(text);
+    yield* balancedValues(text);
+  };
+  let fallback;
+  for (const candidate of candidates()) {
+    let data;
+    try {
+      data = JSON.parse(candidate.trim());
+    } catch {
+      continue;
+    }
+    if (isProject(data)) return { data };
+    if (!fallback) fallback = { data };
+  }
+  return fallback || null;
+}
+
+/* Read the assistant's answer to the project prompt. Raw JSON is what the
+   prompt asks for; a json code block, or a sentence around the JSON, is
+   accepted too. Returns { slides } or { error }. */
+export function parseSlideProject(answer) {
+  const textIn = String(answer || '').trim();
+  if (!/[[{]/.test(textIn)) return { error: 'Paste the whole answer first. It should start with { and end with }.' };
+  const read = readJson(textIn);
+  if (!read) {
+    const cutOff = !/[}\]]\s*(```)?\s*$/.test(textIn);
+    return {
+      error: cutOff
+        ? 'That could not be read: the answer looks cut off, because it does not end with }. Ask for fewer slides at a time, or paste the whole answer.'
+        : 'That could not be read as JSON. Paste the whole answer, from the first { to the last }.',
+    };
+  }
+  const data = read.data;
   const list = Array.isArray(data) ? data : data?.slides;
   if (!Array.isArray(list) || !list.length) return { error: 'No slides were found in that answer.' };
   if (list.length > MAX_PROJECT_SLIDES) return { error: `That is ${list.length} slides; the most that can be added at once is ${MAX_PROJECT_SLIDES}.` };
