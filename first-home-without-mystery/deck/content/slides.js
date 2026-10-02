@@ -26,12 +26,12 @@ Ask: Which of those three feels least clear today?`,
   {
     id: 'three-questions', layout: 'keys', bg: 'white', footer: true,
     eyebrow: 'The clarity line',
-    headline: 'Three questions turn confusion into a plan.',
-    subhead: 'Each answer changes the next one—so we will solve them in order.',
+    headline: 'Three questions.\nOne homebuying plan.',
+    subhead: 'Start with credit. Find your loan.\nKnow your cash target.',
     keys: [
-      { label: 'Credit', question: 'What will a lender see?', note: 'Qualification and pricing' },
-      { label: 'Loan choice', question: 'Which program fits?', note: 'Down payment and tradeoffs' },
-      { label: 'Cash to close', question: 'What will I actually need?', note: 'Costs, prepaids, and credits' },
+      { label: 'Credit', question: 'What will a lender see?', note: 'Your credit profile' },
+      { label: 'Loan choice', question: 'Which loan\nfits me?', note: 'Down payment and tradeoffs' },
+      { label: 'Cash to close', question: 'How much cash will I need?', note: 'Down payment, costs, and credits' },
     ],
     time: 90,
     notes: `Preview the roadmap. All three questions connect: loan type changes mortgage insurance and cash; credit can change pricing; and cash reserves can change which choice feels comfortable.
@@ -39,35 +39,39 @@ Ask: Which of those three feels least clear today?`,
 Humor line: Think of this as the homebuying version of assembling IKEA furniture—we are going to look at the instructions before discovering three leftover screws.`,
   },
   {
-    id: 'credit-report', layout: 'layers', bg: 'mist', footer: true,
+    id: 'credit-report', layout: 'ficoPie', bg: 'white', footer: true,
+    manualBuild: true,
     eyebrow: 'Key one · Credit',
-    headline: 'A mortgage credit report is more than a score.',
-    layers: [
-      { label: 'Score', body: 'A prediction based on information in your credit reports.' },
-      { label: 'History', body: 'How accounts and payments have been handled over time.' },
-      { label: 'Balances', body: 'What is owed and how much available credit is being used.' },
-      { label: 'Activity', body: 'New applications, inquiries, collections, and public records.' },
+    headline: 'What makes up your FICO® Score?',
+    subhead: 'Five factors. Each one adds to the picture.',
+    factors: [
+      { label: 'Payment history', percent: 35, detail: 'How you have paid your accounts.', color: '#14494B', side: '#0C3335', ink: '#FFFFFF' },
+      { label: 'Amounts owed', percent: 30, detail: 'Balances and available credit used.', color: '#4B7B4D', side: '#345737', ink: '#FFFFFF' },
+      { label: 'Length of credit history', percent: 15, detail: 'How long you have used credit.', color: '#8CC63E', side: '#628E28', ink: '#0C3335' },
+      { label: 'New credit', percent: 10, detail: 'Recent accounts and applications.', color: '#B8CEC0', side: '#81998B', ink: '#0C3335' },
+      { label: 'Credit mix', percent: 10, detail: 'The types of credit you have.', color: '#719D90', side: '#4B7166', ink: '#0C3335' },
     ],
     time: 135,
-    notes: `Walk through the four parts. A mortgage score may differ from a consumer app because different scoring models and report data can be used. Avoid promising a score requirement before reviewing the actual program and lender.
+    notes: `Advance once for each slice: payment history 35%, amounts owed 30%, length of credit history 15%, new credit 10%, and credit mix 10%. The next advance after all five moves to the next slide. Back removes the most recent slice.
 
-Humor line: Your free app score and your mortgage score can be like two bathroom scales—same person, suspiciously different answer.
+These are general FICO category weights. Their importance can vary by credit profile. A mortgage score may differ from a consumer app because different scoring models and report data can be used. Avoid promising a score requirement before reviewing the actual program and lender.
 
 [Sources]
-- https://www.consumerfinance.gov/ask-cfpb/what-is-a-credit-report-en-309/
+- https://www.myfico.com/credit-education/whats-in-your-credit-score
 - https://www.consumerfinance.gov/ask-cfpb/what-is-a-credit-score-en-315/
 [/Sources]`,
   },
   {
-    id: 'credit-habits', layout: 'markers', bg: 'white', footer: true, tone: 'do', cols: 1,
+    id: 'credit-habits', layout: 'creditActions', bg: 'white', footer: true,
+    manualBuild: true,
     eyebrow: 'Key one · Credit',
     headline: 'Five habits help before you apply.',
-    items: [
-      'Pay every bill on time.',
-      'Keep revolving-card balances as low as practical.',
-      'Avoid opening accounts you do not need.',
-      'Review all three credit reports for accurate information.',
-      'Call your lender before moving money or changing debt.',
+    actions: [
+      { title: 'Pay every bill on time.', icon: 'calendar' },
+      { title: 'Keep revolving-card balances as low as practical.', icon: 'balance' },
+      { title: 'Avoid opening accounts you do not need.', icon: 'pause' },
+      { title: 'Review all three credit reports for accurate information.', icon: 'reports' },
+      { title: 'Call your lender before moving money or changing debt.', icon: 'conversation' },
     ],
     time: 135,
     notes: `Make this practical. Buyers can review reports through the federally authorized source, AnnualCreditReport.com. Encourage disputes only for information that is truly inaccurate and explain that updates can take time.
@@ -140,6 +144,8 @@ Humor line: A 20% down payment is not a Hogwarts letter—you do not have to wai
     id: 'cash-ingredients', layout: 'ingredients', bg: 'dark', footer: true,
     eyebrow: 'Key three · Cash to close',
     headline: 'Cash to close has four main ingredients.',
+    helpModal: 'cash-help',
+    helpLabel: 'Would you like to learn how closing costs and prepaids may be covered by someone else?',
     ingredients: [
       { label: 'Down payment', body: 'Your equity contribution.' },
       { label: 'Closing costs', body: 'Loan and transaction charges.' },
@@ -215,28 +221,8 @@ The Loan Estimate helps compare expected terms and costs. The Closing Disclosure
 [/Sources]`,
   },
   {
-    id: 'complete-payment', layout: 'payment', bg: 'white', footer: true,
-    eyebrow: 'Affordability',
-    headline: 'Your payment is bigger than principal and interest.',
-    subhead: 'Judge the all-in payment you will live with—not only the amount you can qualify for.',
-    fixed: ['Principal and interest on a fixed-rate loan', 'Loan term'],
-    moves: ['Property taxes', 'Homeowners insurance', 'Mortgage insurance', 'HOA dues'],
-    points: [
-      'Taxes, insurance, and HOA dues can change after closing.',
-      'Your comfortable payment may be lower than your maximum approval.',
-    ],
-    time: 120,
-    notes: `Connect cash-to-close planning to the ongoing payment. Taxes, insurance, and HOA dues can change, so buyers should judge comfort rather than merely maximum approval.
-
-Humor line: The underwriter can approve a payment; they cannot approve whether you still want tacos on Friday.
-
-[Sources]
-- https://www.consumerfinance.gov/owning-a-home/loan-estimate/
-- https://www.consumerfinance.gov/owning-a-home/closing-disclosure/
-[/Sources]`,
-  },
-  {
     id: 'protect-preapproval', layout: 'markers', bg: 'mist', footer: true, tone: 'dont', cols: 1,
+    manualBuild: true, sideCallout: true,
     eyebrow: 'After preapproval',
     headline: 'Protect the version of you we approved.',
     subhead: 'Before making a financial change, call your lender first.',
@@ -257,9 +243,9 @@ Suggested line: The lender does not hate sofas. The lender hates surprise monthl
     eyebrow: 'Prepare',
     headline: 'Bring the documents that tell your financial story.',
     groups: [
-      { label: 'Income', items: ['Paystubs', 'W-2s or tax returns', 'Employment history'] },
-      { label: 'Assets', items: ['Bank statements', 'Investment or retirement funds', 'Gift-fund details'] },
-      { label: 'Identity + property', items: ['Photo identification', 'Housing history', 'Purchase contract when available'] },
+      { label: 'Income', modal: 'docs-income', items: ['Paystubs', 'W-2s or tax returns', 'Employment history'] },
+      { label: 'Assets', modal: 'docs-assets', items: ['Bank statements', 'Investment or retirement funds', 'Gift-fund details'] },
+      { label: 'Identity + property', modal: 'docs-identity', items: ['Photo identification', 'Housing history', 'Purchase contract when available'] },
     ],
     callout: 'Self-employment, variable income, gifts, and assistance may require additional documentation.',
     time: 90,
@@ -268,15 +254,15 @@ Suggested line: The lender does not hate sofas. The lender hates surprise monthl
 Humor line: Underwriting does not ask for documents because it is building a scrapbook. Every page answers a risk question.`,
   },
   {
-    id: 'five-step-plan', layout: 'stepper', bg: 'dark', footer: true,
+    id: 'five-step-plan', layout: 'stepper', bg: 'dark', footer: true, manualBuild: true,
     eyebrow: 'Your plan',
     headline: 'Your homebuying plan fits on one line.',
     steps: [
-      { label: 'Review', note: 'Credit + goals' },
-      { label: 'Choose', note: 'Loan + budget' },
-      { label: 'Prepare', note: 'Cash + documents' },
-      { label: 'Shop', note: 'With a real range' },
-      { label: 'Close', note: 'Review + sign' },
+      { label: 'Review', note: 'Credit + goals', detail: 'Review your credit and talk through your goals. Start with the payment and cash target that feel comfortable for you.' },
+      { label: 'Choose', note: 'Loan + budget', detail: 'Compare loan options, down payment, and the full monthly payment. Choose a program and budget that fit your situation.' },
+      { label: 'Prepare', note: 'Cash + documents', detail: 'Gather your income, asset, and property documents. Confirm where your closing funds will come from and review your preapproval with your lender.' },
+      { label: 'Shop', note: 'With a real range', detail: 'Use your reviewed budget and preapproval to guide your home search. Check the property costs and proposed terms with your lender before committing.' },
+      { label: 'Close', note: 'Review + sign', detail: 'Review your Closing Disclosure and ask about anything that changed. Confirm closing instructions with your lender and settlement team before signing or sending funds.' },
     ],
     time: 90,
     notes: `Recap the sequence. Buyers do not need to solve everything before the first conversation. Encourage a document-supported preapproval before serious shopping, based on company practice.

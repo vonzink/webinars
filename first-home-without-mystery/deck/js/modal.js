@@ -5,6 +5,7 @@
    Supports bulleted sections and an optional comparison table.
    ========================================================================= */
 
+import { programShareChart } from './program-share.js';
 import { MODALS } from '../content/modals.js';
 import { COMPLIANCE } from '../content/presenters.js';
 import { mediaById } from '../content/presenter-media.js';
@@ -125,6 +126,43 @@ function section(s) {
   return `<div class="modal-section"${tone}>${head}${list}${note}</div>`;
 }
 
+function renderTabs(tabs) {
+  return `<div class="aid-tabs" role="tablist" aria-label="Detail topics">
+    ${tabs.map((tab, i) => `<button type="button" role="tab" id="aid-tab-${i}" aria-controls="aid-panel-${i}" aria-selected="${i === 0}" tabindex="${i === 0 ? 0 : -1}">${tab.label}</button>`).join('')}
+  </div><div class="aid-panels">${tabs.map((tab, i) => `<section class="aid-panel" role="tabpanel" id="aid-panel-${i}" aria-labelledby="aid-tab-${i}" tabindex="${i === 0 ? 0 : -1}" ${i === 0 ? '' : 'hidden inert'}>
+    <p class="aid-intro">${tab.intro}</p>
+    <div class="aid-columns">${tab.sections.map(section).join('')}</div>
+    <p class="aid-note">${tab.note}</p>
+    <p class="aid-sources">Sources: ${tab.sources.map(source => `<a href="${source.url}" target="_blank" rel="noopener noreferrer">${source.label}</a>`).join(' · ')}</p>
+  </section>`).join('')}</div>`;
+}
+
+function initTabs() {
+  const tabs = [...bodyEl.querySelectorAll('[role="tab"]')];
+  const panels = [...bodyEl.querySelectorAll('[role="tabpanel"]')];
+  const select = index => {
+    tabs.forEach((tab, i) => {
+      tab.setAttribute('aria-selected', String(i === index));
+      tab.tabIndex = i === index ? 0 : -1;
+      panels[i].hidden = i !== index;
+      panels[i].inert = i !== index;
+      panels[i].tabIndex = i === index ? 0 : -1;
+    });
+    tabs[index].focus({ preventScroll: true });
+  };
+  tabs.forEach((tab, index) => {
+    tab.addEventListener('click', () => select(index));
+    tab.addEventListener('keydown', event => {
+      let next;
+      if (event.key === 'ArrowRight') next = (index + 1) % tabs.length;
+      if (event.key === 'ArrowLeft') next = (index + tabs.length - 1) % tabs.length;
+      if (event.key === 'Home') next = 0;
+      if (event.key === 'End') next = tabs.length - 1;
+      if (next !== undefined) { event.preventDefault(); event.stopPropagation(); select(next); }
+    });
+  });
+}
+
 function rememberSessionOpener(opener) {
   if (root.classList.contains('is-open')) return;
   const candidate = opener || document.activeElement;
@@ -145,7 +183,7 @@ async function revealAndFocus(kind, token) {
 }
 
 async function fitEducational(d, token) {
-  const width = d.table ? WIDE_CONTENT_WIDTH : CONTENT_WIDTH;
+  const width = d.table || d.purchaseShare || d.tabs ? WIDE_CONTENT_WIDTH : CONTENT_WIDTH;
   root.classList.add('is-measuring');
   Object.assign(surface.style, { width: `${width}px`, height: 'auto', transform: 'none' });
   await document.fonts.ready;
@@ -170,7 +208,11 @@ export async function openModal(id, opener) {
   if (d.intro) body += `<p class="modal-intro">${d.intro}</p>`;
   if (d.table) body += renderTable(d.table);
   if (d.sections) body += d.sections.map(section).join('');
-  bodyEl.innerHTML = body;
+  if (d.tabs) body += renderTabs(d.tabs);
+  bodyEl.innerHTML = d.purchaseShare
+    ? `<div class="program-detail-layout">${programShareChart(id)}<div class="program-detail-copy">${body}</div></div>`
+    : body;
+  if (d.tabs) initTabs();
 
   const lines = (d.compliance || []).map(k => COMPLIANCE[k]).filter(Boolean);
   if (lines.length) { footEl.textContent = lines.join('  '); footEl.hidden = false; }

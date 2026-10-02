@@ -16,15 +16,14 @@ const expectedIds = [
   'cash-ingredients',
   'cash-example',
   'costs-vs-prepaids',
-  'complete-payment',
   'protect-preapproval',
   'document-story',
   'five-step-plan',
   'wrap',
 ];
 
-test('the beginner workshop is a 15-slide learning progression', () => {
-  assert.equal(SLIDES.length, 15);
+test('the beginner workshop is a 14-slide learning progression', () => {
+  assert.equal(SLIDES.length, 14);
   assert.deepEqual(SLIDES.map(slide => slide.id), expectedIds);
   assert.ok(TARGET_RUNTIME_SECONDS >= 25 * 60);
   assert.ok(TARGET_RUNTIME_SECONDS <= 35 * 60);
@@ -50,7 +49,7 @@ test('loan cards connect to four current program popouts', () => {
   const modalIds = programs.cards.map(card => card.modal);
 
   assert.deepEqual(modalIds, ['prog-conventional', 'prog-fha', 'prog-va', 'prog-usda']);
-  assert.equal(MODAL_COUNT, 4);
+  assert.equal(MODAL_COUNT, 8);
   for (const modalId of modalIds) assert.ok(MODALS[modalId], `${modalId} must exist`);
 });
 
@@ -68,8 +67,7 @@ test('claim-bearing slides retain source blocks in presenter notes', () => {
     'loan-programs',
     'cash-ingredients',
     'costs-vs-prepaids',
-    'complete-payment',
-  ];
+    ];
 
   for (const id of sourced) {
     const notes = SLIDES.find(slide => slide.id === id)?.notes || '';
@@ -81,4 +79,24 @@ test('Seth Angell remains the active presenter', () => {
   assert.equal(ACTIVE_PRESENTER, 'seth');
   assert.equal(PRESENTERS[ACTIVE_PRESENTER].name, 'Seth Angell');
   assert.equal(PRESENTERS[ACTIVE_PRESENTER].nmls, 'NMLS# 912881');
+});
+
+
+test('cash-to-close help connects to the three assistance tabs', () => {
+  const slide = SLIDES.find(slide => slide.id === 'cash-ingredients');
+  assert.equal(slide.helpModal, 'cash-help');
+  assert.deepEqual(MODALS[slide.helpModal].tabs.map(tab => tab.label),
+    ['Seller concessions', 'Down payment assistance', 'Gift funds']);
+  for (const tab of MODALS[slide.helpModal].tabs) assert.ok(tab.sources.length > 0);
+});
+
+
+test('each document group links to a sourced tabbed checklist', () => {
+  const slide = SLIDES.find(slide => slide.id === 'document-story');
+  for (const group of slide.groups) {
+    const modal = MODALS[group.modal];
+    assert.ok(modal);
+    assert.equal(modal.tabs.length, group.items.length);
+    for (const tab of modal.tabs) assert.ok(tab.sources.length);
+  }
 });
