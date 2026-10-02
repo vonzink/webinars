@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 240" role="img" aria-label="Mountain State Financial Group, LLC">
+  <!-- RECONSTRUCTION for layout/comp use. Replace with the official MSFG vector before delivery. Text is live, not outlined. -->
+  <g transform="translate(0,8)">
+    <polygon points="18.0,210.0 150.0,18.0 173.8,52.6" fill="#8CC63E"/>
+    <polygon points="18.0,210.0 173.8,52.6 197.5,87.1" fill="#6BAE47"/>
+    <polygon points="18.0,210.0 197.5,87.1 222.6,123.6" fill="#4B7B4D"/>
+    <polygon points="18.0,210.0 222.6,123.6 249.0,162.0" fill="#2A5F4E"/>
+    <polygon points="18.0,210.0 249.0,162.0 282.0,210.0" fill="#104547"/>
+  </g>
+  <text x="340" y="118" font-family="Inter, 'Helvetica Neue', Arial, sans-serif" font-size="86" font-weight="800" letter-spacing="-1" textLength="740" lengthAdjust="spacingAndGlyphs">
+    <tspan fill="#8CC63E">MOUNTAIN</tspan><tspan fill="#104547">STATE</tspan></text>
+  <text x="342" y="180" font-family="Inter, 'Helvetica Neue', Arial, sans-serif" font-size="36" font-weight="500" letter-spacing="8" textLength="572" lengthAdjust="spacingAndGlyphs">
+    <tspan fill="#8CC63E">FINANCIAL</tspan><tspan fill="#104547"> GROUP, LLC</tspan></text>
+</svg>

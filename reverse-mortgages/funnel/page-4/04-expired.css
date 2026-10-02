@@ -1,0 +1,553 @@
+#msfg-expired,
+    #msfg-expired * {
+      box-sizing: border-box;
+    }
+
+    #msfg-expired {
+      --bright-green: #8cc63e;
+      --green: #4b7b4d;
+      --teal: #104547;
+      --charcoal: #404041;
+      --muted: #66736f;
+      --white: #ffffff;
+      --light: #f4f8f1;
+      --border: rgba(16, 69, 71, 0.10);
+
+      position: relative;
+
+      width: 100%;
+      max-width: none !important;
+
+      left: 0;
+      margin-left: 0;
+      margin-right: 0 !important;
+
+      padding: 0 !important;
+
+      font-family:
+        Inter,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Roboto,
+        Helvetica,
+        Arial,
+        sans-serif;
+
+      color: var(--charcoal);
+      background: var(--white);
+
+      line-height: 1.5;
+
+      overflow-x: hidden;
+    }
+
+
+    
+
+    #msfg-expired .msfg-expired-shell {
+      width: min(1180px, calc(100% - 40px)) !important;
+      max-width: 1180px !important;
+
+      margin: 0 auto !important;
+      padding: 0 !important;
+    }
+
+
+    
+
+    #msfg-expired .msfg-expired-header {
+      min-height: 82px;
+
+      display: flex;
+      align-items: center;
+      gap: 18px;
+
+      padding: 12px 0;
+
+      border-bottom: 1px solid var(--border);
+    }
+
+    #msfg-expired .msfg-expired-logo {
+      display: block;
+
+      width: auto;
+      max-width: 190px;
+      max-height: 58px;
+
+      object-fit: contain;
+    }
+
+    #msfg-expired .msfg-expired-header-name {
+      color: var(--teal);
+
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+
+    
+
+    #msfg-expired .msfg-expired-hero {
+      position: relative;
+
+      padding: 64px 40px 68px;
+
+      text-align: center;
+
+      background:
+        radial-gradient(
+          circle at 90% 12%,
+          rgba(140, 198, 62, 0.18),
+          transparent 29%
+        ),
+        linear-gradient(
+          135deg,
+          #fafcf9 0%,
+          #eef7ed 55%,
+          #e7f2e5 100%
+        );
+
+      border-radius: 0 0 24px 24px;
+
+      overflow: hidden;
+    }
+
+    #msfg-expired .msfg-expired-hero::before {
+      content: "";
+
+      position: absolute;
+      top: 0;
+      left: 0;
+
+      width: 100%;
+      height: 5px;
+
+      background: var(--bright-green);
+    }
+
+    #msfg-expired .msfg-expired-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+
+      margin-bottom: 18px;
+
+      color: var(--teal);
+
+      font-size: 13px;
+      font-weight: 800;
+
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+    }
+
+    #msfg-expired .msfg-expired-eyebrow-dot {
+      width: 9px;
+      height: 9px;
+
+      border-radius: 50%;
+
+      background: var(--bright-green);
+
+      box-shadow:
+        0 0 0 5px rgba(140, 198, 62, 0.16);
+    }
+
+    #msfg-expired .msfg-expired-title {
+      margin: 0;
+
+      color: var(--teal);
+
+      font-size: clamp(44px, 5vw, 62px);
+      font-weight: 760;
+
+      line-height: 1.04;
+      letter-spacing: -0.04em;
+    }
+
+    #msfg-expired .msfg-expired-copy {
+      max-width: 760px;
+
+      margin: 20px auto 0;
+
+      color: var(--muted);
+
+      font-size: 18px;
+      line-height: 1.7;
+    }
+
+
+    
+
+    #msfg-expired .msfg-expired-main {
+      width: 100%;
+
+      padding: 56px 0 74px;
+    }
+
+    #msfg-expired .msfg-expired-section-heading {
+      text-align: center;
+    }
+
+    #msfg-expired .msfg-expired-section-heading h2 {
+      margin: 0;
+
+      color: var(--teal);
+
+      font-size: clamp(30px, 4vw, 40px);
+      font-weight: 730;
+
+      line-height: 1.15;
+      letter-spacing: -0.03em;
+    }
+
+    #msfg-expired .msfg-expired-section-heading p {
+      max-width: 650px;
+
+      margin: 12px auto 0;
+
+      color: var(--muted);
+
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+
+    
+
+    #msfg-expired .msfg-expired-options {
+      display: grid;
+
+      grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+
+      gap: 22px;
+
+      margin-top: 38px;
+    }
+
+
+    
+
+    #msfg-expired .msfg-expired-option {
+      position: relative;
+
+      display: flex;
+      flex-direction: column;
+
+      min-width: 0;
+      min-height: 100%;
+
+      padding: 30px 28px;
+
+      background: var(--white);
+
+      border: 1px solid var(--border);
+      border-radius: 19px;
+
+      box-shadow:
+        0 12px 36px rgba(16, 69, 71, 0.055);
+
+      overflow: hidden;
+    }
+
+    #msfg-expired .msfg-expired-option::before {
+      content: "";
+
+      position: absolute;
+
+      top: 0;
+      left: 8%;
+      right: 8%;
+
+      height: 4px;
+
+      background: var(--bright-green);
+
+      border-radius: 0 0 4px 4px;
+    }
+
+    #msfg-expired .msfg-expired-option-number {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+
+      width: fit-content;
+      min-width: 44px;
+      height: 32px;
+
+      padding: 0 11px;
+      margin-bottom: 18px;
+
+      color: var(--teal);
+      background: rgba(140, 198, 62, 0.17);
+
+      border-radius: 999px;
+
+      font-size: 12px;
+      font-weight: 800;
+
+      letter-spacing: 0.05em;
+    }
+
+    #msfg-expired .msfg-expired-option h3 {
+      margin: 0;
+
+      color: var(--teal);
+
+      font-size: 22px;
+      font-weight: 730;
+
+      line-height: 1.25;
+    }
+
+    #msfg-expired .msfg-expired-option p {
+      margin: 13px 0 24px;
+
+      color: var(--muted);
+
+      font-size: 15px;
+      line-height: 1.65;
+
+      flex-grow: 1;
+    }
+
+
+    
+
+    #msfg-expired .msfg-expired-button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      width: 100%;
+
+      min-height: 48px;
+
+      padding: 13px 18px;
+
+      border-radius: 8px;
+
+      font-size: 13px;
+      font-weight: 800;
+
+      text-align: center;
+      text-decoration: none !important;
+
+      transition:
+        opacity 0.2s ease,
+        transform 0.2s ease;
+    }
+
+    #msfg-expired .msfg-expired-button:hover {
+      opacity: 0.92;
+      transform: translateY(-1px);
+    }
+
+    #msfg-expired .msfg-expired-button-primary {
+      color: var(--white) !important;
+      background: var(--green);
+    }
+
+    #msfg-expired .msfg-expired-button-secondary {
+      color: var(--white) !important;
+      background: var(--teal);
+    }
+
+    #msfg-expired .msfg-expired-button-survey {
+      color: var(--teal) !important;
+      background: var(--white);
+
+      border: 2px solid var(--teal);
+    }
+
+
+    
+
+    #msfg-expired .msfg-expired-consultation {
+      max-width: 900px;
+
+      margin: 46px auto 0;
+      padding: 32px 30px;
+
+      text-align: center;
+
+      background: var(--light);
+
+      border: 1px solid rgba(140, 198, 62, 0.35);
+      border-radius: 18px;
+    }
+
+    #msfg-expired .msfg-expired-consultation h3 {
+      margin: 0;
+
+      color: var(--teal);
+
+      font-size: 24px;
+      font-weight: 740;
+
+      line-height: 1.25;
+    }
+
+    #msfg-expired .msfg-expired-consultation p {
+      max-width: 680px;
+
+      margin: 10px auto 20px;
+
+      color: var(--muted);
+
+      font-size: 15px;
+      line-height: 1.65;
+    }
+
+    #msfg-expired .msfg-expired-consultation-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+
+      padding: 14px 25px;
+
+      color: var(--white) !important;
+      background: var(--green);
+
+      border-radius: 8px;
+
+      font-size: 14px;
+      font-weight: 800;
+
+      text-decoration: none !important;
+    }
+
+
+    
+
+    #msfg-expired .msfg-expired-footer {
+      margin-top: 54px;
+      padding: 38px 0 32px;
+
+      text-align: center;
+
+      color: var(--muted);
+
+      border-top: 1px solid var(--border);
+
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    #msfg-expired .msfg-expired-footer img {
+      display: block;
+
+      width: auto;
+      height: 31px;
+
+      margin: 0 auto 12px;
+    }
+
+    #msfg-expired .msfg-expired-footer strong {
+      display: block;
+
+      color: var(--teal);
+    }
+
+    #msfg-expired .msfg-expired-footer > span {
+      display: block;
+
+      margin-top: 3px;
+    }
+
+    #msfg-expired .msfg-expired-footer-links {
+      margin-top: 16px;
+    }
+
+    #msfg-expired .msfg-expired-footer-links a {
+      color: var(--teal);
+      text-decoration: none;
+    }
+
+    #msfg-expired .msfg-expired-footer-links a:hover {
+      text-decoration: underline;
+    }
+
+    #msfg-expired .msfg-expired-footer-links span {
+      margin: 0 8px;
+    }
+
+
+    
+
+    @media (max-width: 900px) {
+
+      #msfg-expired .msfg-expired-shell {
+        width: min(760px, calc(100% - 32px)) !important;
+      }
+
+      #msfg-expired .msfg-expired-options {
+        grid-template-columns: 1fr;
+      }
+
+      #msfg-expired .msfg-expired-option {
+        min-height: auto;
+      }
+
+    }
+
+
+    
+
+    @media (max-width: 640px) {
+
+      #msfg-expired .msfg-expired-shell {
+        width: calc(100% - 20px) !important;
+      }
+
+      #msfg-expired .msfg-expired-header {
+        min-height: 68px;
+      }
+
+      #msfg-expired .msfg-expired-header-name {
+        display: none;
+      }
+
+      #msfg-expired .msfg-expired-logo {
+        max-width: 145px;
+        max-height: 48px;
+      }
+
+      #msfg-expired .msfg-expired-hero {
+        padding: 44px 20px 50px;
+      }
+
+      #msfg-expired .msfg-expired-title {
+        font-size: clamp(38px, 12vw, 50px);
+      }
+
+      #msfg-expired .msfg-expired-copy {
+        font-size: 16px;
+      }
+
+      #msfg-expired .msfg-expired-main {
+        padding: 44px 0 52px;
+      }
+
+      #msfg-expired .msfg-expired-options {
+        margin-top: 28px;
+      }
+
+      #msfg-expired .msfg-expired-option {
+        padding: 26px 20px;
+      }
+
+      #msfg-expired .msfg-expired-consultation {
+        margin-top: 30px;
+        padding: 26px 20px;
+      }
+
+    }
+
+  
+#msfg-expired [hidden] { display:none!important; }
+#msfg-expired a:focus-visible { outline:3px solid #4b7b4d; outline-offset:5px; }
+#msfg-expired .msfg-expired-options { grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr)); }
+@media(prefers-reduced-motion:reduce) { #msfg-expired .msfg-expired-button { transition:none; transform:none; } }

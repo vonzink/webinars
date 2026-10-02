@@ -1,0 +1,13 @@
+EMAIL 3 — ONE-HOUR REMINDER
+Subject: The Webinar is in 1 Hour!
+Preview text: We start in one hour! Your Zoom link is inside.
+From name: {{custom_values.webinar_host}} | MSFG
+Reply-to: {{custom_values.webinar_host_email}}
+
+Paste the full 03-one-hour-reminder.html into GHL’s HTML email editor. Styling is included. Retain the account business-address footer.
+
+Send one hour before the event start: October 8, 2026 at 5:00 PM Mountain for this 6:00 PM webinar. Use the event-relative workflow wait. Skip this reminder for contacts entering after that point; the email itself does not control scheduling.
+
+Preview uses sample contact Alex and a Zoom homepage link for visual review. Production uses custom_values.zoom_link. Send a GHL test to verify real substitutions, Zoom, reply-to, unsubscribe and inbox rendering.
+
+No email sent and no workflow modified.

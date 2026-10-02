@@ -1,0 +1,157 @@
+<div class="msfg-live-page" id="msfg-live">
+
+  <div class="msfg-live-shell">
+
+    <!-- HEADER -->
+
+    <header class="msfg-live-header">
+      <img
+        class="msfg-live-logo"
+        src="{{custom_values.logo_image_url}}"
+        alt="Mountain State Financial Group"
+      >
+
+      <div class="msfg-live-header-name">
+        Mountain State Financial Group LLC
+      </div>
+    </header>
+
+    <main class="msfg-live-main">
+
+      <!-- INTRO -->
+
+      <section class="msfg-live-intro">
+        <div class="msfg-live-eyebrow">
+          <span class="msfg-live-dot"></span>
+          Live Webinar
+        </div>
+
+        <h1 class="msfg-live-title">
+          You're Ready to Join.
+        </h1>
+
+        <h2 class="msfg-live-subtitle">{{custom_values.webinar_title}}</h2>
+        <p class="msfg-live-copy">
+          Join {{custom_values.webinar_host}} in Zoom for the live webinar. Watch the presentation and ask your questions
+          during the session.
+        </p>
+
+        <div
+          class="msfg-live-date"
+          id="msfgLiveDate"
+        >{{custom_values.next_webinar_date}}<br>
+          {{custom_values.webinar_start_time}} · {{custom_values.timezone}}</div>
+      </section>
+
+      <!-- ZOOM ACCESS -->
+
+      <section class="msfg-live-grid">
+        <article class="msfg-live-card">
+
+          <div class="msfg-live-step">
+            Join on Zoom
+          </div>
+
+          <h2>
+            Join the Live Zoom Meeting
+          </h2>
+
+          <p>
+            Join the MSFG team in Zoom for the live presentation,
+            discussion, examples, and questions.
+          </p>
+
+          <div class="msfg-live-detail-box">
+            <div class="msfg-live-detail-label">
+              Live Zoom
+            </div>
+
+            <div class="msfg-live-detail-text">
+              Click below to open the Zoom meeting.
+              The meeting information is included in your link.
+            </div>
+          </div>
+
+          <a
+            class="msfg-live-button msfg-live-button-secondary"
+            id="msfgZoomButton"
+            href="{{custom_values.zoom_link}}"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            JOIN LIVE ZOOM
+          </a>
+
+        </article>
+      </section>
+
+      <!-- EXPERIENCE TIP -->
+
+      <div class="msfg-live-tip">
+        <strong>Best experience:</strong>
+        join Zoom with your speakers or headphones ready.
+        {{custom_values.webinar_host}} will share the presentation during the live session.
+      </div>
+
+      <!-- CONSULTATION -->
+
+      <section class="msfg-consultation-cta">
+        <h3>
+          Want to Talk Through Your Options?
+        </h3>
+
+        <p>
+          Schedule a free one-on-one consultation with {{custom_values.webinar_host}} to discuss
+          your goals, home equity options, eligibility questions, and next steps.
+        </p>
+
+        <a
+          class="msfg-consultation-button"
+          id="msfgConsultationButton"
+          href="{{custom_values.webinarconsultation}}"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          SCHEDULE A 1-ON-1 CONSULTATION
+        </a>
+      </section>
+
+    <p class="msfg-live-help">Questions or trouble joining? Contact
+        <a href="mailto:{{custom_values.webinar_host_email}}">{{custom_values.webinar_host_email}}</a>.
+      </p>
+    </main>
+  </div>
+</div>
+<script>
+(function () {
+  function initialize() {
+    const root = document.getElementById("msfg-live");
+    if (!root) return;
+    function validateButton(id, missingLabel) {
+      const button = root.querySelector("#" + id);
+      const value = (button.getAttribute("href") || "").trim();
+      let valid = false;
+      if (value && !value.includes("custom_values.")) {
+        try {
+          const url = new URL(value);
+          valid = (url.protocol === "https:" || url.protocol === "http:") &&
+            !url.username && !url.password;
+        } catch (_) {}
+      }
+      if (!valid) {
+        button.removeAttribute("href");
+        button.setAttribute("aria-disabled", "true");
+        button.textContent = missingLabel;
+      }
+    }
+    validateButton("msfgZoomButton", "CONTACT US FOR THE ZOOM LINK");
+    validateButton("msfgConsultationButton", "CONTACT US TO SCHEDULE");
+  }
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initialize, { once: true });
+  } else {
+    initialize();
+  }
+})();
+</script>
+

@@ -1,7 +1,7 @@
 /* ============================================================================
    FIGURES — the two diagrams the deck keeps, both number-free and on-palette.
      paymentBands()   — proportional makeup of a mortgage payment
-     processStepper() — the 8 loan-process steps, forest → green
+     processStepper() — the homebuying-plan steps, forest → green
    Squared, banded, no gradients, no emoji.
    ========================================================================= */
 
@@ -38,7 +38,7 @@ export function paymentLegend() {
   ).join('') + `</div>`;
 }
 
-export function processStepper(steps) {
+export function processStepper(steps, { manualBuild = false } = {}) {
   const n = steps.length;
   const W = 1760, x0 = 130, gap = (W - x0 * 2) / (n - 1);
   const ramp = i => {
@@ -67,16 +67,17 @@ export function processStepper(steps) {
               font-weight="800" font-size="23" fill="#FFFFFF">${lines[1]}</text>`
       : `<text x="${cx}" y="150" text-anchor="middle" font-family="Montserrat, sans-serif"
               font-weight="800" font-size="26" fill="#FFFFFF">${s.label}</text>`;
-    return `
+    return `<g${manualBuild ? ' class="build-step"' : ''}>
       <circle cx="${cx}" cy="70" r="26" fill="${fill}" stroke="#0C3335" stroke-width="4"/>
       <circle cx="${cx}" cy="70" r="9" fill="#0C3335"/>
       ${labelSvg}
       <text x="${cx}" y="196" text-anchor="middle" font-family="'Open Sans', sans-serif"
-            font-size="21" fill="rgba(255,255,255,0.62)">${s.note}</text>`;
+            font-size="21" fill="rgba(255,255,255,0.62)">${s.note}</text>
+      </g>`;
   }).join('');
   return `
   <svg viewBox="0 0 1760 214" role="img"
-       aria-label="Eight loan-process steps from pre-approval to funded.">
+       aria-label="${n} homebuying-plan steps from review to close.">
     ${line}${nodes}
   </svg>`;
 }

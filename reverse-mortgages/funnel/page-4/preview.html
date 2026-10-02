@@ -1,0 +1,211 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Preview — Webinar Follow-Up</title><link rel="icon" href="data:,"><link rel="stylesheet" href="04-expired.css"><style>body{margin:0}</style></head><body><div class="msfg-expired-page" id="msfg-expired">
+  <div class="msfg-expired-shell">
+    <header class="msfg-expired-header">
+      <img
+        class="msfg-expired-logo"
+        src="https://assets.cdn.filesafe.space/46BB4JfRDQDuW3lvtlMw/media/6aac1a8cdefc5728a962b096.png"
+        alt="Mountain State Financial Group"
+      >
+      <div class="msfg-expired-header-name">
+        Mountain State Financial Group LLC
+      </div>
+    </header>
+    <section class="msfg-expired-hero">
+      <div class="msfg-expired-eyebrow">
+        <span class="msfg-expired-eyebrow-dot"></span>
+        Reverse Mortgages. Clearly Explained.
+      </div>
+      <h1 class="msfg-expired-title">
+        This Webinar Has Ended.
+      </h1>
+      <p class="msfg-expired-copy">
+        Thank you for your interest. Explore the available next steps below, or contact Seth Angell with your questions about reverse mortgages and home equity.
+      </p>
+    </section>
+    <main class="msfg-expired-main">
+      <div class="msfg-expired-section-heading" hidden>
+        <h2>
+          What Would You Like to Do Next?
+        </h2>
+        <p>
+          Choose the option that works best for you.
+        </p>
+      </div>
+      <div class="msfg-expired-options" hidden>
+        <article
+          class="msfg-expired-option"
+          id="msfgReplayCard" hidden
+        >
+          <div class="msfg-expired-option-number">
+            01
+          </div>
+          <h3>
+            Watch the Replay
+          </h3>
+          <p>
+            Catch the presentation on your own time and review the reverse-mortgage information whenever it's convenient.
+          </p>
+          <a
+            id="msfgReplayButton"
+            href=""
+            class="
+              msfg-expired-button
+              msfg-expired-button-primary
+            "
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            WATCH WEBINAR REPLAY
+          </a>
+        </article>
+        <article
+          class="msfg-expired-option"
+          id="msfgRegistrationCard" hidden
+        >
+          <div class="msfg-expired-option-number">
+            02
+          </div>
+          <h3>
+            Join the Next Live Class
+          </h3>
+          <p>
+            Prefer to attend live and ask questions?
+            Register for the next available webinar.
+          </p>
+          <a
+            id="msfgRegistrationButton"
+            href=""
+            class="
+              msfg-expired-button
+              msfg-expired-button-secondary
+            "
+          >
+            REGISTER FOR NEXT WEBINAR
+          </a>
+        </article>
+        <article
+          class="msfg-expired-option"
+          id="msfgSurveyCard" hidden
+        >
+          <div class="msfg-expired-option-number">
+            03
+          </div>
+          <h3>
+            Take a Quick Survey
+          </h3>
+          <p>
+            Help us improve future webinars and let us know
+            which reverse-mortgage topics, questions, or next steps
+            would be most useful to you.
+          </p>
+          <a
+            id="msfgSurveyButton"
+            href=""
+            class="
+              msfg-expired-button
+              msfg-expired-button-survey
+            "
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            TAKE THE SURVEY
+          </a>
+        </article>
+      </div>
+      <section
+        class="msfg-expired-consultation"
+        id="msfgConsultationCTA" hidden
+      >
+        <h3>
+          Want to Talk Through Your Options?
+        </h3>
+        <p>
+          Schedule a free one-on-one consultation with Seth Angell to discuss your goals, home equity options, eligibility questions, and next steps.
+        </p>
+        <a
+          id="msfgConsultationButton"
+          class="msfg-expired-consultation-button"
+          href="https://web.msfgmortgage.com/schedule-consultation-reverse"
+        >
+          SCHEDULE A 1-ON-1 CONSULTATION
+        </a>
+      </section>
+    </main>
+    <p class="msfg-expired-copy" style="text-align:center">Questions? <a href="mailto:seth.angell@msfg.us">seth.angell@msfg.us</a></p>
+    <footer class="msfg-expired-footer">
+      <img
+        src="https://assets.cdn.filesafe.space/46BB4JfRDQDuW3lvtlMw/media/6a7e08cdfe4291bd1056c347.png"
+        alt="Equal Housing Opportunity"
+      >
+      <strong>
+        Mountain State Financial Group, LLC · NMLS #1314257
+      </strong>
+      <span>
+        Equal Housing Opportunity
+      </span>
+      <div class="msfg-expired-footer-links">
+        <a
+          href="https://msfg.us/privacy"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Privacy Policy
+        </a>
+        <span>|</span>
+        <a
+          href="https://msfg.us/terms"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Terms &amp; Conditions
+        </a>
+      </div>
+    </footer>
+  </div>
+</div>
+<script>
+(function () {
+  function initialize() {
+    const root = document.getElementById("msfg-expired");
+    if (!root) return;
+
+    function hasValidLink(button) {
+      const value = (button.getAttribute("href") || "").trim();
+      if (!value || value.includes("custom_values.")) return false;
+      try {
+        const url = new URL(value);
+        return (url.protocol === "https:" || url.protocol === "http:") &&
+          !url.username && !url.password;
+      } catch (_) {
+        return false;
+      }
+    }
+
+    const options = [
+      ["msfgReplayCard", "msfgReplayButton"],
+      ["msfgRegistrationCard", "msfgRegistrationButton"],
+      ["msfgSurveyCard", "msfgSurveyButton"]
+    ];
+    let visibleCount = 0;
+    options.forEach(function (ids) {
+      const card = root.querySelector("#" + ids[0]);
+      const button = root.querySelector("#" + ids[1]);
+      const visible = hasValidLink(button);
+      card.hidden = !visible;
+      if (visible) visibleCount++;
+    });
+
+    root.querySelector(".msfg-expired-section-heading").hidden = !visibleCount;
+    root.querySelector(".msfg-expired-options").hidden = !visibleCount;
+    root.querySelector("#msfgConsultationCTA").hidden =
+      !hasValidLink(root.querySelector("#msfgConsultationButton"));
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initialize, { once:true });
+  } else {
+    initialize();
+  }
+})();
+</script>
+</body></html>

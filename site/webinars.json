@@ -24,7 +24,8 @@
       "title": "The Homebuyer's Playbook",
       "source": "first-time-homebuyer/deck",
       "downloads": [
-        { "from": "first-time-homebuyer/Homebuyers-Playbook.pptx", "to": "downloads/Homebuyers-Playbook.pptx" }
+        { "from": "first-time-homebuyer/Homebuyers-Playbook.pptx", "to": "downloads/homebuyers-playbook-webinar.pptx" },
+        { "from": "first-time-homebuyer/Homebuyers-Playbook.pptx", "to": "downloads/homebuyers-playbook-webinar-editable.pptx" }
       ]
     },
     {
@@ -32,7 +33,7 @@
       "title": "Understanding VA Loans",
       "source": "va-loans/deck",
       "downloads": [
-        { "from": "va-loans/Understanding-VA-Loans.pptx", "to": "downloads/Understanding-VA-Loans.pptx" }
+        { "from": "va-loans/Understanding-VA-Loans.pptx", "to": "downloads/understanding-va-loans.pptx" }
       ]
     },
     {
@@ -46,6 +47,17 @@
       "slug": "first-home-without-mystery",
       "title": "Your first home, without the mystery.",
       "source": "first-home-without-mystery/deck",
+      "downloads": []
+    },
+    {
+      "slug": "reverse-mortgages",
+      "title": "Reverse Mortgages",
+      "source": "reverse-mortgages/deck",
+      "exclude": [
+        "logo-horizontal.png", "logo-knockout.svg", "logo-mark-only-knockout.svg", "logo-mark-only.svg",
+        "logo-stacked.png", "logo-stacked.svg", "presentation-qr.png", "presentation-qr.svg",
+        "qr-seth.png", "webinar-qr.png"
+      ],
       "downloads": []
     }
   ]

@@ -38,7 +38,51 @@
       main {
         min-height: 100vh;
         display: grid;
-        grid-template-rows: 1fr auto;
+        grid-template-rows: auto 1fr auto;
+      }
+
+      .site-nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+        flex-wrap: wrap;
+        padding: 20px clamp(28px, 6vw, 104px);
+        border-bottom: 1px solid var(--line);
+      }
+
+      .nav-brand {
+        color: var(--evergreen);
+        font-size: 15px;
+        font-weight: 900;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        text-decoration: none;
+      }
+
+      .nav-brand span {
+        color: var(--pine);
+      }
+
+      .nav-links {
+        display: flex;
+        align-items: center;
+        gap: 26px;
+        flex-wrap: wrap;
+      }
+
+      .nav-links a {
+        color: var(--graphite);
+        font-size: 14px;
+        font-weight: 700;
+        text-decoration: none;
+        border-bottom: 3px solid transparent;
+        padding-bottom: 3px;
+      }
+
+      .nav-links a:hover {
+        color: var(--evergreen);
+        border-bottom-color: var(--signal);
       }
 
       .hero {
@@ -114,13 +158,6 @@
         text-decoration: none;
       }
 
-      .webinar-card a.library {
-        margin-left: 12px;
-        background: var(--paper);
-        color: var(--evergreen);
-        border: 1px solid var(--line);
-      }
-
       footer {
         display: flex;
         justify-content: space-between;
@@ -149,6 +186,15 @@
   </head>
   <body>
     <main>
+      <nav class="site-nav" aria-label="Site">
+        <a class="nav-brand" href="/">Mountain State <span>Webinars</span></a>
+        <div class="nav-links">
+          <a href="/webinars/">All webinars</a>
+          <a href="/webinars/homebuyers-webinar/">Homebuyer&rsquo;s Playbook</a>
+          <a href="/webinars/va/">VA Loans</a>
+          <a href="/webinars/le-cd/">LE &amp; CD Decoder</a>
+        </div>
+      </nav>
       <section class="hero">
         <div>
           <div class="eyebrow">Mountain State Financial Group, LLC</div>
@@ -166,8 +212,7 @@
             A first-time homebuyer seminar covering myths, budget, loan programs,
             the process, mistakes to avoid, and next steps.
           </p>
-          <a href="/webinars/homebuyers-webinar/">Open webinar</a>
-          <a class="library" href="/webinars/">All webinars</a>
+          <a href="/webinars/">Browse the webinars</a>
         </article>
       </section>
 

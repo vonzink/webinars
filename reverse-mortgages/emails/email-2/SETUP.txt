@@ -1,0 +1,13 @@
+EMAIL 2 — DAY-BEFORE REMINDER
+Subject: Tomorrow: {{custom_values.webinar_title}}
+Preview text: Your webinar is tomorrow. Save your Zoom link and check the start time inside.
+From name: {{custom_values.webinar_host}} | MSFG
+Reply-to: {{custom_values.webinar_host_email}}
+
+Use 02-day-before-reminder.html in GHL’s HTML email editor. HTML and CSS are included in one file. No JavaScript.
+
+Schedule for the day before the webinar using the event’s Mountain time zone. Do not send this tomorrow reminder to contacts who register on the event day or afterward. Verify the workflow wait/late-registration branch separately; this template does not schedule itself.
+
+Uses the same confirmed event/host/NMLS fields and built-in unsubscribe tag as Email 1. Retain your business-address footer. Preview contains sample contact Alex and a Zoom-homepage link only; production uses the real zoom_link custom value.
+
+Send a GHL test email to verify custom values, Zoom destination, unsubscribe, reply-to, and inbox rendering. No email has been sent or workflow changed.

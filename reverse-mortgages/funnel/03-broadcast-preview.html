@@ -1,0 +1,198 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Preview — Reverse Mortgage Webinar Waiting Room</title><link rel="icon" href="data:,"><style>body{margin:0}</style></head><body><link rel="stylesheet" href="./03-broadcast-custom-values.css">
+<div id="msfg-broadcast" class="msfg-broadcast-page"
+     data-start="2026-10-08T18:00:00-06:00"
+     data-duration="60">
+  <div class="msfg-broadcast-shell">
+    <header class="msfg-broadcast-header">
+      <a href="https://web.msfgmortgage.com/reverse" aria-label="Webinar home">
+        <img class="msfg-broadcast-logo"
+             src="https://assets.cdn.filesafe.space/46BB4JfRDQDuW3lvtlMw/media/6a7206150629193ed509e1e2.png"
+             alt="Mountain State Financial Group">
+      </a>
+      <span>Mountain State Financial Group</span>
+    </header>
+
+    <main class="msfg-broadcast-hero">
+      <div class="msfg-broadcast-eyebrow">
+        <span aria-hidden="true"></span>Live Webinar
+      </div>
+      <h1 class="msfg-broadcast-title" data-page-title>Your Webinar Starts Soon.</h1>
+      <p class="msfg-broadcast-copy"><strong>Reverse Mortgages. Clearly Explained.</strong><br>With Seth Angell</p>
+      <p class="msfg-broadcast-copy" data-status role="status">
+        You're in the right place. Keep this page open for your webinar access.
+      </p>
+      <div class="msfg-webinar-date">
+        <div>October 8th, 2026</div>
+        <div>6:00 pm · Mountain Time Zone (MT)</div>
+      </div>
+
+      <div class="msfg-countdown-wrap" data-countdown hidden>
+        <div class="msfg-countdown-label">Webinar starts in</div>
+        <div class="msfg-countdown-grid" role="timer" aria-label="Time until webinar start">
+          <div class="msfg-countdown-unit"><div class="msfg-countdown-number" data-days>0</div><span>days</span></div>
+          <div class="msfg-countdown-unit"><div class="msfg-countdown-number" data-hours>0</div><span>hours</span></div>
+          <div class="msfg-countdown-unit"><div class="msfg-countdown-number" data-minutes>0</div><span>minutes</span></div>
+          <div class="msfg-countdown-unit"><div class="msfg-countdown-number" data-seconds>0</div><span>seconds</span></div>
+        </div>
+      </div>
+
+      <div class="msfg-ready-wrap" data-ready hidden>
+        <strong>The scheduled start time has arrived.</strong>
+        <p>Click below to continue to the live webinar page.</p>
+        <a class="msfg-ready-button" data-live-link
+           href="https://web.msfgmortgage.com/webinar-live-reverse">Join Live Webinar</a>
+      </div>
+
+      <div class="msfg-ready-wrap" data-ended hidden>
+        <strong>This webinar's scheduled time has ended.</strong>
+        <p>Taking you to the webinar follow-up page.</p>
+        <a class="msfg-ready-button" data-expired-link
+           href="https://web.msfgmortgage.com/expired-webinar-reverse">Continue to Follow-Up</a>
+      </div>
+    </main>
+
+    <section class="msfg-broadcast-bottom">
+      <div class="msfg-broadcast-info">
+        <strong>Getting ready for the webinar</strong>
+        <span>
+          The join button appears at the scheduled start time.
+          Make sure your speakers are on and give yourself a minute
+          or two to get settled before we begin.
+        </span>
+      </div>
+      <div class="msfg-broadcast-help">
+        Having trouble? Contact
+        <a href="mailto:seth.angell@msfg.us">seth.angell@msfg.us</a>.
+      </div>
+      <footer class="msfg-broadcast-footer">
+        <img src="https://assets.cdn.filesafe.space/46BB4JfRDQDuW3lvtlMw/media/6a7e08cdfe4291bd1056c347.png"
+             alt="Equal Housing Opportunity">
+        <strong>Mountain State Financial Group, LLC · NMLS #1314257</strong>
+        <span>Equal Housing Opportunity</span>
+        <div class="msfg-footer-links">
+          <a href="https://msfg.us/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a>
+          <span aria-hidden="true">|</span>
+          <a href="https://msfg.us/terms" target="_blank" rel="noopener noreferrer">Terms &amp; Conditions</a>
+        </div>
+      </footer>
+    </section>
+  </div>
+</div>
+
+<script>
+(function () {
+  function initialize() {
+    const root = document.getElementById("msfg-broadcast");
+    if (!root) return;
+    if (typeof root.msfgCleanup === "function") root.msfgCleanup();
+
+    const find = selector => root.querySelector(selector);
+    const countdown = find("[data-countdown]");
+    const ready = find("[data-ready]");
+    const ended = find("[data-ended]");
+    const status = find("[data-status]");
+    const title = find("[data-page-title]");
+    const liveLink = find("[data-live-link]");
+    const expiredLink = find("[data-expired-link]");
+    const startText = (root.dataset.start || "").trim();
+    const durationText = (root.dataset.duration || "").trim();
+    const isoPattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:Z|[+-]\d{2}:\d{2})$/;
+    const start = isoPattern.test(startText) ? Date.parse(startText) : NaN;
+    const duration = /^\d+(?:\.\d+)?$/.test(durationText) ? Number(durationText) : NaN;
+    const end = start + duration * 60000;
+
+    function validUrl(link) {
+      const raw = (link.getAttribute("href") || "").trim();
+      if (!raw || raw.includes("custom_values.")) return null;
+      try {
+        const url = new URL(raw);
+        return url.protocol === "https:" && !url.username && !url.password ? url.href : null;
+      } catch (_) {
+        return null;
+      }
+    }
+
+    const liveUrl = validUrl(liveLink);
+    const expiredUrl = validUrl(expiredLink);
+    countdown.hidden = true;
+    ready.hidden = true;
+    ended.hidden = true;
+    liveLink.hidden = !liveUrl;
+    expiredLink.hidden = !expiredUrl;
+
+    if (!Number.isFinite(start) || !Number.isFinite(end) || !(duration > 0)) {
+      status.textContent = "Please check the event details below or contact us for webinar access.";
+      return;
+    }
+
+    const fields = ["days", "hours", "minutes", "seconds"].map(name => find("[data-" + name + "]"));
+    let timer = null;
+    let state = "";
+
+    function cleanup() {
+      if (timer !== null) window.clearInterval(timer);
+      timer = null;
+      document.removeEventListener("visibilitychange", update);
+    }
+
+    function update() {
+      if (!root.isConnected) return cleanup();
+      const now = Date.now();
+
+      if (now >= end) {
+        title.textContent = "This Webinar Has Ended.";
+        countdown.hidden = true;
+        ready.hidden = true;
+        ended.hidden = Boolean(!expiredUrl);
+        status.textContent = expiredUrl
+          ? "This webinar's scheduled time has ended. Opening the follow-up page."
+          : "This webinar's scheduled time has ended. Contact us for next steps.";
+        cleanup();
+        if (expiredUrl && expiredUrl !== window.location.href) {
+          window.location.replace(expiredUrl);
+        }
+        return;
+      }
+
+      if (now >= start) {
+        countdown.hidden = true;
+        ready.hidden = !liveUrl;
+        if (state !== "started") {
+          title.textContent = "It’s Time for Your Webinar.";
+          status.textContent = liveUrl
+            ? "It's time for your webinar. Continue below to join."
+            : "The scheduled start time has arrived. Please contact us for access.";
+          state = "started";
+        }
+        // Keep checking so this open page also expires at the scheduled end.
+        return;
+      }
+
+      if (state !== "waiting") {
+        status.textContent = "Your webinar starts soon. The join button will appear here at the scheduled start time.";
+        state = "waiting";
+      }
+      countdown.hidden = false;
+      ready.hidden = true;
+      const seconds = Math.ceil((start - now) / 1000);
+      const values = [Math.floor(seconds / 86400), Math.floor(seconds / 3600) % 24,
+                      Math.floor(seconds / 60) % 60, seconds % 60];
+      fields.forEach((field, index) => {
+        field.textContent = String(values[index]).padStart(2, "0");
+      });
+    }
+
+    root.msfgCleanup = cleanup;
+    timer = window.setInterval(update, 1000);
+    document.addEventListener("visibilitychange", update);
+    update();
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initialize, { once:true });
+  } else {
+    initialize();
+  }
+})();
+</script>
+</body></html>
