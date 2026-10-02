@@ -151,7 +151,7 @@ async (page) => {
     'offline settings must identify the browser-cache fallback');
 
   await presenter.screenshot({
-    path: '/Users/zacharyzink/MSFG/Webinars/first-home-without-mystery/deck/output/playwright/presenter-shortcut-settings.png',
+    path: 'output/playwright/presenter-shortcut-settings.png',
     fullPage: false,
   });
   check(pageErrors.length === 0, `page errors: ${pageErrors.join(' | ')}`);

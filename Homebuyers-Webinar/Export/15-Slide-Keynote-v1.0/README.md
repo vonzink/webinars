@@ -6,15 +6,15 @@ Open `index.html` in a browser and use the left/right arrow keys to move through
 
 Presenter guide with slide purpose, educational objective, emotional objective, visual objective, speaker notes, animation recommendations, audience interaction, questions, and transitions:
 
-- `/Users/zacharyzink/MSFG/Webinars/Homebuyers-Webinar/Slides/19-Slide-Presentation-v1.0.md`
+- `/Users/zacharyzink/MSFG/Webinar-Source/Homebuyers-Webinar/Slides/19-Slide-Presentation-v1.0.md`
 
 ## Source
 
 Built from:
 
-- `/Users/zacharyzink/MSFG/Webinars/Homebuyers-Webinar/Slides/19-Slide-Presentation-v1.0.md`
-- `/Users/zacharyzink/MSFG/Webinars/Homebuyers-Webinar/Slides/Claude-Reference-Deck-Audit-v1.0.md`
-- `/Users/zacharyzink/MSFG/Webinars/presentation-system`
+- `/Users/zacharyzink/MSFG/Webinar-Source/Homebuyers-Webinar/Slides/19-Slide-Presentation-v1.0.md`
+- `/Users/zacharyzink/MSFG/Webinar-Source/Homebuyers-Webinar/Slides/Claude-Reference-Deck-Audit-v1.0.md`
+- `/Users/zacharyzink/MSFG/Webinar-Source/presentation-system`
 
 ## Slides
 
@@ -65,10 +65,10 @@ Interactive Layer v1 includes:
 
 Use these files for simple changes:
 
-- Slide text and order: `/Users/zacharyzink/MSFG/Webinars/Homebuyers-Webinar/Export/15-Slide-Keynote-v1.0/index.html`
-- Visual styling: `/Users/zacharyzink/MSFG/Webinars/Homebuyers-Webinar/Export/15-Slide-Keynote-v1.0/styles.css`
-- Button and calculator behavior: `/Users/zacharyzink/MSFG/Webinars/Homebuyers-Webinar/Export/15-Slide-Keynote-v1.0/script.js`
-- Brand images: `/Users/zacharyzink/MSFG/Webinars/Homebuyers-Webinar/Export/15-Slide-Keynote-v1.0/assets/brand`
+- Slide text and order: `/Users/zacharyzink/MSFG/Webinar-Source/Homebuyers-Webinar/Export/15-Slide-Keynote-v1.0/index.html`
+- Visual styling: `/Users/zacharyzink/MSFG/Webinar-Source/Homebuyers-Webinar/Export/15-Slide-Keynote-v1.0/styles.css`
+- Button and calculator behavior: `/Users/zacharyzink/MSFG/Webinar-Source/Homebuyers-Webinar/Export/15-Slide-Keynote-v1.0/script.js`
+- Brand images: `/Users/zacharyzink/MSFG/Webinar-Source/Homebuyers-Webinar/Export/15-Slide-Keynote-v1.0/assets/brand`
 
 To swap an image, put the new image in `assets/brand`, then update the matching `src="./assets/brand/file-name.png"` in `index.html`.
 
@@ -76,9 +76,9 @@ The folder name still says `15-Slide-Keynote-v1.0` because this is the original 
 
 ## Assets
 
-- Main HTML: `/Users/zacharyzink/MSFG/Webinars/Homebuyers-Webinar/Export/15-Slide-Keynote-v1.0/index.html`
-- Styles: `/Users/zacharyzink/MSFG/Webinars/Homebuyers-Webinar/Export/15-Slide-Keynote-v1.0/styles.css`
-- Interactions: `/Users/zacharyzink/MSFG/Webinars/Homebuyers-Webinar/Export/15-Slide-Keynote-v1.0/script.js`
-- Images: `/Users/zacharyzink/MSFG/Webinars/Homebuyers-Webinar/Export/15-Slide-Keynote-v1.0/assets/brand`
+- Main HTML: `/Users/zacharyzink/MSFG/Webinar-Source/Homebuyers-Webinar/Export/15-Slide-Keynote-v1.0/index.html`
+- Styles: `/Users/zacharyzink/MSFG/Webinar-Source/Homebuyers-Webinar/Export/15-Slide-Keynote-v1.0/styles.css`
+- Interactions: `/Users/zacharyzink/MSFG/Webinar-Source/Homebuyers-Webinar/Export/15-Slide-Keynote-v1.0/script.js`
+- Images: `/Users/zacharyzink/MSFG/Webinar-Source/Homebuyers-Webinar/Export/15-Slide-Keynote-v1.0/assets/brand`
 
 All numbers are illustrative. Payment, APR, rate, program, and assistance examples require delivery-date compliance review before live use.

@@ -23,7 +23,7 @@ async page => {
  const expected=await page.evaluate(async()=>(await import('./content/slides.js')).SOURCE_APPENDIX.blocks);
  if(JSON.stringify(appendix)!==JSON.stringify(expected))throw Error('Appendix content differs');
  await page.evaluate(()=>{location.hash='retirement-bridge';});await presenter.locator('#p-notes').filter({hasText:'124%'}).waitFor();
- await presenter.screenshot({path:'/Users/zacharyzink/MSFG/Webinars/output/reverse-seth-round2/presenter.png',fullPage:true});
+ await presenter.screenshot({path:'output/reverse-seth-round2/presenter.png',fullPage:true});
  await presenter.locator('#p-next-btn').click();await page.waitForURL('**/#growing-balance');
  await presenter.locator('#p-prev').click();await page.waitForURL('**/#retirement-bridge');
  await presenter.close();

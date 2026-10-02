@@ -30,7 +30,7 @@ Saved edits live in the Dashboard API (`/api/public/webinar-slide-edits`, table 
 
 ## Local review
 
-From `/Users/zacharyzink/MSFG/Webinars`:
+From `/Users/zacharyzink/MSFG/Webinar-Source`:
 
 ```sh
 python3 -m http.server 4196 --bind 127.0.0.1
@@ -49,6 +49,6 @@ Open <http://127.0.0.1:4196/reverse-mortgages/deck/>.
 npm test --prefix reverse-mortgages/deck
 ```
 
-Browser checks are in `deck/tests`. Screenshots are under `deck/output/playwright`. Release records are under `output/reverse-seth-round2` at the workspace root.
+Browser checks are in `deck/tests` (and `registration/output/check.run.js`). Open the playwright-cli session from the repository root: their screenshot paths are relative to it. Screenshots are under `deck/output/playwright`. Release records are under `output/reverse-seth-round2` at the workspace root.
 
 The closing slide links to the existing MSFG booking calendar at `https://info.msfgmortgage.com/widget/booking/g5PgWvOtMFIP7b8Py4C7`. Available Mountain Time slots were verified without submitting an appointment. This is the calendar already embedded on the MSFG consultation page; its staff routing was not changed.

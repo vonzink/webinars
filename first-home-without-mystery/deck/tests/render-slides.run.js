@@ -1,6 +1,6 @@
 async (page) => {
   const baseUrl = `${page.url().replace(/[?#].*$/, '').replace(/\/$/, '')}/`;
-  const outputDir = '/Users/zacharyzink/MSFG/Webinars/first-home-without-mystery/deck/output/playwright';
+  const outputDir = 'output/playwright'; // relative to the deck directory, where render-slides.sh opens the session
   await page.setViewportSize({ width: 1920, height: 1080 });
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto(`${baseUrl}#opening`);

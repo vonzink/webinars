@@ -8,7 +8,7 @@ This package is prepared for the GoHighLevel page builder. Use the files in this
 
 In HighLevel, go to Media Storage and upload everything in:
 
-`/Users/zacharyzink/MSFG/Webinars/Homebuyers-Webinar/Export/GoHighLevel-homebuyer-webinar-v1.0/assets-to-upload`
+`/Users/zacharyzink/MSFG/Webinar-Source/Homebuyers-Webinar/Export/GoHighLevel-homebuyer-webinar-v1.0/assets-to-upload`
 
 Then open:
 

@@ -111,7 +111,7 @@ async (page) => {
   }
 
   await page.screenshot({
-    path: '/Users/zacharyzink/MSFG/Webinars/first-home-without-mystery/deck/output/playwright/presenter-note-controls.png',
+    path: 'output/playwright/presenter-note-controls.png',
     fullPage: false,
   });
 

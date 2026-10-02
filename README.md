@@ -13,6 +13,15 @@ https://msfgmortgage.com/webinars/.
 | `Homebuyers-Webinar/`, `presentation-system/` | Earlier v1.0 generation, superseded by the decks above | — |
 | `docs/superpowers/` | Design specs, implementation plans, and validation records | — |
 
+## Repository boundary
+
+Two separate Git repositories. Do not nest the public-site repository inside this one.
+
+| Role | Local path | GitHub | Owns |
+|---|---|---|---|
+| Source and authoring (this repo) | `/Users/zacharyzink/MSFG/Webinar-Source` | `vonzink/webinars` | Webinar source decks, Webinar Studio, editors, tests and build tooling |
+| Public website | `/Users/zacharyzink/MSFG/WebProjects/msfgmortgage-site` | `vonzink/msfgmortgage-site` | The deployed MSFG website; its `webinars/` directory maps to https://msfgmortgage.com/webinars/ |
+
 ## Build and deploy
 
 Local, from the repository root:

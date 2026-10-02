@@ -1,6 +1,6 @@
 async (page) => {
   const base = 'http://127.0.0.1:4196/reverse-mortgages/deck/';
-  const out = '/Users/zacharyzink/MSFG/Webinars/reverse-mortgages/deck/output/playwright';
+  const out = 'reverse-mortgages/deck/output/playwright'; // relative to the repository root, where the session is opened
   await page.context().route('**/*', route => route.continue());
   const errors = [];
   page.on('pageerror', e => errors.push(e.message));

@@ -4,7 +4,7 @@ Definitive first-time homebuyer seminar for Mountain State Financial Group.
 
 This is a premium educational experience, not a sales deck. It uses the shared MSFG presentation system in:
 
-`/Users/zacharyzink/MSFG/Webinars/presentation-system`
+`/Users/zacharyzink/MSFG/Webinar-Source/presentation-system`
 
 ## Start Here
 

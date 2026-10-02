@@ -23,7 +23,8 @@ for _ in {1..50}; do
   sleep .1
 done
 
-"$pwcli" -s="$session" open http://127.0.0.1:4204/presenter.html >/dev/null
+# Open from the deck directory: relative screenshot paths in the .run.js resolve against it.
+(cd "$deck_dir" && "$pwcli" -s="$session" open http://127.0.0.1:4204/presenter.html) >/dev/null
 set +e
 result=$("$pwcli" --raw -s="$session" run-code --filename="$script_dir/presenter-note-controls.run.js")
 run_status=$?
