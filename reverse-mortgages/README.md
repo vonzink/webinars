@@ -12,7 +12,7 @@ This version preserves the supplied PowerPoint except for Seth’s September 29 
 
 Open the webinar and press **P** for the connected presenter window. Share the main slide window in Zoom and keep Presenter View private. Opening `presenter.html` directly will not connect it to another open deck session.
 
-Right and left arrows advance or reverse reveals on the myths, eligibility, scenarios, balance, equity, repayment examples, fit, process and questions slides. Other slides navigate normally. **F** toggles fullscreen. The presenter window includes notes, clocks, annotation tools and the original pacing guide. `?preview` shows every build for review.
+Right and left arrows advance or reverse reveals on the myths, eligibility, scenarios, balance, equity, repayment examples, fit, process and questions slides. Other slides navigate normally. **F** toggles fullscreen. The presenter window includes notes, clocks and annotation tools. The original pacing guide appears there on the opening slide only. `?preview` shows every build for review.
 
 Personal notes and shortcuts save in the current browser only. They do not sync with the webinar database. Internet is used for Google Fonts, with fallback fonts if unavailable.
 

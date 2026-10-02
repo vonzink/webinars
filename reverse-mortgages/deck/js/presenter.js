@@ -52,6 +52,9 @@ function render() {
     appendix.dataset.loaded = 'true';
     SOURCE_APPENDIX.blocks.forEach(text => { const p = document.createElement('p'); p.textContent = text; appendix.appendChild(p); });
   }
+  /* The pacing guide is for getting ready, so it only shows on the opening slide. */
+  const appendixSection = appendix?.closest('.p-appendix');
+  if (appendixSection) appendixSection.hidden = index !== 0;
   $('#p-notes').innerHTML = (cur.notes || '—').split('\n\n').map(p => `<p>${p}</p>`).join('');
   $('#p-next').textContent = nxt ? (nxt.headline || nxt.eyebrow || nxt.id) : 'End — open Q&A';
   $('#p-slide-target').textContent = fmt(cur.time || 0);
