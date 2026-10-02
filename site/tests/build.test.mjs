@@ -29,7 +29,7 @@ test('the manifest names real sources and downloads with unique slugs', () => {
   const { webinars } = loadManifest();
   const slugs = webinars.map(w => w.slug);
   assert.equal(new Set(slugs).size, slugs.length);
-  assert.deepEqual(slugs, ['homebuyers-webinar', 'va', 'le-cd', 'first-home-without-mystery']);
+  assert.deepEqual(slugs, ['homebuyers-webinar', 'va', 'le-cd', 'first-home-without-mystery', 'reverse-mortgages']);
   for (const webinar of webinars) assert.ok(existsSync(join(REPO_ROOT, webinar.source, 'index.html')), webinar.slug);
 });
 
@@ -46,16 +46,23 @@ test('the artifact root is the site shell', () => {
 
 test('every webinar lands at /webinars/<slug>/ with its runtime files and downloads', () => {
   withBuild(({ outRoot, webinars }) => {
-    assert.equal(webinars.length, 4);
-    for (const slug of ['homebuyers-webinar', 'va']) {
+    assert.equal(webinars.length, 5);
+    for (const slug of ['homebuyers-webinar', 'va', 'reverse-mortgages']) {
       const deck = join(outRoot, 'webinars', slug);
       for (const file of ['index.html', 'presenter.html', 'css/tokens.css', 'js/deck.js', 'content/slides.js', 'content/presenters.js']) {
         assert.ok(existsSync(join(deck, file)), `${slug} missing ${file}`);
       }
     }
-    assert.ok(existsSync(join(outRoot, 'webinars/homebuyers-webinar/downloads/Homebuyers-Playbook.pptx')));
+    /* The download names are the ones the library page links to. */
+    assert.ok(existsSync(join(outRoot, 'webinars/homebuyers-webinar/downloads/homebuyers-playbook-webinar.pptx')));
+    assert.ok(existsSync(join(outRoot, 'webinars/homebuyers-webinar/downloads/homebuyers-playbook-webinar-editable.pptx')));
     assert.ok(existsSync(join(outRoot, 'webinars/homebuyers-webinar/downloads/dos-and-donts.pdf')), 'deck-owned downloads must survive');
-    assert.ok(existsSync(join(outRoot, 'webinars/va/downloads/Understanding-VA-Loans.pptx')));
+    assert.ok(existsSync(join(outRoot, 'webinars/va/downloads/understanding-va-loans.pptx')));
+
+    /* The library page's filter script and card thumbnails ship with the shell. */
+    for (const file of ['webinars/library-filter.mjs', 'webinars/assets/thumbnails/reverse-mortgages.png']) {
+      assert.ok(existsSync(join(outRoot, file)), `shell missing ${file}`);
+    }
 
     const studioDeck = join(outRoot, 'webinars/first-home-without-mystery');
     for (const file of ['index.html', 'studio-viewer.html', 'css/tokens.css', 'css/studio-viewer.css', 'js/deck.js', 'js/surface-fit.js', 'js/studio/preview-host.js', 'js/studio/presenter-bridge.js', 'js/studio/audience-controller.js', 'js/studio/slide-frame.js', 'content/slides.js']) {
