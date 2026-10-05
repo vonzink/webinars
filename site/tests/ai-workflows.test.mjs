@@ -51,7 +51,7 @@ const presentation = (extra = {}) => ({ title: 'Down payment help in Colorado', 
 test('the presentation prompt asks for one raw JSON object with title, Master CSS and every slide', () => {
   const text = buildPresentationPrompt({ links, format: reverseFormat.SLIDE_FORMAT, presenter: robert, request: 'Ten slides on down payment help.' });
   for (const expected of [PRESENTATION_SHAPE, 'inside one ```json code block', 'Put the whole answer inside ONE Markdown code block',
-    'Its first character is {', 'JSON.parse()', `At most ${MAX_PROJECT_SLIDES} slides`, 'MASTER CSS',
+    'Its first character is {', 'JSON.parse()', 'rather than stopping partway', `At most ${MAX_PROJECT_SLIDES} slides`, 'MASTER CSS',
     'Every selector in masterCss must start with .slide', 'Never use :root, html, body', 'No @import', '1920 x 1080',
     'variable named slide', 'Ten slides on down payment help.', '<footer class="source-footer">', links.equalHousing]) {
     assert.ok(text.includes(expected), `missing: ${expected}`);
