@@ -86,20 +86,6 @@ test('a presentation is read raw, with whitespace, or in one json or plain fence
   }
 });
 
-test('a presentation whose quotes the chat window made curly is still read, unless real curly quotes sit inside a string', () => {
-  const json = JSON.stringify(presentation(), null, 2);
-  const curly = json.replace(/"/g, (_match, offset) => (offset % 2 ? '\u201d' : '\u201c'));
-  assert.notEqual(curly, json);
-  const read = parsePresentation(curly, { headingOf });
-  assert.equal(read.error, undefined, read.error);
-  assert.deepEqual(read.presentation.slides.map(s => s.title), ['Welcome', 'Who qualifies', 'Questions?']);
-  /* a curly quote that is part of the content stays as written */
-  const quoted = JSON.stringify(presentation({ slides: [slide('She said \u201chello\u201d')] }));
-  assert.equal(parsePresentation(quoted, { headingOf }).presentation.slides[0].title, 'She said \u201chello\u201d');
-  /* and plain text that is not JSON still says so, with the code-block advice */
-  assert.match(parsePresentation('{\u201cslides\u201d: nope}').error, /code block/);
-});
-
 test('a presentation that is incomplete or malformed is refused with useful errors', () => {
   const bad = data => parsePresentation(JSON.stringify(data));
   const { masterCss, ...noMaster } = presentation();

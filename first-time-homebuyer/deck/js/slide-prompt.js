@@ -362,12 +362,6 @@ const LIST = 'The response is a list, not the expected object. Ask ChatGPT or Cl
 const SEVERAL = 'The response has more than one block of JSON, so it is not clear which one to use. Ask ChatGPT or Claude for the whole answer as one JSON block.';
 const INVALID = `The JSON in the response is not valid, so it cannot be read. ${COPY_ALL} If it is complete, ask ChatGPT or Claude to put the whole answer inside one \`\`\`json code block, and copy it with that block's copy button.`;
 
-/* Typographic double quotes, which a chat window puts in place of straight
-   ones when JSON is shown as plain text. Tried only after the text as pasted
-   fails, so a legitimate curly quote inside a string is never touched. */
-const CURLY_DOUBLE_QUOTES = /[\u201c\u201d\u201e\u201f\u2033\u301d\u301e]/g;
-const straightenQuotes = text => text.replace(CURLY_DOUBLE_QUOTES, '"');
-
 /* The JSON object in an answer, so the whole response can be copied and
    pasted as it is: the JSON alone, the JSON in a code block, or the JSON with
    sentences before or after it. Exactly one JSON object must be found (one
@@ -375,14 +369,6 @@ const straightenQuotes = text => text.replace(CURLY_DOUBLE_QUOTES, '"');
 export function readJsonAnswer(answer) {
   const text = String(answer || '').trim();
   if (!text) return { error: `Nothing was pasted. ${COPY_ALL}` };
-  const strict = readJsonText(text);
-  if (!strict.error || !CURLY_DOUBLE_QUOTES.test(text)) return strict;
-  CURLY_DOUBLE_QUOTES.lastIndex = 0;
-  const relaxed = readJsonText(straightenQuotes(text));
-  return relaxed.error ? strict : relaxed;
-}
-
-function readJsonText(text) {
   const whole = parseObject(text);
   if (whole?.data) return whole;
   if (whole?.list) return { error: LIST };
