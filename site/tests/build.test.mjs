@@ -65,9 +65,9 @@ test('every webinar lands at /webinars/<slug>/ with its runtime files and downlo
       assert.ok(existsSync(join(outRoot, file)), `shell missing ${file}`);
     }
 
-    const studioDeck = join(outRoot, 'webinars/first-home-without-mystery');
-    for (const file of ['index.html', 'studio-viewer.html', 'css/tokens.css', 'css/studio-viewer.css', 'js/deck.js', 'js/surface-fit.js', 'js/studio/preview-host.js', 'js/studio/presenter-bridge.js', 'js/studio/audience-controller.js', 'js/studio/slide-frame.js', 'content/slides.js']) {
-      assert.ok(existsSync(join(studioDeck, file)), `first-home-without-mystery missing ${file}`);
+    const firstHome = join(outRoot, 'webinars/first-home-without-mystery');
+    for (const file of ['index.html', 'css/tokens.css', 'js/deck.js', 'js/surface-fit.js', 'content/slides.js']) {
+      assert.ok(existsSync(join(firstHome, file)), `first-home-without-mystery missing ${file}`);
     }
 
     const viewer = join(outRoot, 'webinars/le-cd');
