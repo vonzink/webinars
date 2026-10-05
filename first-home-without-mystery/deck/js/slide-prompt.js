@@ -71,6 +71,7 @@ const JSON_BLOCK_RULES = [
   '- Put the whole answer inside ONE Markdown code block that opens with ```json and closes with ```. Nothing before the block and nothing after it: no sentences, no second block.',
   '- Inside the block is one JSON object and nothing else. Its first character is { and its last character is }.',
   '- The object must be directly parseable with JSON.parse(): straight double quotes only, every string escaped properly for JSON (quotes as \\", line breaks as \\n), no comments, no trailing commas.',
+  '- If the full answer would be too long to finish, use fewer or simpler slides rather than stopping partway. A cut-off answer cannot be used at all.',
 ];
 
 /* The deck's own CSS rules that the open slide uses, so the answer can reuse

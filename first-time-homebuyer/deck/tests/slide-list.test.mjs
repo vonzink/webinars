@@ -153,7 +153,7 @@ test('the multi-slide prompt asks for one JSON block the editor can read back', 
   const prompt = buildProjectPrompt({ deckTitle: 'The Homebuyer\'s Playbook', links, format: SLIDE_FORMAT, example: { html: '<h2 class="headline">Plain</h2>', reference: '' } });
   assert.ok(prompt.includes('A SLIDE FROM THIS DECK TO MODEL YOURS ON') && prompt.includes('<h2 class="headline">Plain</h2>'));
   for (const expected of ['inside one ```json code block', 'Put the whole answer inside ONE Markdown code block', 'Nothing before the block and nothing after it',
-    'Its first character is {', 'its last character is }', 'JSON.parse()',
+    'Its first character is {', 'its last character is }', 'JSON.parse()', 'rather than stopping partway',
     PROJECT_SHAPE, `At most ${MAX_PROJECT_SLIDES} slides`, links.equalHousing, 'WHAT I WANT']) {
     assert.ok(prompt.includes(expected), `missing: ${expected}`);
   }
