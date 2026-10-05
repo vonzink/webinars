@@ -62,16 +62,15 @@ function slideRules(format, links, presenter) {
 const forDeck = deckTitle => (deckTitle ? ` called "${deckTitle}"` : '');
 const wanted = (request, example) => ['', 'WHAT I WANT', String(request || '').trim() || example];
 
-/* The rule of a JSON answer, shared by the multi-slide and presentation prompts. */
-const RAW_JSON_RULES = [
-  'IMPORTANT:',
-  '- Do NOT wrap the response in Markdown code fences.',
-  '- Do NOT write ```json.',
-  '- Do NOT include commentary before or after the JSON.',
-  '- The first character of the response must be {',
-  '- The final character must be }',
-  '- The complete response must be directly parseable with JSON.parse().',
-  '- Escape the strings properly for JSON (quotes as \\", line breaks as \\n).',
+/* The rule of a JSON answer, shared by the multi-slide and presentation
+   prompts. One code block, because that is what copies cleanly: the chat
+   turns plain-text JSON into curly quotes and swallows HTML tags, and the
+   block has its own copy button. */
+const JSON_BLOCK_RULES = [
+  'HOW TO ANSWER:',
+  '- Put the whole answer inside ONE Markdown code block that opens with ```json and closes with ```. Nothing before the block and nothing after it: no sentences, no second block.',
+  '- Inside the block is one JSON object and nothing else. Its first character is { and its last character is }.',
+  '- The object must be directly parseable with JSON.parse(): straight double quotes only, every string escaped properly for JSON (quotes as \\", line breaks as \\n), no comments, no trailing commas.',
 ];
 
 /* The deck's own CSS rules that the open slide uses, so the answer can reuse
@@ -167,11 +166,11 @@ export function buildProjectPrompt({
       : `I am adding a set of slides to a Mountain State Financial Group (MSFG) webinar deck${forDeck(deckTitle)}. I will paste your whole answer into a slide editor, which adds every slide in one go.`,
     '',
     'YOUR ANSWER',
-    'Return raw, valid JSON only, in exactly this shape:',
+    'Return one JSON object in exactly this shape, inside one ```json code block:',
     '',
     replace ? REPLACE_SHAPE : PROJECT_SHAPE,
     '',
-    ...RAW_JSON_RULES,
+    ...JSON_BLOCK_RULES,
     '',
     ...(replace ? [
       '- Return one object for each slide you change. Its "id" must be one of the ids given below, exactly as written. Do not invent ids, and do not return a slide you were not given.',
@@ -249,11 +248,11 @@ export function buildPresentationPrompt({ links = {}, format, presenter, request
     'I am creating a complete new webinar presentation for Mountain State Financial Group (MSFG), a mortgage company. I will paste your whole answer into our presentation builder, which creates the presentation in one go.',
     '',
     'YOUR ANSWER',
-    'Return raw, valid JSON only, in exactly this shape:',
+    'Return one JSON object in exactly this shape, inside one ```json code block:',
     '',
     PRESENTATION_SHAPE,
     '',
-    ...RAW_JSON_RULES,
+    ...JSON_BLOCK_RULES,
     '',
     `- "slides" has one object per slide, in presentation order. At most ${maxSlides} slides.`,
     '- Every slide has a non-empty "title" and "html". "css" and "js" are strings (empty if not needed).',
@@ -361,7 +360,13 @@ function objectsIn(text) {
 
 const LIST = 'The response is a list, not the expected object. Ask ChatGPT or Claude to answer in the shape the prompt shows, starting with {.';
 const SEVERAL = 'The response has more than one block of JSON, so it is not clear which one to use. Ask ChatGPT or Claude for the whole answer as one JSON block.';
-const INVALID = `The JSON in the response is not valid, so it cannot be read. ${COPY_ALL} If it is complete, ask ChatGPT or Claude to check that it is valid JSON.`;
+const INVALID = `The JSON in the response is not valid, so it cannot be read. ${COPY_ALL} If it is complete, ask ChatGPT or Claude to put the whole answer inside one \`\`\`json code block, and copy it with that block's copy button.`;
+
+/* Typographic double quotes, which a chat window puts in place of straight
+   ones when JSON is shown as plain text. Tried only after the text as pasted
+   fails, so a legitimate curly quote inside a string is never touched. */
+const CURLY_DOUBLE_QUOTES = /[\u201c\u201d\u201e\u201f\u2033\u301d\u301e]/g;
+const straightenQuotes = text => text.replace(CURLY_DOUBLE_QUOTES, '"');
 
 /* The JSON object in an answer, so the whole response can be copied and
    pasted as it is: the JSON alone, the JSON in a code block, or the JSON with
@@ -370,6 +375,14 @@ const INVALID = `The JSON in the response is not valid, so it cannot be read. ${
 export function readJsonAnswer(answer) {
   const text = String(answer || '').trim();
   if (!text) return { error: `Nothing was pasted. ${COPY_ALL}` };
+  const strict = readJsonText(text);
+  if (!strict.error || !CURLY_DOUBLE_QUOTES.test(text)) return strict;
+  CURLY_DOUBLE_QUOTES.lastIndex = 0;
+  const relaxed = readJsonText(straightenQuotes(text));
+  return relaxed.error ? strict : relaxed;
+}
+
+function readJsonText(text) {
   const whole = parseObject(text);
   if (whole?.data) return whole;
   if (whole?.list) return { error: LIST };

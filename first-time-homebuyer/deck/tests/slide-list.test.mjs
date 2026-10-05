@@ -152,16 +152,16 @@ test('the one-slide prompt carries the format, the footer and the slide that is 
 test('the multi-slide prompt asks for one JSON block the editor can read back', () => {
   const prompt = buildProjectPrompt({ deckTitle: 'The Homebuyer\'s Playbook', links, format: SLIDE_FORMAT, example: { html: '<h2 class="headline">Plain</h2>', reference: '' } });
   assert.ok(prompt.includes('A SLIDE FROM THIS DECK TO MODEL YOURS ON') && prompt.includes('<h2 class="headline">Plain</h2>'));
-  for (const expected of ['Return raw, valid JSON only', 'Do NOT wrap the response in Markdown code fences', 'Do NOT write ```json',
-    'Do NOT include commentary', 'The first character of the response must be {', 'The final character must be }', 'JSON.parse()',
+  for (const expected of ['inside one ```json code block', 'Put the whole answer inside ONE Markdown code block', 'Nothing before the block and nothing after it',
+    'Its first character is {', 'its last character is }', 'JSON.parse()',
     PROJECT_SHAPE, `At most ${MAX_PROJECT_SLIDES} slides`, links.equalHousing, 'WHAT I WANT']) {
     assert.ok(prompt.includes(expected), `missing: ${expected}`);
   }
   assert.ok(!/^```json$/m.test(prompt), 'the shape must not be shown inside a json code fence');
-  assert.ok(!prompt.includes('ONE code block'));
+  assert.ok(!prompt.includes('Do NOT write ```json'), 'a code block is what copies cleanly out of the chat');
   assert.equal(parseSlideProject(PROJECT_SHAPE).slides.length, 1);
   /* the one-slide prompt keeps its three code blocks */
-  assert.ok(!buildSlidePrompt({ links, format: SLIDE_FORMAT }).includes('raw, valid JSON'));
+  assert.ok(!buildSlidePrompt({ links, format: SLIDE_FORMAT }).includes('json code block'));
 });
 
 test('a pasted multi-slide answer is read raw, with whitespace, or in one json or plain fence', () => {
