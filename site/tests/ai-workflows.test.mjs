@@ -50,8 +50,8 @@ const presentation = (extra = {}) => ({ title: 'Down payment help in Colorado', 
 
 test('the presentation prompt asks for one raw JSON object with title, Master CSS and every slide', () => {
   const text = buildPresentationPrompt({ links, format: reverseFormat.SLIDE_FORMAT, presenter: robert, request: 'Ten slides on down payment help.' });
-  for (const expected of [PRESENTATION_SHAPE, 'Return raw, valid JSON only', 'Do NOT wrap the response in Markdown code fences',
-    'The first character of the response must be {', 'JSON.parse()', `At most ${MAX_PROJECT_SLIDES} slides`, 'MASTER CSS',
+  for (const expected of [PRESENTATION_SHAPE, 'inside one ```json code block', 'Put the whole answer inside ONE Markdown code block',
+    'Its first character is {', 'JSON.parse()', `At most ${MAX_PROJECT_SLIDES} slides`, 'MASTER CSS',
     'Every selector in masterCss must start with .slide', 'Never use :root, html, body', 'No @import', '1920 x 1080',
     'variable named slide', 'Ten slides on down payment help.', '<footer class="source-footer">', links.equalHousing]) {
     assert.ok(text.includes(expected), `missing: ${expected}`);
@@ -84,6 +84,20 @@ test('a presentation is read raw, with whitespace, or in one json or plain fence
     assert.deepEqual(read.presentation.slides.map(s => s.title), ['Welcome', 'Who qualifies', 'Questions?']);
     assert.equal(read.presentation.slides[0].html, presentation().slides[0].html, 'each slide is imported complete');
   }
+});
+
+test('a presentation whose quotes the chat window made curly is still read, unless real curly quotes sit inside a string', () => {
+  const json = JSON.stringify(presentation(), null, 2);
+  const curly = json.replace(/"/g, (_match, offset) => (offset % 2 ? '\u201d' : '\u201c'));
+  assert.notEqual(curly, json);
+  const read = parsePresentation(curly, { headingOf });
+  assert.equal(read.error, undefined, read.error);
+  assert.deepEqual(read.presentation.slides.map(s => s.title), ['Welcome', 'Who qualifies', 'Questions?']);
+  /* a curly quote that is part of the content stays as written */
+  const quoted = JSON.stringify(presentation({ slides: [slide('She said \u201chello\u201d')] }));
+  assert.equal(parsePresentation(quoted, { headingOf }).presentation.slides[0].title, 'She said \u201chello\u201d');
+  /* and plain text that is not JSON still says so, with the code-block advice */
+  assert.match(parsePresentation('{\u201cslides\u201d: nope}').error, /code block/);
 });
 
 test('a presentation that is incomplete or malformed is refused with useful errors', () => {
@@ -258,7 +272,7 @@ test('the multi-slide prompt (add) gives the outline, where the slides go, the d
   });
   for (const expected of [PROJECT_SHAPE, 'THE PRESENTATION NOW', '1. Welcome', '2. What it is   <- the new slides go right after this one',
     '4. Questions?', 'DESIGN SYSTEM', '.x-card, .x-stat', 'Do not write Master CSS', '<footer class="source-footer">',
-    'A SLIDE FROM THIS DECK TO MODEL YOURS ON', 'WHAT I WANT\nTwo slides on fees.', 'Do NOT include commentary']) {
+    'A SLIDE FROM THIS DECK TO MODEL YOURS ON', 'WHAT I WANT\nTwo slides on fees.', 'Nothing before the block and nothing after it']) {
     assert.ok(text.includes(expected), `missing: ${expected}`);
   }
   assert.ok(!text.includes('"id"'), 'new slides do not need ids');
